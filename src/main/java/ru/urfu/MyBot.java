@@ -24,7 +24,14 @@ public class MyBot implements LongPollingUpdateConsumer {
                 String chatId = String.valueOf(update.getMessage().getChatId());
                 String text = update.getMessage().getText();
 
-                SendMessage sendMessage = new SendMessage(chatId, text);
+                SendMessage sendMessage;
+
+                //TODO реализовать /help
+                sendMessage = switch (text) {
+                    case "/start" -> new SendMessage(chatId, "Добро пожаловать!");
+                    default -> new SendMessage(chatId, text); // Эхо по умолчанию
+                };
+
                 try {
                     telegramClient.execute(sendMessage);
                 } catch (TelegramApiException e) {
