@@ -14,7 +14,7 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
  * Класс, реализующий Telegram-бота.
  */
 public class MyBot implements LongPollingUpdateConsumer {
-    
+
     /**
      * Клиент для выполнения запросов к Telegram API.
      */
@@ -29,11 +29,6 @@ public class MyBot implements LongPollingUpdateConsumer {
         this.telegramClient = new OkHttpTelegramClient(botToken);
     }
 
-    /**
-     * Обрабатывает входящие обновления от Telegram.
-     *
-     * @param updates список обновлений, пришедших от пользователей
-     */
     @Override
     public void consume(List<Update> updates) {
         for (Update update : updates) {
@@ -46,7 +41,11 @@ public class MyBot implements LongPollingUpdateConsumer {
                 //TODO реализовать /help
                 sendMessage = switch (text) {
                     case "/start" -> new SendMessage(chatId, "Добро пожаловать!");
-                    default -> new SendMessage(chatId, text); // Эхо по умолчанию
+                    case "/help" -> new SendMessage(chatId,
+                            "Привет! Я бот Moodsy\n" +
+                                    "/start - начать работу\n" +
+                                        "/help - показать справку\n");
+                    default -> new SendMessage(chatId, "Вы ввели " + text); // Эхо по умолчанию, см регламент
                 };
 
                 try {
