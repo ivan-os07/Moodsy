@@ -38,13 +38,14 @@ public class MyBot implements LongPollingUpdateConsumer {
 
                 SendMessage sendMessage;
 
-                //TODO реализовать /help
                 sendMessage = switch (text) {
                     case "/start" -> new SendMessage(chatId, "Добро пожаловать!");
                     case "/help" -> new SendMessage(chatId,
-                            "Привет! Я бот Moodsy\n" +
-                                    "/start - начать работу\n" +
-                                        "/help - показать справку\n");
+                            """
+                                    Привет! Я бот Moodsy
+                                    /start - начать работу
+                                    /help - показать справку
+                                    """);
                     default -> new SendMessage(chatId, "Вы ввели " + text); // Эхо по умолчанию, см регламент
                 };
 
