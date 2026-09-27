@@ -10,13 +10,30 @@ import java.util.List;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 
+/**
+ * Класс, реализующий Telegram-бота.
+ */
 public class MyBot implements LongPollingUpdateConsumer {
+    
+    /**
+     * Клиент для выполнения запросов к Telegram API.
+     */
     private final TelegramClient telegramClient;
 
+    /**
+     * Инициализирует бота с заданным токеном.
+     *
+     * @param botToken токен для доступа к Telegram API
+     */
     public MyBot(String botToken) {
         this.telegramClient = new OkHttpTelegramClient(botToken);
     }
 
+    /**
+     * Обрабатывает входящие обновления от Telegram.
+     *
+     * @param updates список обновлений, пришедших от пользователей
+     */
     @Override
     public void consume(List<Update> updates) {
         for (Update update : updates) {
