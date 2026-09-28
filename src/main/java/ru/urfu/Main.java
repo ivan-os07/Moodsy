@@ -2,6 +2,13 @@ package ru.urfu;
 
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 
+/**
+ * Точка входа telegram-бота.
+ * берет токен из переменной окружения BOT_TOKEN,
+ * запускает приложение и регистрирует в нем.
+ * Если токен не задан - выводит ошибку и завершает работу.
+ *
+ */
 public class Main {
     static void main() {
         String botToken = System.getenv("BOT_TOKEN");
