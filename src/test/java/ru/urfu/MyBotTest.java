@@ -43,6 +43,8 @@ class MyBotTest {
 
     /**
      * Проверяет, корректность обработки echo функции.
+     * -@ParameterizedTest для того, чтобы тест прошелся несколько раз
+     * -@CsvSource работает как источник данных для теста
      */
     @ParameterizedTest
     @CsvSource({
