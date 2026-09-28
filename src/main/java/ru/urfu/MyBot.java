@@ -29,6 +29,24 @@ public class MyBot implements LongPollingUpdateConsumer {
         this.telegramClient = new OkHttpTelegramClient(botToken);
     }
 
+    /**
+     * Создает строку-ответ по заданному сообщению.
+     *
+     * @param text строка по которой формируем ответ
+     * @return текст ответа бота, умолчанию просто возвращает text
+     */
+    public String buildResponse(String text) {
+        return switch (text) {
+            case "/start" -> "Добро пожаловать!";
+            case "/help" -> """
+                    Привет! Я бот Moodsy
+                    /start - начать работу
+                    /help - показать справку
+                    """;
+            default -> "Вы ввели " + text;
+        };
+    }
+
     @Override
     public void consume(List<Update> updates) {
         for (Update update : updates) {
@@ -38,16 +56,7 @@ public class MyBot implements LongPollingUpdateConsumer {
 
                 SendMessage sendMessage;
 
-                sendMessage = switch (text) {
-                    case "/start" -> new SendMessage(chatId, "Добро пожаловать!");
-                    case "/help" -> new SendMessage(chatId,
-                            """
-                                    Привет! Я бот Moodsy
-                                    /start - начать работу
-                                    /help - показать справку
-                                    """);
-                    default -> new SendMessage(chatId, "Вы ввели " + text); // Эхо по умолчанию, см регламент
-                };
+                sendMessage = new SendMessage(chatId, buildResponse(text));
 
                 try {
                     telegramClient.execute(sendMessage);
