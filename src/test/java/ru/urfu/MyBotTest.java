@@ -13,7 +13,7 @@ class MyBotTest {
     /**
      * Экземпляр бота для тестирования.
      */
-    MyBot bot = new MyBot("fake-token");
+    MyBotLogic bot = new MyBotLogic();
 
     /**
      * Проверяет, что команда /start возвращает приветствие.
