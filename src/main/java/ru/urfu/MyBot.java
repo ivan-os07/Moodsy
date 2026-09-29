@@ -19,7 +19,7 @@ public class MyBot implements LongPollingUpdateConsumer {
      * Клиент для выполнения запросов к Telegram API.
      */
     private final TelegramClient telegramClient;
-
+    private final MyBotLogic bot = new MyBotLogic();
     /**
      * Инициализирует бота с заданным токеном.
      *
@@ -27,24 +27,6 @@ public class MyBot implements LongPollingUpdateConsumer {
      */
     public MyBot(String botToken) {
         this.telegramClient = new OkHttpTelegramClient(botToken);
-    }
-
-    /**
-     * Создает строку-ответ по заданному сообщению.
-     *
-     * @param text строка по которой формируем ответ
-     * @return текст ответа бота, умолчанию просто возвращает text
-     */
-    public String buildResponse(String text) {
-        return switch (text) {
-            case "/start" -> "Добро пожаловать!";
-            case "/help" -> """
-                    Привет! Я бот Moodsy
-                    /start - начать работу
-                    /help - показать справку
-                    """;
-            default -> "Вы ввели " + text;
-        };
     }
 
     @Override
@@ -56,7 +38,7 @@ public class MyBot implements LongPollingUpdateConsumer {
 
                 SendMessage sendMessage;
 
-                sendMessage = new SendMessage(chatId, buildResponse(text));
+                sendMessage = new SendMessage(chatId, bot.buildResponse(text));
 
                 try {
                     telegramClient.execute(sendMessage);
