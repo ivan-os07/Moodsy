@@ -1,7 +1,5 @@
 package ru.urfu.config;
 
-import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
-
 import java.util.function.Function;
 
 /**
@@ -16,6 +14,8 @@ public class TelegramConfig {
      * botToken - токен телеграм бота
      */
     private static final String ENV_BOT_TOKEN = "BOT_TOKEN";
+
+    /** Токен для доступа к Telegram API. */
     private final String botToken;
 
     /**

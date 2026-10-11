@@ -1,14 +1,11 @@
 package ru.urfu;
 
-import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import ru.urfu.config.TelegramConfig;
-import ru.urfu.service.BotCommand;
 import ru.urfu.service.CommandDispatcher;
 import ru.urfu.service.HelpCommand;
 import ru.urfu.service.StartCommand;
 import ru.urfu.transport.telegram.TelegramBot;
 
-import java.util.List;
 
 public class Main {
     static void main() {
@@ -22,13 +19,17 @@ public class Main {
 
         String botToken = tgConfig.getBotToken();
 
-        List<BotCommand> commands = List.of(new StartCommand(), new HelpCommand());
-        CommandDispatcher dispatcher = new CommandDispatcher(commands);
 
-        TelegramBot bot = new TelegramBot(botToken, dispatcher);
-        // в будущем можно подключить этот же диспетчер к другим платформам
+        CommandDispatcher dispatcher = new CommandDispatcher();
 
-        try {
+        // регистрируем команды в диспетчере
+        dispatcher.register(new StartCommand());
+        dispatcher.register(new HelpCommand(dispatcher));
+
+
+        try (TelegramBot bot = new TelegramBot(botToken, dispatcher)
+             // в будущем можно подключить этот же диспетчер к другим платформам
+        ) {
             bot.start();
         } catch (Exception e) {
             e.printStackTrace();

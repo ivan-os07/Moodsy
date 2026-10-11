@@ -1,9 +1,6 @@
 package ru.urfu.service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Маршрутизатор. Получает сырой текст от пользователя, находит нужную команду и вызывает её
@@ -17,22 +14,17 @@ public class CommandDispatcher {
 
     /**
      * Конструктор диспетчера.
-     *
-     * @param commandList список всех доступных команд
+     * Создает пустое хранилище для команд.
      */
-    public CommandDispatcher(List<BotCommand> commandList) {
+    public CommandDispatcher() {
         this.commands = new HashMap<>();
-        // Проходим по списку и складываем каждую команду в мапу:
-        for (BotCommand command : commandList) {
-            this.commands.put(command.getCommandKey(), command);
-        }
     }
 
     /**
      * Обработка входящего сообщения.
      *
      * @param userId id пользователя.
-     * @param text текст сообщения
+     * @param text   текст сообщения
      * @return ответ бота
      */
     public BotResponse handle(String userId, String text) {
@@ -57,5 +49,21 @@ public class CommandDispatcher {
         String responseText = command.execute(userId, args);
         return new BotResponse(userId, responseText);
 
+    }
+
+    /**
+     * Возвращает коллекцию из всех зарегистрированных команд.
+     *
+     * @return коллекция команд
+     */
+    public Collection<BotCommand> getCommands() {
+        return this.commands.values();
+    }
+
+    /**
+     * Регистрирует команды по одной.
+     */
+    public void register(BotCommand command) {
+        this.commands.put(command.getCommandKey(), command);
     }
 }

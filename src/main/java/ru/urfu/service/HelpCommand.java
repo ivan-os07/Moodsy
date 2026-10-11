@@ -5,6 +5,12 @@ package ru.urfu.service;
  */
 public class HelpCommand implements BotCommand {
 
+    private final CommandDispatcher dispatcher;
+
+    public HelpCommand(CommandDispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+    }
+
     @Override
     public String getCommandKey() {
         return "/help";
@@ -17,10 +23,16 @@ public class HelpCommand implements BotCommand {
 
     @Override
     public String execute(String userId, String[] args) {
-        return """
-                Привет! Я бот Moodsy
-                /start - начать работу
-                /help - показать справку
-                """;
+        StringBuilder builder = new StringBuilder("Привет! Я бот Moodsy\n");
+
+        for (BotCommand command : this.dispatcher.getCommands()) {
+            builder.append(command.getCommandKey());
+            builder.append(" - ");
+            builder.append(command.getDescription());
+            builder.append("\n");
+        }
+
+        return builder.toString();
+
     }
 }
