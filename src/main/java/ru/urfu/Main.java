@@ -1,6 +1,7 @@
 package ru.urfu;
 
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+//import ru.urfu.transport.telegram.MyBot;
 
 /**
  * Точка входа telegram-бота.
@@ -17,12 +18,12 @@ public class Main {
             return;
         }
 
-        try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
-            botsApplication.registerBot(botToken, new MyBot(botToken));
-            System.out.println("Бот успешно запущен и слушает обновления...");
-            Thread.currentThread().join();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+//            botsApplication.registerBot(botToken, new MyBot(botToken));
+//            System.out.println("Бот успешно запущен и слушает обновления...");
+//            Thread.currentThread().join();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 }
