@@ -1,5 +1,7 @@
 package ru.urfu.config;
 
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+
 import java.util.function.Function;
 
 /**
@@ -41,6 +43,5 @@ public class TelegramConfig {
     public String getBotToken() {
         return botToken;
     }
-
 
 }

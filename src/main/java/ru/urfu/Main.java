@@ -1,29 +1,37 @@
 package ru.urfu;
 
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
-//import ru.urfu.transport.telegram.MyBot;
+import ru.urfu.config.TelegramConfig;
+import ru.urfu.service.BotCommand;
+import ru.urfu.service.CommandDispatcher;
+import ru.urfu.service.HelpCommand;
+import ru.urfu.service.StartCommand;
+import ru.urfu.transport.telegram.TelegramBot;
 
-/**
- * Точка входа telegram-бота.
- * берет токен из переменной окружения BOT_TOKEN,
- * запускает приложение и регистрирует в нем.
- * Если токен не задан - выводит ошибку и завершает работу.
- *
- */
+import java.util.List;
+
 public class Main {
     static void main() {
-        String botToken = System.getenv("BOT_TOKEN");
-        if (botToken == null || botToken.isBlank()) {
-            System.err.println("Ошибка: переменная окружения BOT_TOKEN не задана!");
+        TelegramConfig tgConfig;
+        try {
+            tgConfig = new TelegramConfig();
+        } catch (IllegalStateException e) {
+            System.err.println(e.getMessage());
             return;
         }
 
-//        try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
-//            botsApplication.registerBot(botToken, new MyBot(botToken));
-//            System.out.println("Бот успешно запущен и слушает обновления...");
-//            Thread.currentThread().join();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        String botToken = tgConfig.getBotToken();
+
+        List<BotCommand> commands = List.of(new StartCommand(), new HelpCommand());
+        CommandDispatcher dispatcher = new CommandDispatcher(commands);
+
+        TelegramBot bot = new TelegramBot(botToken, dispatcher);
+        // в будущем можно подключить этот же диспетчер к другим платформам
+
+        try {
+            bot.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
