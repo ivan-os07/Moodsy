@@ -3,7 +3,6 @@ package ru.urfu.service;
 import ru.urfu.repository.MoodRepository;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 public class HistoryCommand implements BotCommand {
