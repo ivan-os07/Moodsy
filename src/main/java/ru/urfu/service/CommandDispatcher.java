@@ -63,6 +63,8 @@ public class CommandDispatcher {
 
     /**
      * Регистрирует команды по одной.
+     *
+     * @param command команда для регистрации
      */
     public void register(BotCommand command) {
         this.commands.put(command.getCommandKey(), command);
