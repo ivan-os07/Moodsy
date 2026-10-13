@@ -6,6 +6,7 @@ import java.util.*;
  * Маршрутизатор. Получает сырой текст от пользователя, находит нужную команду и вызывает её
  */
 public class CommandDispatcher {
+
     /**
      * Словарь зарегистрированных команд: ключ команды -> объект
      * команды.
@@ -17,7 +18,7 @@ public class CommandDispatcher {
      * Создает пустое хранилище для команд.
      */
     public CommandDispatcher() {
-        this.commands = new HashMap<>();
+        this.commands = new LinkedHashMap<>();
     }
 
     /**
@@ -62,6 +63,8 @@ public class CommandDispatcher {
 
     /**
      * Регистрирует команды по одной.
+     *
+     * @param command команда для регистрации
      */
     public void register(BotCommand command) {
         this.commands.put(command.getCommandKey(), command);
