@@ -19,12 +19,7 @@ public class InMemoryMoodRepository implements MoodRepository {
      */
     private final ConcurrentHashMap<String, List<MoodEntry>> entries = new ConcurrentHashMap<>();
 
-    /**
-     * Сохраняет новую запись (отметку) пользователя
-     *
-     * @param userId идентификатор пользователя
-     * @param entry  запись (отметка)
-     */
+
 
     @Override
     public void save(String userId, MoodEntry entry) {
@@ -32,13 +27,7 @@ public class InMemoryMoodRepository implements MoodRepository {
 
     }
 
-    /**
-     * Возвращает последние записи пользователя (от новых к старым)
-     *
-     * @param userId идентификатор пользователя
-     * @param limit  максимальное число возвращаемых записей
-     * @return список последних записей
-     */
+
     @Override
     public List<MoodEntry> findLast(String userId, int limit) {
         if (limit <= 0) {
@@ -56,12 +45,7 @@ public class InMemoryMoodRepository implements MoodRepository {
         return Collections.unmodifiableList(result);
     }
 
-    /**
-     * Возвращает последнюю запись пользователя
-     *
-     * @param userId идентификатор пользователя
-     * @return последняя запись, иначе пустой Optional
-     */
+
     @Override
     public Optional<MoodEntry> findLatest(String userId) {
         List<MoodEntry> userEntries = entries.get(userId);
@@ -72,13 +56,7 @@ public class InMemoryMoodRepository implements MoodRepository {
         return Optional.of(userEntries.get(userEntries.size() - 1));
     }
 
-    /**
-     * Обновляет последнюю запись пользователя
-     *
-     * @param userId       идентификатор пользователя
-     * @param updatedEntry новая версия записи
-     * @return true, если обновлена, иначе false
-     */
+
     @Override
     public boolean updateLast(String userId, MoodEntry updatedEntry) {
         List<MoodEntry> userEntries = entries.get(userId);
@@ -89,11 +67,7 @@ public class InMemoryMoodRepository implements MoodRepository {
         return true;
     }
 
-    /**
-     * Удаляет последнюю запись пользователя
-     * @param userId идентификатор пользователя
-     * @return true, если запись удалена, иначе false
-     */
+
     @Override
     public boolean deleteLast(String userId) {
         List<MoodEntry> userEntries = entries.get(userId);

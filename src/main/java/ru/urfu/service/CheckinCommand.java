@@ -5,10 +5,21 @@ import ru.urfu.repository.MoodRepository;
 import java.time.Clock;
 import java.time.LocalDateTime;
 
+/**
+ * Команда для записи оценки настроения пользователя
+ */
 public class CheckinCommand implements BotCommand {
+    /**
+     * Репозиторий для хранения записей настроения
+     */
     private final MoodRepository moodRepository;
     private final Clock clock;
 
+    /**
+     * Инициализация команды /checkin
+     * @param moodRepository репозиторий для хранения записей настроения
+     * @param clock источник текущего времени
+     */
     public CheckinCommand(MoodRepository moodRepository, Clock clock) {
         this.moodRepository = moodRepository;
         this.clock = clock;
@@ -28,7 +39,8 @@ public class CheckinCommand implements BotCommand {
     @Override
     public String execute(String userId, String[] args) {
         if (args == null || args.length != 1) {
-            return ("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.");
+            return ("Использование команды /checkin: \n" +
+                    "/checkin <n> - n число от 1 до 10");
         }
         int score;
         try {
