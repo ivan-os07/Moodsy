@@ -15,7 +15,9 @@ public class TelegramConfig {
      */
     private static final String ENV_BOT_TOKEN = "BOT_TOKEN";
 
-    /** Токен для доступа к Telegram API. */
+    /**
+     * Токен для доступа к Telegram API.
+     */
     private final String botToken;
 
     /**
@@ -29,6 +31,9 @@ public class TelegramConfig {
     /**
      * Сами передаем фейковый токен, например для тестов.
      * Как пример: TelegramConfig(key -> "12345:ABC-DEF");
+     *
+     * @param envProvider окружение откуда берем переменную
+     * @throws IllegalStateException бросаем исключение при ошибке
      */
     public TelegramConfig(Function<String, String> envProvider) {
         String token = envProvider.apply(ENV_BOT_TOKEN);
@@ -40,6 +45,11 @@ public class TelegramConfig {
     }
 
 
+    /**
+     * Возвращает токен бота
+     *
+     * @return токен бота
+     */
     public String getBotToken() {
         return botToken;
     }
