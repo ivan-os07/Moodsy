@@ -42,8 +42,8 @@ public class HistoryCommand implements BotCommand {
         int limit = 10;
         if (args != null && args.length > 0) {
             if (args.length != 1) {
-                return ("Формат использования команды /history: \n " +
-                        "/history <n> - где n кол-во записей\n"+
+                return ("Использование команды /history: \n " +
+                        "/history <n> - показать последние n записей\n"+
                         "/history - последние 10 записей");
             }
             try {
