@@ -20,10 +20,6 @@ class InMemoryMoodRepositoryTest {
     private final MoodEntry secondEntry = new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8);
     private final MoodEntry thirdEntry = new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1);
 
-    /**
-     * Создаем новый репозиторий перед каждым тестом,
-     * чтобы не копить результаты в одном
-     */
     @BeforeEach
     void setUp() {
         repository = new InMemoryMoodRepository();
