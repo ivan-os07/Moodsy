@@ -9,9 +9,17 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HistoryCommandTest {
+    /**
+     * Репозиторий для хранения отметок
+     */
     private InMemoryMoodRepository repository;
+    /**
+     * Сама команда /history
+     */
     private HistoryCommand command;
-
+    /**
+     * Идентификатор пользователя
+     */
     private final String userId = "tg:6767";
 
     @BeforeEach
@@ -21,6 +29,12 @@ public class HistoryCommandTest {
 
     }
 
+    /**
+     * Проверка:
+     * попытки обращения к пустой истории (с аргументом и без)
+     * корректности формирования строки для ответа пользователю (с лимитом и без)
+     * проверка корректного отображения в истории (от старых к новым)
+     */
     @Test
     void executeTest() {
         assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, null));
@@ -44,6 +58,11 @@ public class HistoryCommandTest {
         assertFalse(response2.contains("10.10.2026 10:10 - 10/10"));
     }
 
+    /**
+     * Проверка, что при использовании команды без аргумента
+     * и наличия кол-ва заметок в истории большем чем 10
+     * выводится именно 10 заметок.
+     */
     @Test
     void executeTestLimit() {
         for (int i = 1; i <= 23; i++) {
@@ -54,6 +73,10 @@ public class HistoryCommandTest {
         assertEquals(10, entriesCount);
     }
 
+    /**
+     * Проверяем, сообщения об ошибках в сценариях:
+     * буквенная последовательность, отрицательные числа, нуль, несколько аргументов
+     */
     @Test
     void executeErrorTest(){
         String exp = "❌ Ошибка: переданный формат числа не соответствует ожидаемому";
