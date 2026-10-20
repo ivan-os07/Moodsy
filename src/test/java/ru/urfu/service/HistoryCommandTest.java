@@ -6,8 +6,11 @@ import ru.urfu.repository.InMemoryMoodRepository;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
 
+/**
+ * Тестирование команды /history
+ */
 public class HistoryCommandTest {
     /**
      * Репозиторий для хранения отметок
@@ -37,8 +40,8 @@ public class HistoryCommandTest {
      */
     @Test
     void executeTest() {
-        assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, null));
-        assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, new String[]{"6"}));
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, null));
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, new String[]{"6"}));
 
         repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 10), 10));
         repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 11, 13, 12), 1));
@@ -49,13 +52,13 @@ public class HistoryCommandTest {
                 "12.11.2026 23:56 - 6/10\n" +
                 "11.10.2026 13:12 - 1/10\n" +
                 "10.10.2026 10:10 - 10/10";
-        assertEquals(expected, response);
+        Assertions.assertEquals(expected, response);
         String response2 = command.execute(userId, new String[]{"2"});
         String expected2 = " \uD83D\uDCC5 Ваша история записей:\n" +
                 "12.11.2026 23:56 - 6/10\n" +
                 "11.10.2026 13:12 - 1/10";
-        assertEquals(expected2, response2);
-        assertFalse(response2.contains("10.10.2026 10:10 - 10/10"));
+        Assertions.assertEquals(expected2, response2);
+        Assertions.assertFalse(response2.contains("10.10.2026 10:10 - 10/10"));
     }
 
     /**
@@ -70,7 +73,7 @@ public class HistoryCommandTest {
         }
         String response = command.execute(userId, null);
         long entriesCount = response.lines().filter(line -> line.matches("\\d{2}\\.\\d{2}\\.\\d{4}.*")).count();
-        assertEquals(10, entriesCount);
+        Assertions.assertEquals(10, entriesCount);
     }
 
     /**
@@ -78,14 +81,14 @@ public class HistoryCommandTest {
      * буквенная последовательность, отрицательные числа, нуль, несколько аргументов
      */
     @Test
-    void executeErrorTest(){
+    void executeErrorTest() {
         String exp = "❌ Ошибка: переданный формат числа не соответствует ожидаемому";
-        assertEquals(exp, command.execute(userId, new String[]{"abc"}));
-        assertEquals(exp, command.execute(userId, new String[]{"-1"}));
-        assertEquals(exp, command.execute(userId, new String[]{"0"}));
-        assertEquals(exp, command.execute(userId, new String[]{"-67"}));
-        assertEquals("Использование команды /history: \n " +
-                "/history <n> - показать последние n записей\n"+
+        Assertions.assertEquals(exp, command.execute(userId, new String[]{"abc"}));
+        Assertions.assertEquals(exp, command.execute(userId, new String[]{"-1"}));
+        Assertions.assertEquals(exp, command.execute(userId, new String[]{"0"}));
+        Assertions.assertEquals(exp, command.execute(userId, new String[]{"-67"}));
+        Assertions.assertEquals("Использование команды /history: \n " +
+                "/history <n> - показать последние n записей\n" +
                 "/history - последние 10 записей", command.execute(userId, new String[]{"6", "7"}));
     }
 }
