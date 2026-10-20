@@ -2,7 +2,7 @@ package ru.urfu.config;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Тестируем класс конфигурации бота в телеграмме:
@@ -19,7 +19,7 @@ class TelegramConfigTest {
     void getBotToken_withValidToken() {
         TelegramConfig config = new TelegramConfig(_ -> "valid_secret_token");
 
-        assertEquals("valid_secret_token", config.getBotToken());
+        Assertions.assertEquals("valid_secret_token", config.getBotToken());
     }
 
     /**
@@ -28,7 +28,7 @@ class TelegramConfigTest {
      */
     @Test
     void getBotToken_withInvalidToken() {
-        assertThrows(IllegalStateException.class, () -> new TelegramConfig(_ -> null));
+        Assertions.assertThrows(IllegalStateException.class, () -> new TelegramConfig(_ -> null));
     }
 
     /**
@@ -37,7 +37,7 @@ class TelegramConfigTest {
      */
     @Test
     void getBotToken_withBlankToken() {
-        assertThrows(IllegalStateException.class, () -> new TelegramConfig(_ -> "   "));
+        Assertions.assertThrows(IllegalStateException.class, () -> new TelegramConfig(_ -> "   "));
     }
 
 }

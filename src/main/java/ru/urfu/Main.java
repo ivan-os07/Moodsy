@@ -1,9 +1,9 @@
 package ru.urfu;
 
 import ru.urfu.config.TelegramConfig;
-import ru.urfu.repository.InMemoryMoodRepository;
-import ru.urfu.repository.MoodRepository;
-import ru.urfu.service.*;
+import ru.urfu.commands.CommandDispatcher;
+import ru.urfu.commands.HelpCommand;
+import ru.urfu.commands.StartCommand;
 import ru.urfu.transport.telegram.TelegramBot;
 
 import java.time.Clock;

@@ -1,19 +1,25 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Тестируем работу диспетчера команд.
  */
 class CommandDispatcherTest {
 
-    // диспетчер и фейковая команда
+    /**
+     * Диспетчер
+     */
     private CommandDispatcher dispatcher;
+
+    /**
+     * Фейковая команда
+     */
     private FakeCommand fakeCommand;
 
     /**
@@ -29,7 +35,7 @@ class CommandDispatcherTest {
     }
 
     /**
-     * Обработка известной(зарегистрированной) команды.
+     * Тестирование обработки известной(зарегистрированной) команды.
      * Убеждаемся в валидности ответа и за счет FakeCommand
      * проверяем количество вызовов и id пользователя
      */
@@ -37,59 +43,59 @@ class CommandDispatcherTest {
     void handle_knownCommand() {
         BotResponse response = dispatcher.handle("tg:123", "/test");
 
-        assertEquals("tg:123", response.userId());
-        assertEquals("answer test", response.text());
-        assertEquals("tg:123", fakeCommand.getLastUserId());
-        assertEquals(1, fakeCommand.getCallCount());
+        Assertions.assertEquals("tg:123", response.userId());
+        Assertions.assertEquals("answer test", response.text());
+        Assertions.assertEquals("tg:123", fakeCommand.getLastUserId());
+        Assertions.assertEquals(1, fakeCommand.getCallCount());
     }
 
     /**
-     * Обработка неизвестной(незарегистрированной) команды.
+     * Тестирование обработки неизвестной(незарегистрированной) команды.
      */
     @Test
     void handle_unknownCommand() {
         BotResponse response = dispatcher.handle("tg:123", "/unknown");
 
-        assertEquals("tg:123", response.userId());
-        assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
-        assertNull(fakeCommand.getLastUserId());
-        assertEquals(0, fakeCommand.getCallCount());
+        Assertions.assertEquals("tg:123", response.userId());
+        Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
+        Assertions.assertNull(fakeCommand.getLastUserId());
+        Assertions.assertEquals(0, fakeCommand.getCallCount());
 
     }
 
     /**
-     * Обработка ошибки при регистрации пустой команды
+     * Тестирование обработки ошибки при регистрации пустой команды
      */
     @Test
     void handle_blankCommand() {
         BotResponse response = dispatcher.handle("tg:123", "");
 
-        assertEquals("tg:123", response.userId());
-        assertEquals("Сообщение не может быть пустым!", response.text());
-        assertNull(fakeCommand.getLastUserId());
-        assertEquals(0, fakeCommand.getCallCount());
+        Assertions.assertEquals("tg:123", response.userId());
+        Assertions.assertEquals("Сообщение не может быть пустым!", response.text());
+        Assertions.assertNull(fakeCommand.getLastUserId());
+        Assertions.assertEquals(0, fakeCommand.getCallCount());
 
     }
 
     /**
-     * Обработка команды с несколькими аргументами
+     * Тестирование обработки команды с несколькими аргументами
      */
     @Test
     void handle_commandWithArguments() {
         dispatcher.handle("tg:123", "/test arg1 arg2 arg3");
-        assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
+        Assertions.assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
     }
 
     /**
-     * Обработка возвращаемого количества команд.
+     * Тестирование обработки возвращаемого количества команд.
      * Тк мы при инициализации добавили одну команду, то размер коллекции должен быть 1
      */
     @Test
     void getCommands_returnsAllRegisteredCommands() {
         Collection<BotCommand> commands = dispatcher.getCommands();
 
-        assertEquals(1, commands.size());
-        assertTrue(commands.contains(fakeCommand));
+        Assertions.assertEquals(1, commands.size());
+        Assertions.assertTrue(commands.contains(fakeCommand));
     }
 
     /**
@@ -103,9 +109,9 @@ class CommandDispatcherTest {
 
         Collection<BotCommand> commands = dispatcher.getCommands();
 
-        assertEquals(2, commands.size());
-        assertTrue(commands.contains(fakeCommand));
-        assertTrue(commands.contains(secondCommand));
+        Assertions.assertEquals(2, commands.size());
+        Assertions.assertTrue(commands.contains(fakeCommand));
+        Assertions.assertTrue(commands.contains(secondCommand));
     }
 
     /**
@@ -120,8 +126,8 @@ class CommandDispatcherTest {
 
         BotResponse response = dispatcher.handle("tg:123", "/ping");
 
-        assertEquals("pong", response.text());
-        assertEquals("tg:123", response.userId());
+        Assertions.assertEquals("pong", response.text());
+        Assertions.assertEquals("tg:123", response.userId());
     }
 
     /**
@@ -137,6 +143,6 @@ class CommandDispatcherTest {
 
         BotResponse response = dispatcher.handle("tg:123", "/test");
 
-        assertEquals("i am new test", response.text());
+        Assertions.assertEquals("i am new test", response.text());
     }
 }

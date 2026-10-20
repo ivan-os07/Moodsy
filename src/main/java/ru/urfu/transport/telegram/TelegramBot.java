@@ -10,8 +10,8 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import java.util.List;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
-import ru.urfu.service.BotResponse;
-import ru.urfu.service.CommandDispatcher;
+import ru.urfu.commands.BotResponse;
+import ru.urfu.commands.CommandDispatcher;
 
 /**
  * Класс, реализующий Telegram-бота.

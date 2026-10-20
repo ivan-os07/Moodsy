@@ -1,4 +1,4 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 /**
  * Объект ответа бота (кому отправить + текст сообщения).

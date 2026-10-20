@@ -1,17 +1,23 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Тестирование команды /help
  */
 class HelpCommandTest {
 
-    // Диспетчер и команда /help
+    /**
+     * Диспетчер
+     */
     private CommandDispatcher dispatcher;
+
+    /**
+     * Команда /help
+     */
     private HelpCommand command;
 
     /**
@@ -24,22 +30,21 @@ class HelpCommandTest {
     }
 
     /**
-     * Проверяем валидность возврата команды
+     * Тестируем валидность возврата команды
      */
     @Test
     void getCommandKey() {
         String result = command.getCommandKey();
-        assertEquals("/help", result);
+        Assertions.assertEquals("/help", result);
     }
 
     /**
-     * Проверяем валидность возврата описания команды
+     * Тестируем валидность возврата описания команды
      */
     @Test
     void getDescription_returnsNonEmpty() {
         String result = command.getDescription();
-        assertNotNull(result);
-        assertFalse(result.isBlank());
+        Assertions.assertEquals("Получить помощь и список команд", result);
     }
 
     /**
@@ -55,7 +60,7 @@ class HelpCommandTest {
 
         String result = helpCommand.execute("tg123", new String[]{});
 
-        assertTrue(result.contains("/cmd1 - cmd1 description"));
-        assertTrue(result.contains("/cmd2 - cmd2 description"));
+        Assertions.assertTrue(result.contains("/cmd1 - cmd1 description"));
+        Assertions.assertTrue(result.contains("/cmd2 - cmd2 description"));
     }
 }

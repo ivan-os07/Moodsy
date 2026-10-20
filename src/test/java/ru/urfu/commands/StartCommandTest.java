@@ -1,16 +1,18 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Тестирование команды /test
  */
 class StartCommandTest {
 
-    // Команда /start
+    /**
+     * Команда /start
+     */
     private StartCommand command;
 
     /**
@@ -22,33 +24,29 @@ class StartCommandTest {
     }
 
     /**
-     * Проверяем валидность возврата команды
+     * Тестируем валидность возврата команды
      */
     @Test
     void getCommandKey_returnsCorrectKey() {
         String result = command.getCommandKey();
-        assertEquals("/start", result);
+        Assertions.assertEquals("/start", result);
     }
 
     /**
-     * Проверяем валидность возврата описания команды
+     * Тестируем валидность возврата описания команды
      */
     @Test
     void getDescription_returnsNonEmpty() {
         String result = command.getDescription();
-        assertNotNull(result);
-        assertFalse(result.isBlank());
+        Assertions.assertEquals("Начать работу", result);
     }
 
     /**
-     * Проверяет, что команда возвращает корректное приветственное сообщение.
+     * Тестируем, что команда возвращает корректное приветственное сообщение.
      */
     @Test
     void execute_returnsWelcomeMessage() {
         String result = command.execute("tg:123", new String[]{});
-
-        assertNotNull(result);
-        assertFalse(result.isBlank());
+        Assertions.assertEquals("Добро пожаловать!", result);
     }
-
 }
