@@ -1,6 +1,6 @@
 package ru.urfu.repository;
 
-import ru.urfu.service.MoodEntry;
+import ru.urfu.model.MoodEntry;
 import java.util.List;
 import java.util.Optional;
 

@@ -1,6 +1,7 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import ru.urfu.repository.MoodRepository;
+import ru.urfu.model.MoodEntry;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
