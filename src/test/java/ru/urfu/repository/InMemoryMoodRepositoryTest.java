@@ -9,9 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
 
 
+/**
+ * Тестирование методов работы с хранилищем
+ */
 class InMemoryMoodRepositoryTest {
     /**
      * Репозиторий для хранения отметок
@@ -22,10 +25,16 @@ class InMemoryMoodRepositoryTest {
      */
     private final String userId = "tg:6767";
     /**
-     * Три отличные друг от друга отметки
+     * Первая заметка для тестирования
      */
     private final MoodEntry firstEntry = new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5);
+    /**
+     * Вторая заметка для тестирования
+     */
     private final MoodEntry secondEntry = new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8);
+    /**
+     * Третья заметка для тестирования
+     */
     private final MoodEntry thirdEntry = new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1);
 
     @BeforeEach
@@ -42,13 +51,13 @@ class InMemoryMoodRepositoryTest {
     @Test
     void saveOneOrMoreEntries() {
         repository.save(userId, firstEntry);
-        assertEquals(
+        Assertions.assertEquals(
                 Optional.of(firstEntry),
                 repository.findLatest(userId)
         );
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
-        assertEquals(
+        Assertions.assertEquals(
                 List.of(thirdEntry, secondEntry, firstEntry),
                 repository.findLast(userId, 10)
         );
@@ -67,18 +76,18 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
-        assertEquals(
+        Assertions.assertEquals(
                 List.of(thirdEntry, secondEntry, firstEntry),
                 repository.findLast(userId, 10)
         );
-        assertEquals(
+        Assertions.assertEquals(
                 List.of(thirdEntry, secondEntry),
                 repository.findLast(userId, 2)
         );
-        assertTrue(repository.findLast(userId, 0).isEmpty());
-        assertTrue(repository.findLast(userId, -1).isEmpty());
-        assertTrue(repository.findLast(userId, -66).isEmpty());
-        assertTrue(repository.findLast("unknown", 10).isEmpty());
+        Assertions.assertTrue(repository.findLast(userId, 0).isEmpty());
+        Assertions.assertTrue(repository.findLast(userId, -1).isEmpty());
+        Assertions.assertTrue(repository.findLast(userId, -66).isEmpty());
+        Assertions.assertTrue(repository.findLast("unknown", 10).isEmpty());
     }
 
     /**
@@ -89,14 +98,14 @@ class InMemoryMoodRepositoryTest {
      */
     @Test
     void findLatestTest() {
-        assertEquals(Optional.empty(), repository.findLatest(userId));
+        Assertions.assertEquals(Optional.empty(), repository.findLatest(userId));
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
-        assertEquals(
+        Assertions.assertEquals(
                 Optional.of(secondEntry),
                 repository.findLatest(userId)
         );
-        assertEquals(Optional.empty(), repository.findLatest("unknown"));
+        Assertions.assertEquals(Optional.empty(), repository.findLatest("unknown"));
     }
 
     /**
@@ -106,16 +115,16 @@ class InMemoryMoodRepositoryTest {
      */
     @Test
     void updateListTest() {
-        assertFalse(repository.updateLast(userId, firstEntry));
+        Assertions.assertFalse(repository.updateLast(userId, firstEntry));
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         MoodEntry updatedEntry = new MoodEntry(LocalDateTime.of(2026, 10, 10, 21, 59), 10);
 
-        assertTrue(repository.updateLast(userId, updatedEntry));
-        assertEquals(Optional.of(updatedEntry),
+        Assertions.assertTrue(repository.updateLast(userId, updatedEntry));
+        Assertions.assertEquals(Optional.of(updatedEntry),
                 repository.findLatest(userId));
-        assertEquals(List.of(updatedEntry, firstEntry), repository.findLast(userId, 2));
-        assertFalse(repository.updateLast("unknown", updatedEntry));
+        Assertions.assertEquals(List.of(updatedEntry, firstEntry), repository.findLast(userId, 2));
+        Assertions.assertFalse(repository.updateLast("unknown", updatedEntry));
     }
 
     /**
@@ -124,15 +133,15 @@ class InMemoryMoodRepositoryTest {
      */
     @Test
     void deleteTest() {
-        assertFalse(repository.deleteLast(userId));
+        Assertions.assertFalse(repository.deleteLast(userId));
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
-        assertTrue(repository.deleteLast(userId));
-        assertEquals(Optional.of(firstEntry), repository.findLatest(userId));
-        assertTrue(repository.deleteLast(userId));
-        assertTrue(repository.findLatest(userId).isEmpty());
-        assertTrue(repository.findLast(userId, 10).isEmpty());
-        assertFalse(repository.deleteLast(userId));
+        Assertions.assertTrue(repository.deleteLast(userId));
+        Assertions.assertEquals(Optional.of(firstEntry), repository.findLatest(userId));
+        Assertions.assertTrue(repository.deleteLast(userId));
+        Assertions.assertTrue(repository.findLatest(userId).isEmpty());
+        Assertions.assertTrue(repository.findLast(userId, 10).isEmpty());
+        Assertions.assertFalse(repository.deleteLast(userId));
     }
 
     /**
@@ -145,11 +154,11 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, firstEntry);
         repository.save(secondUserId, secondEntry);
 
-        assertEquals(
+        Assertions.assertEquals(
                 List.of(firstEntry),
                 repository.findLast(userId, 10)
         );
-        assertEquals(
+        Assertions.assertEquals(
                 List.of(secondEntry),
                 repository.findLast(secondUserId, 10)
         );
@@ -163,6 +172,6 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, firstEntry);
 
         List<MoodEntry> history = repository.findLast(userId, 10);
-        assertThrows(UnsupportedOperationException.class, () -> history.add(secondEntry));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> history.add(secondEntry));
     }
 }
