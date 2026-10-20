@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class StartCommandTest {
 
+    // Команда /start
     private StartCommand command;
 
     /**

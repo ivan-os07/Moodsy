@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CommandDispatcherTest {
 
+    // диспетчер и фейковая команда
     private CommandDispatcher dispatcher;
     private FakeCommand fakeCommand;
 

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class HelpCommandTest {
 
+    // Диспетчер и команда /help
     private CommandDispatcher dispatcher;
     private HelpCommand command;
 
