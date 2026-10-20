@@ -2,7 +2,7 @@ package ru.urfu.repository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.urfu.service.MoodEntry;
+import ru.urfu.model.MoodEntry;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -168,7 +168,7 @@ class InMemoryMoodRepositoryTest {
      * Проверяет, что невозможно изменить отметки пользователя из вне.
      */
     @Test
-    void UnmodifiableList() {
+    void unmodifiableList() {
         repository.save(userId, firstEntry);
 
         List<MoodEntry> history = repository.findLast(userId, 10);

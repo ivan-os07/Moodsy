@@ -5,8 +5,17 @@ package ru.urfu.commands;
  */
 public class HelpCommand implements BotCommand {
 
+    /**
+     * Диспетчер
+     */
     private final CommandDispatcher dispatcher;
 
+    /**
+     * Конструктор для инициализации команды помощи.
+     *
+     * @param dispatcher диспетчер команд, используемый для получения списка
+     *                   всех доступных в приложении команд и их описаний
+     */
     public HelpCommand(CommandDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }

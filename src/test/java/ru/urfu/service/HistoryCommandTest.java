@@ -2,6 +2,8 @@ package ru.urfu.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.urfu.commands.HistoryCommand;
+import ru.urfu.model.MoodEntry;
 import ru.urfu.repository.InMemoryMoodRepository;
 
 import java.time.LocalDateTime;

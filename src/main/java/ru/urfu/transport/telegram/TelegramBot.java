@@ -18,6 +18,9 @@ import ru.urfu.commands.CommandDispatcher;
  */
 public class TelegramBot implements LongPollingUpdateConsumer {
 
+    /**
+     * Клиент телеграмма
+     */
     private final TelegramClient telegramClient;
 
     /**
