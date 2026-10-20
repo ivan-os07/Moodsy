@@ -13,9 +13,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 class InMemoryMoodRepositoryTest {
+    /**
+     * Репозиторий для хранения отметок
+     */
     private InMemoryMoodRepository repository;
+    /**
+     * Идентификатор пользователя
+     */
     private final String userId = "tg:6767";
-
+    /**
+     * Три отличные друг от друга отметки
+     */
     private final MoodEntry firstEntry = new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5);
     private final MoodEntry secondEntry = new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8);
     private final MoodEntry thirdEntry = new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1);
@@ -73,7 +81,12 @@ class InMemoryMoodRepositoryTest {
         assertTrue(repository.findLast("unknown", 10).isEmpty());
     }
 
-
+    /**
+     * Проверяет, findLatest() корректно реагирует на пустую историю (отметок нет),
+     * несуществующий userId,
+     * и возвращает правильную заметку при стандартном случае сохранения
+     *
+     */
     @Test
     void findLatestTest() {
         assertEquals(Optional.empty(), repository.findLatest(userId));
@@ -86,6 +99,11 @@ class InMemoryMoodRepositoryTest {
         assertEquals(Optional.empty(), repository.findLatest("unknown"));
     }
 
+    /**
+     * Проверяет, что нельзя обновить отсутствующую "последнюю" запись настроения
+     * Корректность обновления, невозможность обновления у несуществующего пользователя
+     *
+     */
     @Test
     void updateListTest() {
         assertFalse(repository.updateLast(userId, firstEntry));
@@ -100,6 +118,10 @@ class InMemoryMoodRepositoryTest {
         assertFalse(repository.updateLast("unknown", updatedEntry));
     }
 
+    /**
+     * Проверяет, невозможность удаления записи у пользователя, у которого еще нет отметок
+     * Корректность удаления и невозможность удаления записи из пустой листа
+     */
     @Test
     void deleteTest() {
         assertFalse(repository.deleteLast(userId));
@@ -113,6 +135,9 @@ class InMemoryMoodRepositoryTest {
         assertFalse(repository.deleteLast(userId));
     }
 
+    /**
+     * Проверяет, что записи одного пользователя не попадают в хранилище заметок другого пользователя.
+     */
     @Test
     void secondUser() {
         String secondUserId = "tg:911";
@@ -130,6 +155,9 @@ class InMemoryMoodRepositoryTest {
         );
     }
 
+    /**
+     * Проверяет, что невозможно изменить отметки пользователя из вне.
+     */
     @Test
     void UnmodifiableList() {
         repository.save(userId, firstEntry);
