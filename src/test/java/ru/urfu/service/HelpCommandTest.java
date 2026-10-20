@@ -5,23 +5,35 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Тестирование команды /help
+ */
 class HelpCommandTest {
 
     private CommandDispatcher dispatcher;
     private HelpCommand command;
 
+    /**
+     * Инициализация диспетчера и команды /help перед всеми тестами
+     */
     @BeforeEach
     void startup() {
         dispatcher = new CommandDispatcher();
         command = new HelpCommand(dispatcher);
     }
 
+    /**
+     * Проверяем валидность возврата команды
+     */
     @Test
     void getCommandKey() {
         String result = command.getCommandKey();
         assertEquals("/help", result);
     }
 
+    /**
+     * Проверяем валидность возврата описания команды
+     */
     @Test
     void getDescription_returnsNonEmpty() {
         String result = command.getDescription();
@@ -29,6 +41,9 @@ class HelpCommandTest {
         assertFalse(result.isBlank());
     }
 
+    /**
+     * Тестируем вывод команд при регистрации 2 новых команд
+     */
     @Test
     void execute() {
         dispatcher.register(new FakeCommand("/cmd1", "cmd1 description", "ans1"));

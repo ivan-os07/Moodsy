@@ -7,11 +7,19 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Тестируем работу диспетчера команд.
+ */
 class CommandDispatcherTest {
 
     private CommandDispatcher dispatcher;
     private FakeCommand fakeCommand;
 
+    /**
+     * Инициализация окружения перед каждым тестом.
+     * Создаем новый диспетчер и регистрируем одну тестовую команду (/test),
+     * используя заглушку FakeCommand
+     */
     @BeforeEach
     void setup() {
         dispatcher = new CommandDispatcher();
@@ -19,6 +27,11 @@ class CommandDispatcherTest {
         dispatcher.register(fakeCommand);
     }
 
+    /**
+     * Обработка известной(зарегистрированной) команды.
+     * Убеждаемся в валидности ответа и за счет FakeCommand
+     * проверяем количество вызовов и id пользователя
+     */
     @Test
     void handle_knownCommand() {
         BotResponse response = dispatcher.handle("tg:123", "/test");
@@ -29,6 +42,9 @@ class CommandDispatcherTest {
         assertEquals(1, fakeCommand.getCallCount());
     }
 
+    /**
+     * Обработка неизвестной(незарегистрированной) команды.
+     */
     @Test
     void handle_unknownCommand() {
         BotResponse response = dispatcher.handle("tg:123", "/unknown");
@@ -40,6 +56,9 @@ class CommandDispatcherTest {
 
     }
 
+    /**
+     * Обработка ошибки при регистрации пустой команды
+     */
     @Test
     void handle_blankCommand() {
         BotResponse response = dispatcher.handle("tg:123", "");
@@ -51,12 +70,19 @@ class CommandDispatcherTest {
 
     }
 
+    /**
+     * Обработка команды с несколькими аргументами
+     */
     @Test
     void handle_commandWithArguments() {
         dispatcher.handle("tg:123", "/test arg1 arg2 arg3");
         assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
     }
 
+    /**
+     * Обработка возвращаемого количества команд.
+     * Тк мы при инициализации добавили одну команду, то размер коллекции должен быть 1
+     */
     @Test
     void getCommands_returnsAllRegisteredCommands() {
         Collection<BotCommand> commands = dispatcher.getCommands();
@@ -65,6 +91,10 @@ class CommandDispatcherTest {
         assertTrue(commands.contains(fakeCommand));
     }
 
+    /**
+     * Тестирование добавления новой команды.
+     * Убеждаемся в корректности обработки диспетчера.
+     */
     @Test
     void getCommands_addNewCommand() {
         FakeCommand secondCommand = new FakeCommand("/test2", "test2 description", "answer test2");
@@ -77,6 +107,10 @@ class CommandDispatcherTest {
         assertTrue(commands.contains(secondCommand));
     }
 
+    /**
+     * Тестирование регистрации новой команды.
+     * Убеждаемся в корректности обработки диспетчера этой новой команды
+     */
     @Test
     void register_addNewCommand() {
         FakeCommand newCommand = new FakeCommand("/ping", "check conn", "pong");
@@ -89,6 +123,11 @@ class CommandDispatcherTest {
         assertEquals("tg:123", response.userId());
     }
 
+    /**
+     * Тестирование поведения диспетчера при перерегистрации команды.
+     * Добавляется команда с ключом который есть в коллекции, но с новым описанием,
+     * проверяем валидность после перерегистрации
+     */
     @Test
     void register_sameKeyRegister() {
         FakeCommand newCommand = new FakeCommand("/test", "new test", "i am new test");
