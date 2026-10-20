@@ -1,4 +1,4 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 /**
  * Контракт для всех команд. Каждая команда будет его реализовывать.

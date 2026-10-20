@@ -1,4 +1,4 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import java.util.*;
 

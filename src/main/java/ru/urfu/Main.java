@@ -1,9 +1,9 @@
 package ru.urfu;
 
 import ru.urfu.config.TelegramConfig;
-import ru.urfu.service.CommandDispatcher;
-import ru.urfu.service.HelpCommand;
-import ru.urfu.service.StartCommand;
+import ru.urfu.commands.CommandDispatcher;
+import ru.urfu.commands.HelpCommand;
+import ru.urfu.commands.StartCommand;
 import ru.urfu.transport.telegram.TelegramBot;
 
 
