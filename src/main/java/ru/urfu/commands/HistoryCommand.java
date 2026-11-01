@@ -5,6 +5,7 @@ import ru.urfu.model.MoodEntry;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Команда для просмотра записей пользователя
@@ -39,7 +40,7 @@ public class HistoryCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String userId, String[] args) {
+    public String execute(UUID userId, String[] args) {
         int limit = 10;
         if (args != null && args.length > 0) {
             if (args.length != 1) {

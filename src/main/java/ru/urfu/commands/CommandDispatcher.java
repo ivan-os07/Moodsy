@@ -28,7 +28,7 @@ public class CommandDispatcher {
      * @param text   текст сообщения
      * @return ответ бота
      */
-    public BotResponse handle(String userId, String text) {
+    public BotResponse handle(UUID userId, String text) {
         if (text == null || text.isBlank()) {
             return new BotResponse(userId, "Сообщение не может быть пустым!");
         }

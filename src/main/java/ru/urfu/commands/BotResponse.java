@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import java.util.UUID;
+
 /**
  * Объект ответа бота (кому отправить + текст сообщения).
  * p.s. Используется record тк это простой контейнер для хранения данных
@@ -9,5 +11,5 @@ package ru.urfu.commands;
  * @param userId идентификатор пользователя-получателя
  * @param text   текст сообщения
  */
-public record BotResponse(String userId, String text) {
+public record BotResponse(UUID userId, String text) {
 }
