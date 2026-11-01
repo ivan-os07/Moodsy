@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
 
@@ -41,11 +42,11 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_knownCommand() {
-        BotResponse response = dispatcher.handle("tg:123", "/test");
+        BotResponse response = dispatcher.handle(UUID.fromString("00000000-0000-0000-0000-000000000123"), "/test");
 
-        Assertions.assertEquals("tg:123", response.userId());
+        Assertions.assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000123"), response.userId());
         Assertions.assertEquals("answer test", response.text());
-        Assertions.assertEquals("tg:123", fakeCommand.getLastUserId());
+        Assertions.assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000123"), fakeCommand.getLastUserId());
         Assertions.assertEquals(1, fakeCommand.getCallCount());
     }
 
@@ -54,9 +55,9 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_unknownCommand() {
-        BotResponse response = dispatcher.handle("tg:123", "/unknown");
+        BotResponse response = dispatcher.handle(UUID.fromString("00000000-0000-0000-0000-000000000123"), "/unknown");
 
-        Assertions.assertEquals("tg:123", response.userId());
+        Assertions.assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000123"), response.userId());
         Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
         Assertions.assertNull(fakeCommand.getLastUserId());
         Assertions.assertEquals(0, fakeCommand.getCallCount());
@@ -68,9 +69,9 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_blankCommand() {
-        BotResponse response = dispatcher.handle("tg:123", "");
+        BotResponse response = dispatcher.handle(UUID.fromString("00000000-0000-0000-0000-000000000123"), "");
 
-        Assertions.assertEquals("tg:123", response.userId());
+        Assertions.assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000123"), response.userId());
         Assertions.assertEquals("Сообщение не может быть пустым!", response.text());
         Assertions.assertNull(fakeCommand.getLastUserId());
         Assertions.assertEquals(0, fakeCommand.getCallCount());
@@ -82,7 +83,7 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_commandWithArguments() {
-        dispatcher.handle("tg:123", "/test arg1 arg2 arg3");
+        dispatcher.handle(UUID.fromString("00000000-0000-0000-0000-000000000123"), "/test arg1 arg2 arg3");
         Assertions.assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
     }
 
@@ -124,10 +125,10 @@ class CommandDispatcherTest {
 
         dispatcher.register(newCommand);
 
-        BotResponse response = dispatcher.handle("tg:123", "/ping");
+        BotResponse response = dispatcher.handle(UUID.fromString("00000000-0000-0000-0000-000000000123"), "/ping");
 
         Assertions.assertEquals("pong", response.text());
-        Assertions.assertEquals("tg:123", response.userId());
+        Assertions.assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000123"), response.userId());
     }
 
     /**
@@ -141,7 +142,7 @@ class CommandDispatcherTest {
 
         dispatcher.register(newCommand);
 
-        BotResponse response = dispatcher.handle("tg:123", "/test");
+        BotResponse response = dispatcher.handle(UUID.fromString("00000000-0000-0000-0000-000000000123"), "/test");
 
         Assertions.assertEquals("i am new test", response.text());
     }

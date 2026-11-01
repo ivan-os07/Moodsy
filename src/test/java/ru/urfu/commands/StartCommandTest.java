@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.Assertions;
 
+import java.util.UUID;
+
 /**
  * Тестирование команды /test
  */
@@ -46,7 +48,7 @@ class StartCommandTest {
      */
     @Test
     void execute_returnsWelcomeMessage() {
-        String result = command.execute("tg:123", new String[]{});
+        String result = command.execute(UUID.fromString("00000000-0000-0000-0000-000000000123"), new String[]{});
         Assertions.assertEquals("Добро пожаловать!", result);
     }
 }

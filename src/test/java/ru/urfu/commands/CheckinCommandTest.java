@@ -1,4 +1,4 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.urfu.commands.CheckinCommand;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.repository.InMemoryMoodRepository;
 
@@ -30,11 +30,11 @@ class CheckinCommandTest {
     /**
      * Идентификатор пользователя
      */
-    private final String userId = "tg:6767";
+    private final UUID userId = UUID.fromString("00000000-0000-0000-0000-000000006767");
     /**
      * Фиксированные часы, чтобы тесты не падали
      */
-    private final Clock clock = Clock.fixed(Instant.parse("2026-10-14T12:00:00Z"), ZoneId.of("UTC"));
+    private final Clock clock = Clock.fixed(Instant.parse("2026-10-14T09:00:00Z"), ZoneId.of("Europe/Moscow"));
 
     @BeforeEach
     void setUp() {
@@ -51,10 +51,10 @@ class CheckinCommandTest {
     void executeTest() {
 
         Assertions.assertEquals("✅ Настроение 1 успешно сохранено!", command.execute(userId, new String[]{"1"}));
-        MoodEntry expectedEntry = new MoodEntry(LocalDateTime.of(2026, 10, 14, 12, 00), 1);
+        MoodEntry expectedEntry = new MoodEntry(LocalDateTime.of(2026, 10, 14, 12, 00), 1, "");
         Assertions.assertEquals(Optional.of(expectedEntry), repository.findLatest(userId));
         Assertions.assertEquals("✅ Настроение 10 успешно сохранено!", command.execute(userId, new String[]{"10"}));
-        MoodEntry expectedEntry2 = new MoodEntry(LocalDateTime.of(2026, 10, 14, 12, 00), 10);
+        MoodEntry expectedEntry2 = new MoodEntry(LocalDateTime.of(2026, 10, 14, 12, 00), 10, "");
         Assertions.assertEquals(List.of(expectedEntry2, expectedEntry), repository.findLast(userId, 10));
     }
 
