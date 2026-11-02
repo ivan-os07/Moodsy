@@ -1,12 +1,12 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.urfu.commands.HistoryCommand;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.repository.InMemoryMoodRepository;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
 
@@ -25,7 +25,7 @@ public class HistoryCommandTest {
     /**
      * Идентификатор пользователя
      */
-    private final String userId = "tg:6767";
+    private final UUID userId = UUID.fromString("00000000-0000-0000-0000-000000006767");
 
     @BeforeEach
     void setUp() {
@@ -45,9 +45,9 @@ public class HistoryCommandTest {
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, null));
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, new String[]{"6"}));
 
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 10), 10));
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 11, 13, 12), 1));
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 11, 12, 23, 56), 6));
+        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 10), 10, ""));
+        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 11, 13, 12), 1, ""));
+        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 11, 12, 23, 56), 6, ""));
 
         String response = command.execute(userId, null);
         String expected = " \uD83D\uDCC5 Ваша история записей:\n" +
@@ -71,7 +71,7 @@ public class HistoryCommandTest {
     @Test
     void executeTestLimit() {
         for (int i = 1; i <= 23; i++) {
-            repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1));
+            repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1, ""));
         }
         String response = command.execute(userId, null);
         long entriesCount = response.lines().filter(line -> line.matches("\\d{2}\\.\\d{2}\\.\\d{4}.*")).count();

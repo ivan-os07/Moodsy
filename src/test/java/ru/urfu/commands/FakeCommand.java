@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import java.util.UUID;
+
 /**
  * Тестовая заглушка команды: запоминает, как её вызывали:
  * кто и сколько вызывал.
@@ -25,7 +27,7 @@ public class FakeCommand implements BotCommand {
     /**
      * ID пользователя из последнего обработанного вызова (для верификации в тестах).
      */
-    private String lastUserId;
+    private UUID lastUserId;
 
     /**
      * Аргументы последнего вызова команды (для верификации в тестах).
@@ -65,7 +67,7 @@ public class FakeCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String userId, String[] args) {
+    public String execute(UUID userId, String[] args) {
         lastUserId = userId;
         lastArgs = args;
         callCount++;
@@ -77,7 +79,7 @@ public class FakeCommand implements BotCommand {
      *
      * @return lastUserId
      */
-    public String getLastUserId() {
+    public UUID getLastUserId() {
         return lastUserId;
     }
 

@@ -5,6 +5,8 @@ import ru.urfu.model.MoodEntry;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.UUID;
 
 /**
  * Команда для записи оценки настроения пользователя
@@ -23,7 +25,7 @@ public class CheckinCommand implements BotCommand {
      */
     public CheckinCommand(MoodRepository moodRepository, Clock clock) {
         this.moodRepository = moodRepository;
-        this.clock = clock;
+        this.clock = clock.withZone(ZoneOffset.ofHours(3));
     }
 
     @Override
@@ -38,7 +40,7 @@ public class CheckinCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String userId, String[] args) {
+    public String execute(UUID userId, String[] args) {
         if (args == null || args.length != 1) {
             return ("Использование команды /checkin: \n" +
                     "/checkin <n> - n число от 1 до 10");
@@ -54,7 +56,7 @@ public class CheckinCommand implements BotCommand {
         }
 
         LocalDateTime createdAt = LocalDateTime.now(clock);
-        MoodEntry entry = new MoodEntry(createdAt, score);
+        MoodEntry entry = new MoodEntry(createdAt, score, "");
         moodRepository.save(userId, entry);
         return ("✅ Настроение " + score+ " успешно сохранено!");
     }
