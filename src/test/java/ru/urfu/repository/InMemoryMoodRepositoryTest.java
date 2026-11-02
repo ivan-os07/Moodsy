@@ -109,41 +109,6 @@ class InMemoryMoodRepositoryTest {
         Assertions.assertEquals(Optional.empty(), repository.findLatest(UUID.fromString("00000000-0000-0000-0000-000000000000")));
     }
 
-    /**
-     * Проверяет, что нельзя обновить отсутствующую "последнюю" запись настроения
-     * Корректность обновления, невозможность обновления у несуществующего пользователя
-     *
-     */
-    @Test
-    void updateListTest() {
-        Assertions.assertFalse(repository.updateLast(userId, firstEntry));
-        repository.save(userId, firstEntry);
-        repository.save(userId, secondEntry);
-        MoodEntry updatedEntry = new MoodEntry(LocalDateTime.of(2026, 10, 10, 21, 59), 10, "");
-
-        Assertions.assertTrue(repository.updateLast(userId, updatedEntry));
-        Assertions.assertEquals(Optional.of(updatedEntry),
-                repository.findLatest(userId));
-        Assertions.assertEquals(List.of(updatedEntry, firstEntry), repository.findLast(userId, 2));
-        Assertions.assertFalse(repository.updateLast(UUID.fromString("00000000-0000-0000-0000-000000000000"), updatedEntry));
-    }
-
-    /**
-     * Проверяет, невозможность удаления записи у пользователя, у которого еще нет отметок
-     * Корректность удаления и невозможность удаления записи из пустой листа
-     */
-    @Test
-    void deleteTest() {
-        Assertions.assertFalse(repository.deleteLast(userId));
-        repository.save(userId, firstEntry);
-        repository.save(userId, secondEntry);
-        Assertions.assertTrue(repository.deleteLast(userId));
-        Assertions.assertEquals(Optional.of(firstEntry), repository.findLatest(userId));
-        Assertions.assertTrue(repository.deleteLast(userId));
-        Assertions.assertTrue(repository.findLatest(userId).isEmpty());
-        Assertions.assertTrue(repository.findLast(userId, 10).isEmpty());
-        Assertions.assertFalse(repository.deleteLast(userId));
-    }
 
     /**
      * Проверяет, что записи одного пользователя не попадают в хранилище заметок другого пользователя.

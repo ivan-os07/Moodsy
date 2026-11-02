@@ -10,6 +10,7 @@ import java.util.UUID;
  */
 public interface MoodRepository {
     //[C]reate: сохранение новой записи
+
     /**
      * Сохраняет новую запись (отметку) пользователя
      *
@@ -18,6 +19,7 @@ public interface MoodRepository {
      */
     void save(UUID userId, MoodEntry entry);
     //[R]ead: получение последних N записей от новых к старым
+
     /**
      * Возвращает последние записи пользователя (от новых к старым)
      *
@@ -27,6 +29,7 @@ public interface MoodRepository {
      */
     List<MoodEntry> findLast(UUID userId, int limit);
     //[R]ead: получение самой последней записи
+
     /**
      * Возвращает последнюю запись пользователя
      *
@@ -34,20 +37,4 @@ public interface MoodRepository {
      * @return последняя запись, иначе пустой Optional
      */
     Optional<MoodEntry> findLatest(UUID userId);
-    //[U]pdate: обновление последней записи пользователя
-    /**
-     * Обновляет последнюю запись пользователя
-     *
-     * @param userId       идентификатор пользователя
-     * @param updatedEntry новая версия записи
-     * @return true, если обновлена, иначе false
-     */
-    boolean updateLast(UUID userId, MoodEntry updatedEntry);
-    //[D]elete: удаление последней записи пользователя
-    /**
-     * Удаляет последнюю запись пользователя
-     * @param userId идентификатор пользователя
-     * @return true, если запись удалена, иначе false
-     */
-    boolean deleteLast(UUID userId);
 }
