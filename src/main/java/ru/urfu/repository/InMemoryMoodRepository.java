@@ -2,10 +2,7 @@ package ru.urfu.repository;
 
 import ru.urfu.model.MoodEntry;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,21 +12,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class InMemoryMoodRepository implements MoodRepository {
 
     /**
-     * Записи настроения, разделенные по идентификаторам пользователей
+     * Записи настроения, разделенные по внутренним идентификаторам пользователей
      */
-    private final ConcurrentHashMap<String, List<MoodEntry>> entries = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, List<MoodEntry>> entries = new ConcurrentHashMap<>();
 
 
 
     @Override
-    public void save(String userId, MoodEntry entry) {
+    public void save(UUID userId, MoodEntry entry) {
         entries.computeIfAbsent(userId, key -> new CopyOnWriteArrayList<>()).add(entry);
 
     }
 
 
     @Override
-    public List<MoodEntry> findLast(String userId, int limit) {
+    public List<MoodEntry> findLast(UUID userId, int limit) {
         if (limit <= 0) {
             return Collections.emptyList();
         }
@@ -47,7 +44,7 @@ public class InMemoryMoodRepository implements MoodRepository {
 
 
     @Override
-    public Optional<MoodEntry> findLatest(String userId) {
+    public Optional<MoodEntry> findLatest(UUID userId) {
         List<MoodEntry> userEntries = entries.get(userId);
         if (userEntries == null || userEntries.isEmpty()) {
             return Optional.empty();
@@ -58,7 +55,7 @@ public class InMemoryMoodRepository implements MoodRepository {
 
 
     @Override
-    public boolean updateLast(String userId, MoodEntry updatedEntry) {
+    public boolean updateLast(UUID userId, MoodEntry updatedEntry) {
         List<MoodEntry> userEntries = entries.get(userId);
         if (userEntries == null || userEntries.isEmpty()) {
             return false;
@@ -69,7 +66,7 @@ public class InMemoryMoodRepository implements MoodRepository {
 
 
     @Override
-    public boolean deleteLast(String userId) {
+    public boolean deleteLast(UUID userId) {
         List<MoodEntry> userEntries = entries.get(userId);
         if (userEntries == null || userEntries.isEmpty()) {
             return false;

@@ -1,11 +1,13 @@
 package ru.urfu;
 
 import ru.urfu.config.TelegramConfig;
+import ru.urfu.service.UserService;
 import ru.urfu.transport.telegram.TelegramBot;
 import ru.urfu.commands.*;
 import ru.urfu.repository.*;
 
 import java.time.Clock;
+import java.time.ZoneOffset;
 
 
 /**
@@ -32,19 +34,23 @@ public class Main {
 
         // Инициализация инфраструктурных компонентов и слоев данных
         MoodRepository moodRepository = new InMemoryMoodRepository();
+        UserRepository userRepository = new InMemoryUserRepository();
+        UserService userService  = new UserService(userRepository);
+
         CommandDispatcher dispatcher = new CommandDispatcher();
 
         // Регистрируем команды в диспетчере
         dispatcher.register(new StartCommand());
         dispatcher.register(new HelpCommand(dispatcher));
-        dispatcher.register(new CheckinCommand(moodRepository, Clock.systemDefaultZone()));
+        //время мск UTC+3
+        dispatcher.register(new CheckinCommand(moodRepository, Clock.system(ZoneOffset.ofHours(3))));
         dispatcher.register(new HistoryCommand(moodRepository));
 
 
         // Инициализация и запуск транспортного слоя (Telegram-бота)
         // Использование try-with-resources гарантирует корректное закрытие ресурсов бота
 
-        try (TelegramBot bot = new TelegramBot(botToken, dispatcher)
+        try (TelegramBot bot = new TelegramBot(botToken, dispatcher, userService)
              // в будущем можно подключить этот же диспетчер к другим платформам
         ) {
             bot.start();

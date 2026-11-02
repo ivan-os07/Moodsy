@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import java.util.UUID;
+
 /**
  * Реализация команды /start
  */
@@ -16,7 +18,7 @@ public class StartCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String userId, String[] args) {
+    public String execute(UUID userId, String[] args) {
         return "Добро пожаловать!";
     }
 

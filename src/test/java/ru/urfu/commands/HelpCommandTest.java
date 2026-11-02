@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.Assertions;
 
+import java.util.UUID;
+
 /**
  * Тестирование команды /help
  */
@@ -58,7 +60,7 @@ class HelpCommandTest {
         HelpCommand helpCommand = new HelpCommand(dispatcher);
         dispatcher.register(helpCommand);
 
-        String result = helpCommand.execute("tg123", new String[]{});
+        String result = helpCommand.execute(UUID.fromString("00000000-0000-0000-0000-000000000123"), new String[]{});
 
         Assertions.assertTrue(result.contains("/cmd1 - cmd1 description"));
         Assertions.assertTrue(result.contains("/cmd2 - cmd2 description"));

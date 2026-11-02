@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import java.util.UUID;
+
 /**
  * Реализация команды /help
  */
@@ -31,7 +33,7 @@ public class HelpCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String userId, String[] args) {
+    public String execute(UUID userId, String[] args) {
         StringBuilder builder = new StringBuilder("Привет! Я бот Moodsy\n");
 
         for (BotCommand command : this.dispatcher.getCommands()) {
