@@ -2,9 +2,15 @@ package ru.urfu.commands;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.urfu.repository.InMemoryMoodRepository;
+import ru.urfu.service.fsm.CheckinFsmService;
+import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
 
 import org.junit.jupiter.api.Assertions;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 /**
@@ -27,7 +33,11 @@ class HelpCommandTest {
      */
     @BeforeEach
     void startup() {
-        dispatcher = new CommandDispatcher();
+        CheckinFsmService checkinFsmService = new CheckinFsmService(
+                new InMemoryCheckinSessionStore(),
+                new InMemoryMoodRepository(),
+                Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC));
+        dispatcher = new CommandDispatcher(checkinFsmService);
         command = new HelpCommand(dispatcher);
     }
 

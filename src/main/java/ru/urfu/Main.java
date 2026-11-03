@@ -2,6 +2,9 @@ package ru.urfu;
 
 import ru.urfu.config.TelegramConfig;
 import ru.urfu.service.UserService;
+import ru.urfu.service.fsm.CheckinFsmService;
+import ru.urfu.service.fsm.CheckinSessionStore;
+import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
 import ru.urfu.transport.telegram.TelegramBot;
 import ru.urfu.commands.*;
 import ru.urfu.repository.*;
@@ -37,13 +40,17 @@ public class Main {
         UserRepository userRepository = new InMemoryUserRepository();
         UserService userService  = new UserService(userRepository);
 
-        CommandDispatcher dispatcher = new CommandDispatcher();
+        CheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();
+        //время мск UTC+3
+        CheckinFsmService checkinFsmService = new CheckinFsmService(
+                sessionStore, moodRepository, Clock.system(ZoneOffset.ofHours(3)));
+
+        CommandDispatcher dispatcher = new CommandDispatcher(checkinFsmService);
 
         // Регистрируем команды в диспетчере
         dispatcher.register(new StartCommand());
         dispatcher.register(new HelpCommand(dispatcher));
-        //время мск UTC+3
-        dispatcher.register(new CheckinCommand(moodRepository, Clock.system(ZoneOffset.ofHours(3))));
+        dispatcher.register(new CheckinCommand(checkinFsmService));
         dispatcher.register(new HistoryCommand(moodRepository));
 
 
