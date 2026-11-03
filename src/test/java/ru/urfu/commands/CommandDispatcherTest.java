@@ -188,4 +188,5 @@ class CommandDispatcherTest {
         Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
     }
 
+
 }
