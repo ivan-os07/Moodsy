@@ -12,7 +12,7 @@ import java.util.Objects;
 public record PlatformIdentity(PlatformType platform, String platformUserId) {
     public PlatformIdentity {
         Objects.requireNonNull(platform, "platform не может быть null");
-        Objects.requireNonNull(platform, "platformUserId не может быть null");
+        Objects.requireNonNull(platformUserId, "platformUserId не может быть null");
         if (platformUserId.isBlank()) {
             throw new IllegalArgumentException("Идентификатор платформы не может быть пустым");
         }

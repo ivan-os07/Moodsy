@@ -10,9 +10,21 @@ import java.util.List;
  * и списком привязанных платформ
  */
 public final class User {
+    /**
+     * Внутренний уникальный идентификатор пользователя
+     */
     private final UUID id;
+    /**
+     * Список привязанных аккаунтов различных платформ
+     */
     private final List<PlatformIdentity> platforms;
 
+    /**
+     * Создает пользователя с заданным UUID и списком платформ
+     *
+     * @param id        внутренний идентификатор пользователя
+     * @param platforms список привязанных платформ
+     */
     public User(UUID id, List<PlatformIdentity> platforms) {
         this.id = Objects.requireNonNull(id, "id не может быть null");
         Objects.requireNonNull(platforms, "platforms не может быть null");
@@ -24,10 +36,18 @@ public final class User {
 
     }
 
+    /**
+     * Возвращает внутренний UUID пользователя
+     * @return UUID пользователя
+     */
     public UUID getId() {
         return id;
     }
 
+    /**
+     * Возвращает список привязанных платформ
+     * @return неизменяемая копия списка
+     */
     public List<PlatformIdentity> getPlatforms() {
         return List.copyOf(platforms);
     }

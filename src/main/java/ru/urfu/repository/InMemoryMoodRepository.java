@@ -17,7 +17,6 @@ public class InMemoryMoodRepository implements MoodRepository {
     private final ConcurrentHashMap<UUID, List<MoodEntry>> entries = new ConcurrentHashMap<>();
 
 
-
     @Override
     public void save(UUID userId, MoodEntry entry) {
         entries.computeIfAbsent(userId, key -> new CopyOnWriteArrayList<>()).add(entry);
@@ -51,29 +50,6 @@ public class InMemoryMoodRepository implements MoodRepository {
 
         }
         return Optional.of(userEntries.get(userEntries.size() - 1));
-    }
-
-
-    @Override
-    public boolean updateLast(UUID userId, MoodEntry updatedEntry) {
-        List<MoodEntry> userEntries = entries.get(userId);
-        if (userEntries == null || userEntries.isEmpty()) {
-            return false;
-        }
-        userEntries.set(userEntries.size() - 1, updatedEntry);
-        return true;
-    }
-
-
-    @Override
-    public boolean deleteLast(UUID userId) {
-        List<MoodEntry> userEntries = entries.get(userId);
-        if (userEntries == null || userEntries.isEmpty()) {
-            return false;
-
-        }
-        userEntries.removeLast();
-        return true;
     }
 }
 

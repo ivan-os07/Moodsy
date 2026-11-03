@@ -16,6 +16,9 @@ public class CheckinCommand implements BotCommand {
      * Репозиторий для хранения записей настроения
      */
     private final MoodRepository moodRepository;
+    /**
+     * Источник текущего времени, используется при создании записи
+     */
     private final Clock clock;
 
     /**
