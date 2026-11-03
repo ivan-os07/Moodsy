@@ -50,6 +50,7 @@ public class CommandDispatcher {
             return new BotResponse(userId, checkinFsmService.handle(userId, text));
         }
 
+        // ИНАЧЕ
         // Ищем команду в мапе
         BotCommand command = this.commands.get(commandKey);
 

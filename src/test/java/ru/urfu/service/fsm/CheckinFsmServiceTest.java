@@ -63,7 +63,7 @@ class CheckinFsmServiceTest {
 
         Assertions.assertEquals("Введите оценку от 1 до 10", response);
         Assertions.assertTrue(sessionStore.hasSession(userId));
-        Assertions.assertEquals(CheckinStep.SCORE, sessionStore.findById(userId).orElseThrow().getStep());
+        Assertions.assertEquals(CheckinStep.SCORE, sessionStore.findById(userId).orElseThrow().step());
     }
 
     /**
@@ -91,8 +91,9 @@ class CheckinFsmServiceTest {
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", response);
 
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(7, session.getScore());
-        Assertions.assertEquals(CheckinStep.NOTE, session.getStep());
+
+        Assertions.assertEquals(7, session.score());
+        Assertions.assertEquals(CheckinStep.NOTE, session.step());
     }
 
     /**
@@ -108,7 +109,7 @@ class CheckinFsmServiceTest {
 
         // Остаемся на SCORE
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(CheckinStep.SCORE, session.getStep());
+        Assertions.assertEquals(CheckinStep.SCORE, session.step());
     }
 
     /**
@@ -125,7 +126,7 @@ class CheckinFsmServiceTest {
 
         // Остаемся на SCORE
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(CheckinStep.SCORE, session.getStep());
+        Assertions.assertEquals(CheckinStep.SCORE, session.step());
     }
 
     /**
@@ -144,7 +145,7 @@ class CheckinFsmServiceTest {
 
         // Переходим в PREVIEW
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(CheckinStep.PREVIEW, session.getStep());
+        Assertions.assertEquals(CheckinStep.PREVIEW, session.step());
     }
 
     /**
@@ -163,7 +164,7 @@ class CheckinFsmServiceTest {
 
         // Переходим в PREVIEW
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(CheckinStep.PREVIEW, session.getStep());
+        Assertions.assertEquals(CheckinStep.PREVIEW, session.step());
     }
 
     /**
@@ -234,7 +235,7 @@ class CheckinFsmServiceTest {
 
         Assertions.assertEquals("Введите оценку от 1 до 10", response);
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(CheckinStep.SCORE, session.getStep());
+        Assertions.assertEquals(CheckinStep.SCORE, session.step());
     }
 
     /**
@@ -250,7 +251,7 @@ class CheckinFsmServiceTest {
 
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", response);
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(CheckinStep.NOTE, session.getStep());
+        Assertions.assertEquals(CheckinStep.NOTE, session.step());
     }
 
     /**
@@ -264,7 +265,7 @@ class CheckinFsmServiceTest {
 
         Assertions.assertEquals("❌ Вы на первом шаге, вернуться назад нельзя.", response);
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(CheckinStep.SCORE, session.getStep());
+        Assertions.assertEquals(CheckinStep.SCORE, session.step());
     }
 
     /**
@@ -279,6 +280,6 @@ class CheckinFsmServiceTest {
         String response = service.handle(userId, "что-то другое");
 
         Assertions.assertEquals("❌ Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.", response); CheckinSession session = sessionStore.findById(userId).orElseThrow();
-        Assertions.assertEquals(CheckinStep.PREVIEW, session.getStep());
+        Assertions.assertEquals(CheckinStep.PREVIEW, session.step());
     }
 }
