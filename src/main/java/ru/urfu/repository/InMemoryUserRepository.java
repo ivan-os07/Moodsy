@@ -9,9 +9,18 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Реализация UserRepository хранящая User
+ * и их идентификаторов платформ в оперативной памяти
+ */
 public class InMemoryUserRepository implements UserRepository {
-
+    /**
+     * Пользователи, индексация по внутреннему UUID
+     */
     private final ConcurrentHashMap<UUID, User> usersById = new ConcurrentHashMap<>();
+    /**
+     * Связь платформенной идентичности с UUID пользователя
+     */
     private final ConcurrentHashMap<PlatformIdentity, UUID> userIdsByPlatform = new ConcurrentHashMap<>();
 
 
