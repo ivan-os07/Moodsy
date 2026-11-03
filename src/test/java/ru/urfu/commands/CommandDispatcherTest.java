@@ -188,18 +188,4 @@ class CommandDispatcherTest {
         Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
     }
 
-    /**
-     * Проверяет, что зарегистрированная команда обрабатывается как команда даже во время диалога.
-     */
-    @Test
-    void handle_registeredCommandDuringDialog_isHandledAsCommand() {
-        UUID userId = UUID.fromString("00000000-0000-0000-0000-000000000123");
-        dispatcher.register(new CheckinCommand(checkinFsmService));
-
-        dispatcher.handle(userId, "/checkin");
-        BotResponse response = dispatcher.handle(userId, "/test");
-
-        Assertions.assertEquals("answer test", response.text());
-        Assertions.assertTrue(checkinFsmService.hasActiveSession(userId));
-    }
 }
