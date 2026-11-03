@@ -41,10 +41,7 @@ class CommandDispatcherTest {
      */
     @BeforeEach
     void setup() {
-        checkinFsmService = new CheckinFsmService(
-                new InMemoryCheckinSessionStore(),
-                new InMemoryMoodRepository(),
-                Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC));
+        checkinFsmService = new CheckinFsmService(new InMemoryCheckinSessionStore(), new InMemoryMoodRepository(), Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC));
         dispatcher = new CommandDispatcher(checkinFsmService);
         fakeCommand = new FakeCommand("/test", "test description", "answer test");
         dispatcher.register(fakeCommand);
@@ -182,11 +179,9 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_plainTextWithoutSession_returnsUnknownCommand() {
-        BotResponse response = dispatcher.handle(
-                UUID.fromString("00000000-0000-0000-0000-000000000123"), "7");
+        BotResponse response = dispatcher.handle(UUID.fromString("00000000-0000-0000-0000-000000000123"), "7");
 
         Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
     }
-
 
 }
