@@ -38,6 +38,7 @@ public class InMemoryUserRepository implements UserRepository {
         UUID userId = userIdsByPlatform.computeIfAbsent(identity, key -> {
             UUID newId = UUID.randomUUID();
             User newUser = new User(newId, List.of(key));
+            usersById.put(newId, newUser);
             return newId;
         });
         User user = usersById.get(userId);

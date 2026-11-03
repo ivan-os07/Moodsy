@@ -22,11 +22,25 @@ public class HistoryCommand implements BotCommand {
 
     /**
      * Инициализация команды просмотра истории
+     *
      * @param moodRepository репозиторий с записями настроения
      */
     public HistoryCommand(MoodRepository moodRepository) {
         this.moodRepository = moodRepository;
 
+    }
+
+    /**
+     * Формирует строку истории для одной записи.
+     *
+     * @param entry запись настроения
+     * @return дата и время в МСК, оценка и заметка, если она есть
+     */
+    private String formatEntry(MoodEntry entry) {
+        String note = entry.note().isEmpty() ? "" : "\nЗаметка: " + entry.note();
+        return entry.createdAt().format(formatter)
+                + " - " + entry.score() + "/10"
+                + note;
     }
 
     @Override
@@ -44,9 +58,11 @@ public class HistoryCommand implements BotCommand {
         int limit = 10;
         if (args != null && args.length > 0) {
             if (args.length != 1) {
-                return ("Использование команды /history: \n " +
-                        "/history <n> - показать последние n записей\n"+
-                        "/history - последние 10 записей");
+                return ("""
+                        Использование команды /history:\s
+                         \
+                        /history <n> - показать последние n записей
+                        /history - последние 10 записей""");
             }
             try {
                 limit = Integer.parseInt(args[0]);
@@ -67,7 +83,7 @@ public class HistoryCommand implements BotCommand {
                 result.append("\n");
 
             }
-            result.append(entry.createdAt().format(formatter)).append(" - ").append(entry.score()).append("/10");
+            result.append(formatEntry(entry));
         }
 
         return result.toString();

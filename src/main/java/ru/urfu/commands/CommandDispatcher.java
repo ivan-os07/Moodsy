@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import ru.urfu.service.fsm.CheckinFsmService;
+
 import java.util.*;
 
 /**
@@ -12,15 +14,19 @@ public class CommandDispatcher {
      * команды.
      */
     private final Map<String, BotCommand> commands;
+    /**
+     * Сервис для фсм чекина.
+     */
+    private final CheckinFsmService checkinFsmService;
 
     /**
      * Конструктор диспетчера.
-     * Создает пустое хранилище для команд.
+     * Создает пустое хранилище для команд и проверка на не null сервиса чекина
      */
-    public CommandDispatcher() {
+    public CommandDispatcher(CheckinFsmService checkinFsmService) {
+        this.checkinFsmService = Objects.requireNonNull(checkinFsmService, "checkinFsmService не может быть null");
         this.commands = new LinkedHashMap<>();
     }
-
     /**
      * Обработка входящего сообщения.
      *
@@ -41,8 +47,11 @@ public class CommandDispatcher {
         // Ищем команду в мапе
         BotCommand command = this.commands.get(commandKey);
 
-        // Если не нашли - возвращаем сообщение об ошибке
+        // Если не нашли - проверяем fsm или возвращаем сообщение об ошибке
         if (command == null) {
+            if (checkinFsmService.hasActiveSession(userId)) {
+                return new BotResponse(userId, checkinFsmService.handle(userId, text));
+            }
             return new BotResponse(userId, "Неизвестная команда. Введите /help для справки.");
         }
 
@@ -69,4 +78,6 @@ public class CommandDispatcher {
     public void register(BotCommand command) {
         this.commands.put(command.getCommandKey(), command);
     }
+
+
 }

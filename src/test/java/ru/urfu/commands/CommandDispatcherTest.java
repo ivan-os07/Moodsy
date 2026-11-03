@@ -2,7 +2,13 @@ package ru.urfu.commands;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.urfu.repository.InMemoryMoodRepository;
+import ru.urfu.service.fsm.CheckinFsmService;
+import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -19,6 +25,11 @@ class CommandDispatcherTest {
     private CommandDispatcher dispatcher;
 
     /**
+     * Сервис диалога чекина, на который диспетчер передаёт ввод.
+     */
+    private CheckinFsmService checkinFsmService;
+
+    /**
      * Фейковая команда
      */
     private FakeCommand fakeCommand;
@@ -30,7 +41,11 @@ class CommandDispatcherTest {
      */
     @BeforeEach
     void setup() {
-        dispatcher = new CommandDispatcher();
+        checkinFsmService = new CheckinFsmService(
+                new InMemoryCheckinSessionStore(),
+                new InMemoryMoodRepository(),
+                Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC));
+        dispatcher = new CommandDispatcher(checkinFsmService);
         fakeCommand = new FakeCommand("/test", "test description", "answer test");
         dispatcher.register(fakeCommand);
     }
@@ -145,5 +160,46 @@ class CommandDispatcherTest {
         BotResponse response = dispatcher.handle(UUID.fromString("00000000-0000-0000-0000-000000000123"), "/test");
 
         Assertions.assertEquals("i am new test", response.text());
+    }
+
+    /**
+     * Проверяет, что при открытой сессии обычный текст передаётся в FSM чекина.
+     */
+    @Test
+    void handle_textWithActiveSession_routesToCheckinFsm() {
+        UUID userId = UUID.fromString("00000000-0000-0000-0000-000000000123");
+        dispatcher.register(new CheckinCommand(checkinFsmService));
+
+        dispatcher.handle(userId, "/checkin");
+        BotResponse response = dispatcher.handle(userId, "7");
+
+        Assertions.assertEquals("Добавьте заметку или отправьте /skip", response.text());
+        Assertions.assertTrue(checkinFsmService.hasActiveSession(userId));
+    }
+
+    /**
+     * Проверяет, что без открытой сессии обычный текст считается неизвестной командой.
+     */
+    @Test
+    void handle_plainTextWithoutSession_returnsUnknownCommand() {
+        BotResponse response = dispatcher.handle(
+                UUID.fromString("00000000-0000-0000-0000-000000000123"), "7");
+
+        Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
+    }
+
+    /**
+     * Проверяет, что зарегистрированная команда обрабатывается как команда даже во время диалога.
+     */
+    @Test
+    void handle_registeredCommandDuringDialog_isHandledAsCommand() {
+        UUID userId = UUID.fromString("00000000-0000-0000-0000-000000000123");
+        dispatcher.register(new CheckinCommand(checkinFsmService));
+
+        dispatcher.handle(userId, "/checkin");
+        BotResponse response = dispatcher.handle(userId, "/test");
+
+        Assertions.assertEquals("answer test", response.text());
+        Assertions.assertTrue(checkinFsmService.hasActiveSession(userId));
     }
 }

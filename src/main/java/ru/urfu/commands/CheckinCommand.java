@@ -1,63 +1,52 @@
 package ru.urfu.commands;
 
-import ru.urfu.repository.MoodRepository;
-import ru.urfu.model.MoodEntry;
+import ru.urfu.service.fsm.CheckinFsmService;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Команда для записи оценки настроения пользователя
+ * Команда начала пошаговой отметки настроения.
+ * Сама запись не сохраняет: запускает диалог в сервисе чекина.
  */
 public class CheckinCommand implements BotCommand {
-    /**
-     * Репозиторий для хранения записей настроения
-     */
-    private final MoodRepository moodRepository;
-    private final Clock clock;
 
     /**
-     * Инициализация команды /checkin
-     * @param moodRepository репозиторий для хранения записей настроения
-     * @param clock источник текущего времени
+     * Сообщение о недопустимом вызове команды с параметрами.
      */
-    public CheckinCommand(MoodRepository moodRepository, Clock clock) {
-        this.moodRepository = moodRepository;
-        this.clock = clock.withZone(ZoneOffset.ofHours(3));
+    private static final String ARGS_ERROR =
+            "❌ Команда /checkin вызывается без параметров.";
+
+    /**
+     * Сервис диалога чекина.
+     */
+    private final CheckinFsmService checkinFsmService;
+
+    /**
+     * Создаёт команду /checkin.
+     *
+     * @param checkinFsmService сервис диалога чекина
+     */
+    public CheckinCommand(CheckinFsmService checkinFsmService) {
+        this.checkinFsmService = Objects.requireNonNull(
+                checkinFsmService, "checkinFsmService не может быть null");
     }
 
     @Override
     public String getCommandKey() {
         return "/checkin";
-
     }
 
     @Override
     public String getDescription() {
-        return "Ежедневная отметка настроения";
+        return "Пошаговая отметка настроения";
     }
 
     @Override
     public String execute(UUID userId, String[] args) {
-        if (args == null || args.length != 1) {
-            return ("Использование команды /checkin: \n" +
-                    "/checkin <n> - n число от 1 до 10");
+        if (args != null && args.length > 0) {
+            return ARGS_ERROR;
         }
-        int score;
-        try {
-            score = Integer.parseInt(args[0]);
-        } catch (NumberFormatException exception) {
-            return ("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.");
-        }
-        if (score < 1 || score > 10) {
-            return ("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.");
-        }
-
-        LocalDateTime createdAt = LocalDateTime.now(clock);
-        MoodEntry entry = new MoodEntry(createdAt, score, "");
-        moodRepository.save(userId, entry);
-        return ("✅ Настроение " + score+ " успешно сохранено!");
+        return checkinFsmService.start(userId);
     }
 }

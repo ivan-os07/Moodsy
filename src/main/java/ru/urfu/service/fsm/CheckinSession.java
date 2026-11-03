@@ -75,22 +75,68 @@ public class CheckinSession {
     }
 
     /**
-     * Сохраняет оценку, введённую на шаге SCORE.
+     * Принимает оценку на шаге SCORE и переводит диалог на шаг NOTE.
      *
      * @param score оценка от 1 до 10
+     * @throws IllegalArgumentException если оценка вне диапазона
+     * @throws IllegalStateException    если диалог не находится на шаге SCORE
      */
-    void setScore(int score) {
+    void applyScore(int score) {
+        if (step != CheckinStep.SCORE) {
+            throw new IllegalStateException("Оценка принимается только на шаге SCORE");
+        }
+        if (score < 1 || score > 10) {
+            throw new IllegalArgumentException("Оценка должна быть от 1 до 10");
+        }
         this.score = score;
+        this.step = CheckinStep.NOTE;
     }
 
+    /**
+     * Принимает заметку на шаге NOTE и переводит диалог на шаг PREVIEW.
+     *
+     * @param note текст заметки; null и пустая строка означают отсутствие заметки
+     * @throws IllegalStateException если диалог не находится на шаге NOTE
+     */
+    void applyNote(String note) {
+        if (step != CheckinStep.NOTE) {
+            throw new IllegalStateException("Заметка принимается только на шаге NOTE");
+        }
+        this.note = note == null ? "" : note.trim();
+        this.step = CheckinStep.PREVIEW;
+    }
 
     /**
-     * Сохраняет заметку, введённую на шаге NOTE.
+     * Пропускает ввод заметки на шаге NOTE и переводит диалог на шаг PREVIEW.
      *
-     * @param note текст заметки; пустая строка, если заметки нет
+     * @throws IllegalStateException если диалог не находится на шаге NOTE
      */
-    void setNote(String note) {
-        this.note = note;
+    void skipNote() {
+        if (step != CheckinStep.NOTE) {
+            throw new IllegalStateException("Пропустить заметку можно только на шаге NOTE");
+        }
+        this.note = "";
+        this.step = CheckinStep.PREVIEW;
+    }
+
+    /**
+     * Возвращает диалог на предыдущий шаг.
+     *
+     * @return true, если шаг изменён; false, если диалог уже на первом шаге
+     */
+    boolean goBack() {
+        return switch (step) {
+            case PREVIEW -> {
+                this.step = CheckinStep.NOTE;
+                yield true;
+            }
+            case NOTE -> {
+                this.step = CheckinStep.SCORE;
+                yield true;
+            }
+            case SCORE -> false;
+            default -> throw new IllegalStateException("Неизвестный шаг: " + step);
+        };
     }
 
 }
