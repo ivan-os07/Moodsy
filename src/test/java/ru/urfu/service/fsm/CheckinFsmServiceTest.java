@@ -168,6 +168,61 @@ class CheckinFsmServiceTest {
     }
 
     /**
+     * Успешный ввод команды skip на шаге NOTE → пустая заметка, переход в PREVIEW
+     */
+    @Test
+    void handle_validCmdSkip() {
+        service.start(userId);
+        // Успешный пройденный шаг SCORE
+        service.handle(userId, "7");
+
+        String response = service.handle(userId, "/skip");
+
+        String expected = "\uD83D\uDCCB Предпросмотр карточки:\n• Оценка: 7/10\n• Заметка:\nПодтвердите запись:\n/approve — сохранить\n/reject — отменить";
+        Assertions.assertEquals(expected, response);
+
+        // Переходим в PREVIEW
+        CheckinSession session = sessionStore.findById(userId).orElseThrow();
+        Assertions.assertEquals(CheckinStep.PREVIEW, session.step());
+    }
+
+    /**
+     * Неуспешный ввод команды skip на шаге не NOTE, и не на PREVIEW → сообщение об ошибке
+     */
+    @Test
+    void handle_invalidCmdSkipNotPREVIEW() {
+        String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.";
+
+        // Например, на шаге SCORE
+        service.start(userId);
+        String response = service.handle(userId, "/skip");
+        Assertions.assertEquals(expected, response);
+
+        CheckinSession session = sessionStore.findById(userId).orElseThrow();
+        Assertions.assertEquals(CheckinStep.SCORE, session.step());
+    }
+
+    /**
+     * Неуспешный ввод команды skip на шаге PREVIEW → сообщение об ошибке и доступные шаги
+     */
+    @Test
+    void handle_invalidCmdSkipPREVIEW() {
+        String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.\nПожалуйста, подтвердите запись с помощью /approve или отмените через /reject.";
+
+        // Идем к шагу PREVIEW
+        service.start(userId);
+        service.handle(userId, "1");
+        service.handle(userId, "ZAMETKA");
+
+
+        String response = service.handle(userId, "/skip");
+        Assertions.assertEquals(expected, response);
+
+        CheckinSession session = sessionStore.findById(userId).orElseThrow();
+        Assertions.assertEquals(CheckinStep.PREVIEW, session.step());
+    }
+
+    /**
      * Сохранение заметки при использовании /approve на шаге PREVIEW → сохраняет MoodEntry, удаляет сессию
      */
     @Test
@@ -279,7 +334,8 @@ class CheckinFsmServiceTest {
 
         String response = service.handle(userId, "что-то другое");
 
-        Assertions.assertEquals("❌ Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.", response); CheckinSession session = sessionStore.findById(userId).orElseThrow();
+        Assertions.assertEquals("Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.", response);
+        CheckinSession session = sessionStore.findById(userId).orElseThrow();
         Assertions.assertEquals(CheckinStep.PREVIEW, session.step());
     }
 }

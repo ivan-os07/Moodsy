@@ -77,6 +77,12 @@ public class CheckinFsmService {
     private static final String UNKNOWN_COMMAND = "❌ Неизвестная команда. Доступны: /back, /exit";
 
     /**
+     * Сообщение об ошибке при вызове команды /skip не на шаге заметки.
+     */
+    private static final String SKIP_ERROR = "❌ Ошибка: команда /skip доступна только при вводе заметки.";
+
+
+    /**
      * Сообщение о невозможности вернуться назад с первого шага.
      */
     private static final String FIRST_STEP = "❌ Вы на первом шаге, вернуться назад нельзя.";
@@ -84,7 +90,7 @@ public class CheckinFsmService {
     /**
      * Подсказка о доступных действиях на шаге предпросмотра.
      */
-    private static final String PREVIEW_HINT = "❌ Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.";
+    private static final String PREVIEW_HINT = "Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.";
 
     /**
      * Сообщение о попытке продолжить диалог, которого нет.
@@ -171,6 +177,7 @@ public class CheckinFsmService {
             // обработка выхода
             case CMD_EXIT -> handleExit(session);
             case CMD_BACK -> handleBack(session);
+            case CMD_SKIP -> handleSkip(session);
 
             // Идем по шагам
             default -> switch (session.step()) {
@@ -321,6 +328,37 @@ public class CheckinFsmService {
             }
         }
         return "Неизвестный шаг: " + session.step();
+    }
+
+    /**
+     * Обработка команды /skip
+     *
+     * @param session текущая сессия
+     * @return сообщение об ошибке если не на шаге NOTE
+     */
+    private String handleSkip(CheckinSession session) {
+        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
+
+        CheckinSession updatedSession;
+
+        // Если не на шаге NOTE, то выбрасываем сообщение об ошибке
+        if (session.step() != CheckinStep.NOTE) {
+            // Если на шаге PREVIEW, то еще напоминаем, какие команды доступны на этом шаге
+            if (session.step() == CheckinStep.PREVIEW) {
+                return SKIP_ERROR + '\n' + PREVIEW_HINT;
+            }
+            return SKIP_ERROR;
+        }
+
+        // Иначе, пропускаем шаг NOTE, при этом поле note заполняем пустой строкой.
+        updatedSession = new CheckinSession(session.userId(), CheckinStep.PREVIEW, session.score(), "");
+
+        // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
+        // При этом session почистит GC
+        sessionStore.save(updatedSession);
+
+        return buildPreview(updatedSession);
+
     }
 
     /**
