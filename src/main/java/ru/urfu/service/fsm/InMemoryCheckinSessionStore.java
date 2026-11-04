@@ -19,7 +19,7 @@ public class InMemoryCheckinSessionStore implements CheckinSessionStore {
     @Override
     public void save(CheckinSession session) {
         Objects.requireNonNull(session, "session не может быть null");
-        sessions.put(session.getUserId(), session);
+        sessions.put(session.userId(), session);
     }
 
 

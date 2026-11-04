@@ -27,6 +27,7 @@ public class CommandDispatcher {
         this.checkinFsmService = Objects.requireNonNull(checkinFsmService, "checkinFsmService не может быть null");
         this.commands = new LinkedHashMap<>();
     }
+
     /**
      * Обработка входящего сообщения.
      *
@@ -44,14 +45,17 @@ public class CommandDispatcher {
         String commandKey = parts[0];
         String[] args = Arrays.copyOfRange(parts, 1, parts.length);
 
+        // Сначала проверяем есть ли сессия
+        if (checkinFsmService.hasActiveSession(userId)) {
+            return new BotResponse(userId, checkinFsmService.handle(userId, text));
+        }
+
+        // ИНАЧЕ
         // Ищем команду в мапе
         BotCommand command = this.commands.get(commandKey);
 
         // Если не нашли - проверяем fsm или возвращаем сообщение об ошибке
         if (command == null) {
-            if (checkinFsmService.hasActiveSession(userId)) {
-                return new BotResponse(userId, checkinFsmService.handle(userId, text));
-            }
             return new BotResponse(userId, "Неизвестная команда. Введите /help для справки.");
         }
 

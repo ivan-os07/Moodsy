@@ -41,7 +41,7 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void saveAndFindById() {
-        CheckinSession session = new CheckinSession(firstUserId);
+        CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
 
         store.save(session);
 
@@ -61,8 +61,8 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void saveReplacesExistingSession() {
-        CheckinSession first = new CheckinSession(firstUserId);
-        CheckinSession second = new CheckinSession(firstUserId);
+        CheckinSession first = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
+        CheckinSession second = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
 
         store.save(first);
         store.save(second);
@@ -75,7 +75,7 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void removeExistingSession() {
-        CheckinSession session = new CheckinSession(firstUserId);
+        CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
         store.save(session);
 
         CheckinSession removed = store.remove(firstUserId).orElseThrow();
@@ -98,8 +98,8 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void sessionsOfDifferentUsersAreIsolated() {
-        CheckinSession firstSession = new CheckinSession(firstUserId);
-        CheckinSession secondSession = new CheckinSession(secondUserId);
+        CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
+        CheckinSession secondSession = new CheckinSession(secondUserId, CheckinStep.SCORE, 0, "");
         store.save(firstSession);
         store.save(secondSession);
 
@@ -133,7 +133,8 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void hasSession() {
-        CheckinSession firstSession = new CheckinSession(firstUserId);
+        CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
+
         store.save(firstSession);
 
         Assertions.assertTrue(store.hasSession(firstUserId));
