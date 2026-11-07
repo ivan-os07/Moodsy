@@ -1,7 +1,5 @@
 package ru.urfu.model;
 
-import ru.urfu.repository.MoodRepository;
-
 import java.time.LocalDateTime;
 import java.util.Objects;
 
