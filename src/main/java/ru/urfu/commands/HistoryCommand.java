@@ -69,7 +69,10 @@ public class HistoryCommand implements BotCommand {
                 result.append("\n");
 
             }
-            result.append(entry.createdAt().format(formatter)).append(" - ").append(entry.score()).append("/10");
+            result.append(entry.createdAt().format(formatter))
+                    .append(" - ")
+                    .append(entry.score())
+                    .append("/10");
         }
 
         return result.toString();
