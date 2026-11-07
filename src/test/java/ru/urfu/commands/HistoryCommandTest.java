@@ -49,12 +49,19 @@ public class HistoryCommandTest {
         repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 11, 12, 23, 56), 6));
 
         String response = command.execute(userId, null);
-        String expected = " \uD83D\uDCC5 Ваша история записей:\n" + "12.11.2026 23:56 - 6/10\n" + "11.10.2026 13:12 - 1/10\n" + "10.10.2026 10:10 - 10/10";
+        String expected = """
+                 \uD83D\uDCC5 Ваша история записей:
+                12.11.2026 23:56 - 6/10
+                11.10.2026 13:12 - 1/10
+                10.10.2026 10:10 - 10/10""";
         Assertions.assertEquals(expected, response);
+
         String response2 = command.execute(userId, new String[]{"2"});
-        String expected2 = " \uD83D\uDCC5 Ваша история записей:\n" + "12.11.2026 23:56 - 6/10\n" + "11.10.2026 13:12 - 1/10";
+        String expected2 = """
+                 \uD83D\uDCC5 Ваша история записей:
+                12.11.2026 23:56 - 6/10
+                11.10.2026 13:12 - 1/10""";
         Assertions.assertEquals(expected2, response2);
-        Assertions.assertFalse(response2.contains("10.10.2026 10:10 - 10/10"));
     }
 
     /**
