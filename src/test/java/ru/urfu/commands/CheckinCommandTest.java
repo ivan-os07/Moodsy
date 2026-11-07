@@ -1,4 +1,4 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -10,7 +10,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.urfu.commands.CheckinCommand;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.repository.InMemoryMoodRepository;
 

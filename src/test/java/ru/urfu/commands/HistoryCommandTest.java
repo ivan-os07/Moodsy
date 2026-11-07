@@ -1,8 +1,7 @@
-package ru.urfu.service;
+package ru.urfu.commands;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.urfu.commands.HistoryCommand;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.repository.InMemoryMoodRepository;
 
@@ -50,15 +49,10 @@ public class HistoryCommandTest {
         repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 11, 12, 23, 56), 6));
 
         String response = command.execute(userId, null);
-        String expected = " \uD83D\uDCC5 Ваша история записей:\n" +
-                "12.11.2026 23:56 - 6/10\n" +
-                "11.10.2026 13:12 - 1/10\n" +
-                "10.10.2026 10:10 - 10/10";
+        String expected = " \uD83D\uDCC5 Ваша история записей:\n" + "12.11.2026 23:56 - 6/10\n" + "11.10.2026 13:12 - 1/10\n" + "10.10.2026 10:10 - 10/10";
         Assertions.assertEquals(expected, response);
         String response2 = command.execute(userId, new String[]{"2"});
-        String expected2 = " \uD83D\uDCC5 Ваша история записей:\n" +
-                "12.11.2026 23:56 - 6/10\n" +
-                "11.10.2026 13:12 - 1/10";
+        String expected2 = " \uD83D\uDCC5 Ваша история записей:\n" + "12.11.2026 23:56 - 6/10\n" + "11.10.2026 13:12 - 1/10";
         Assertions.assertEquals(expected2, response2);
         Assertions.assertFalse(response2.contains("10.10.2026 10:10 - 10/10"));
     }
@@ -89,8 +83,10 @@ public class HistoryCommandTest {
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"-1"}));
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"0"}));
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"-67"}));
-        Assertions.assertEquals("Использование команды /history: \n " +
-                "/history <n> - показать последние n записей\n" +
-                "/history - последние 10 записей", command.execute(userId, new String[]{"6", "7"}));
+        Assertions.assertEquals("""
+                Использование команды /history:
+                /history <n> - показать последние n записей
+                /history - последние 10 записей
+                """, command.execute(userId, new String[]{"6", "7"}));
     }
 }

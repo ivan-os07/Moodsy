@@ -21,6 +21,7 @@ public class HistoryCommand implements BotCommand {
 
     /**
      * Инициализация команды просмотра истории
+     *
      * @param moodRepository репозиторий с записями настроения
      */
     public HistoryCommand(MoodRepository moodRepository) {
@@ -43,9 +44,11 @@ public class HistoryCommand implements BotCommand {
         int limit = 10;
         if (args != null && args.length > 0) {
             if (args.length != 1) {
-                return ("Использование команды /history: \n " +
-                        "/history <n> - показать последние n записей\n"+
-                        "/history - последние 10 записей");
+                return """
+                        Использование команды /history:
+                        /history <n> - показать последние n записей
+                        /history - последние 10 записей
+                        """;
             }
             try {
                 limit = Integer.parseInt(args[0]);
