@@ -25,7 +25,7 @@ public class FakeCommand implements BotCommand {
     /**
      * ID пользователя из последнего обработанного вызова (для верификации в тестах).
      */
-    private String lastUSER_ID;
+    private String lastUserId;
 
     /**
      * Аргументы последнего вызова команды (для верификации в тестах).
@@ -65,8 +65,8 @@ public class FakeCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String USER_ID, String[] args) {
-        lastUSER_ID = USER_ID;
+    public String execute(String userId, String[] args) {
+        lastUserId = userId;
         lastArgs = args;
         callCount++;
         return response;
@@ -75,10 +75,10 @@ public class FakeCommand implements BotCommand {
     /**
      * Получаем id последнего юзера
      *
-     * @return lastUSER_ID
+     * @return lastUserId
      */
-    public String getLastUSER_ID() {
-        return lastUSER_ID;
+    public String getLastUserId() {
+        return lastUserId;
     }
 
     /**

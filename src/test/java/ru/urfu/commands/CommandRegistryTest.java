@@ -101,7 +101,9 @@ class CommandRegistryTest {
     @Test
     void getCommands_keepsRegistrationOrderTest() {
         FakeCommand second = new FakeCommand("/b", "b", "b");
+        FakeCommand third = new FakeCommand("/a", "a", "a");
         registry.register(second);
+        registry.register(third);
 
         List<String> keys = registry
                 .getCommands()
@@ -116,7 +118,7 @@ class CommandRegistryTest {
     }
 
     /**
-     * Возвращаемую коллекцию нельзя изменить снаружи
+     * Возвращаемую коллекцию нельзя изменить снаружи:
      * попытка очистки бросает исключение и не портит данные хранилища.
      */
     @Test
