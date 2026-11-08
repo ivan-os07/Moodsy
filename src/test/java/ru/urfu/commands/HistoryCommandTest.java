@@ -24,7 +24,7 @@ public class HistoryCommandTest {
     /**
      * Идентификатор пользователя
      */
-    private final String userId = "tg:6767";
+    private final String USER_ID = "tg:6767";
 
     @BeforeEach
     void setUp() {
@@ -41,14 +41,14 @@ public class HistoryCommandTest {
      */
     @Test
     void executeTest() {
-        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, null));
-        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, new String[]{"6"}));
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(USER_ID, null));
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(USER_ID, new String[]{"6"}));
 
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 10), 10));
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 11, 13, 12), 1));
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 11, 12, 23, 56), 6));
+        repository.save(USER_ID, new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 10), 10));
+        repository.save(USER_ID, new MoodEntry(LocalDateTime.of(2026, 10, 11, 13, 12), 1));
+        repository.save(USER_ID, new MoodEntry(LocalDateTime.of(2026, 11, 12, 23, 56), 6));
 
-        String response = command.execute(userId, null);
+        String response = command.execute(USER_ID, null);
         String expected = """
                  \uD83D\uDCC5 Ваша история записей:
                 12.11.2026 23:56 - 6/10
@@ -56,7 +56,7 @@ public class HistoryCommandTest {
                 10.10.2026 10:10 - 10/10""";
         Assertions.assertEquals(expected, response);
 
-        String response2 = command.execute(userId, new String[]{"2"});
+        String response2 = command.execute(USER_ID, new String[]{"2"});
         String expected2 = """
                  \uD83D\uDCC5 Ваша история записей:
                 12.11.2026 23:56 - 6/10
@@ -72,9 +72,9 @@ public class HistoryCommandTest {
     @Test
     void executeTestLimit() {
         for (int i = 1; i <= 23; i++) {
-            repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1));
+            repository.save(USER_ID, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1));
         }
-        String response = command.execute(userId, null);
+        String response = command.execute(USER_ID, null);
         long entriesCount = response.lines().filter(line -> line.matches("\\d{2}\\.\\d{2}\\.\\d{4}.*")).count();
         Assertions.assertEquals(10, entriesCount);
     }
@@ -86,14 +86,14 @@ public class HistoryCommandTest {
     @Test
     void executeErrorTest() {
         String exp = "❌ Ошибка: переданный формат числа не соответствует ожидаемому";
-        Assertions.assertEquals(exp, command.execute(userId, new String[]{"abc"}));
-        Assertions.assertEquals(exp, command.execute(userId, new String[]{"-1"}));
-        Assertions.assertEquals(exp, command.execute(userId, new String[]{"0"}));
-        Assertions.assertEquals(exp, command.execute(userId, new String[]{"-67"}));
+        Assertions.assertEquals(exp, command.execute(USER_ID, new String[]{"abc"}));
+        Assertions.assertEquals(exp, command.execute(USER_ID, new String[]{"-1"}));
+        Assertions.assertEquals(exp, command.execute(USER_ID, new String[]{"0"}));
+        Assertions.assertEquals(exp, command.execute(USER_ID, new String[]{"-67"}));
         Assertions.assertEquals("""
                 Использование команды /history:
                 /history <n> - показать последние n записей
                 /history - последние 10 записей
-                """, command.execute(userId, new String[]{"6", "7"}));
+                """, command.execute(USER_ID, new String[]{"6", "7"}));
     }
 }

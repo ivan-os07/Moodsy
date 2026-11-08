@@ -19,7 +19,10 @@ class CommandDispatcherTest {
      */
     private FakeCommand fakeCommand;
 
-    private static final String userId = "tg:123";
+    /**
+     * Идентификатор пользователя
+     */
+    private static final String USER_ID = "tg:123";
 
     /**
      * Инициализация окружения перед каждым тестом.
@@ -41,11 +44,11 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_knownCommand() {
-        BotResponse response = dispatcher.handle(userId, "/test");
+        BotResponse response = dispatcher.handle(USER_ID, "/test");
 
-        Assertions.assertEquals(userId, response.userId());
+        Assertions.assertEquals(USER_ID, response.userId());
         Assertions.assertEquals("answer test", response.text());
-        Assertions.assertEquals(userId, fakeCommand.getLastUserId());
+        Assertions.assertEquals(USER_ID, fakeCommand.getLastUSER_ID());
         Assertions.assertEquals(1, fakeCommand.getCallCount());
     }
 
@@ -54,11 +57,11 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_unknownCommand() {
-        BotResponse response = dispatcher.handle(userId, "/unknown");
+        BotResponse response = dispatcher.handle(USER_ID, "/unknown");
 
-        Assertions.assertEquals(userId, response.userId());
+        Assertions.assertEquals(USER_ID, response.userId());
         Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
-        Assertions.assertNull(fakeCommand.getLastUserId());
+        Assertions.assertNull(fakeCommand.getLastUSER_ID());
         Assertions.assertEquals(0, fakeCommand.getCallCount());
 
     }
@@ -68,11 +71,11 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_blankCommand() {
-        BotResponse response = dispatcher.handle(userId, "");
+        BotResponse response = dispatcher.handle(USER_ID, "");
 
-        Assertions.assertEquals(userId, response.userId());
+        Assertions.assertEquals(USER_ID, response.userId());
         Assertions.assertEquals("Сообщение не может быть пустым!", response.text());
-        Assertions.assertNull(fakeCommand.getLastUserId());
+        Assertions.assertNull(fakeCommand.getLastUSER_ID());
         Assertions.assertEquals(0, fakeCommand.getCallCount());
 
     }
@@ -82,7 +85,7 @@ class CommandDispatcherTest {
      */
     @Test
     void handle_commandWithArguments() {
-        dispatcher.handle(userId, "/test arg1 arg2 arg3");
+        dispatcher.handle(USER_ID, "/test arg1 arg2 arg3");
         Assertions.assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
     }
 }
