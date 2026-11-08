@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
 /**
- * Тестирование команды /test
+ * Тестирование команды /start
  */
 class StartCommandTest {
 
