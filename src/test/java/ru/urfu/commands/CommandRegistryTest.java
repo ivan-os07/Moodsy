@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Тестируем хранилище команд.
@@ -39,10 +38,7 @@ class CommandRegistryTest {
      */
     @Test
     void find_registeredCommand_returnsIt() {
-        Optional<BotCommand> found = registry.find("/test");
-
-        Assertions.assertTrue(found.isPresent());
-        Assertions.assertSame(fakeCommand, found.get());
+        Assertions.assertSame(fakeCommand, registry.find("/test").orElseThrow());
     }
 
     /**
@@ -58,10 +54,12 @@ class CommandRegistryTest {
      */
     @Test
     void getCommands_returnsAllRegisteredCommands() {
-        Collection<BotCommand> commands = registry.getCommands();
+        List<BotCommand> commands = new ArrayList<>(registry.getCommands());
 
         Assertions.assertEquals(1, commands.size());
-        Assertions.assertTrue(commands.contains(fakeCommand));
+        // Сравниваем по ссылке осознанно: хранилище должно вернуть
+        // именно тот объект, который мы зарегистрировали.
+        Assertions.assertSame(fakeCommand, commands.getFirst());
     }
 
     /**
@@ -74,6 +72,9 @@ class CommandRegistryTest {
         registry.register(secondCommand);
 
         Assertions.assertEquals(2, registry.getCommands().size());
+
+        // Сравниваем по ссылке осознанно: хранилище должно вернуть
+        // именно те объекты, которые мы зарегистрировали.
         Assertions.assertSame(secondCommand, registry.find("/test2").orElseThrow());
     }
 
@@ -87,6 +88,8 @@ class CommandRegistryTest {
         registry.register(newCommand);
 
         Assertions.assertEquals(1, registry.getCommands().size());
+        // Сравниваем по ссылке осознанно: хранилище должно вернуть
+        // именно те объекты, которые мы зарегистрировали.
         Assertions.assertSame(newCommand, registry.find("/test").orElseThrow());
     }
 
