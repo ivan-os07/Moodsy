@@ -53,7 +53,9 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
         Assertions.assertEquals(
-                List.of(thirdEntry, secondEntry, firstEntry),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
                 repository.findLast(userId, 10)
         );
     }
@@ -72,11 +74,14 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
         Assertions.assertEquals(
-                List.of(thirdEntry, secondEntry, firstEntry),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
                 repository.findLast(userId, 10)
         );
         Assertions.assertEquals(
-                List.of(thirdEntry, secondEntry),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8)),
                 repository.findLast(userId, 2)
         );
         Assertions.assertTrue(repository.findLast(userId, 0).isEmpty());
@@ -99,11 +104,11 @@ class InMemoryMoodRepositoryTest {
         repository.save(secondUserId, secondEntry);
 
         Assertions.assertEquals(
-                List.of(firstEntry),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
                 repository.findLast(userId, 10)
         );
         Assertions.assertEquals(
-                List.of(secondEntry),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8)),
                 repository.findLast(secondUserId, 10)
         );
     }
