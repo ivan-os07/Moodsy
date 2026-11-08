@@ -27,8 +27,14 @@ class TelegramConfigTest {
      * если переменная окружения с токеном отсутствует (равна null).
      */
     @Test
-    void getBotToken_withInvalidTokenTest() {
-        Assertions.assertThrows(IllegalStateException.class, () -> new TelegramConfig(_ -> null));
+    void constructor_nullToken_throwsIllegalStateExceptionTest() {
+        IllegalStateException exception = Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> new TelegramConfig(_ -> null));
+
+        Assertions.assertEquals(
+                "Ошибка: переменная окружения BOT_TOKEN не задана!",
+                exception.getMessage());
     }
 
     /**
@@ -36,8 +42,14 @@ class TelegramConfigTest {
      * если переменная окружения задана, но состоит только из пробелов (пустая строка).
      */
     @Test
-    void getBotToken_withBlankTokenTest() {
-        Assertions.assertThrows(IllegalStateException.class, () -> new TelegramConfig(_ -> "   "));
+    void constructor_blankToken_throwsIllegalStateExceptionTest() {
+        IllegalStateException exception = Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> new TelegramConfig(_ -> "     "));
+
+        Assertions.assertEquals(
+                "Ошибка: переменная окружения BOT_TOKEN не задана!",
+                exception.getMessage());
     }
 
 }

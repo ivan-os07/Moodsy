@@ -105,10 +105,9 @@ class CommandRegistryTest {
         registry.register(second);
         registry.register(third);
 
-        List<BotCommand> commands = new ArrayList<>(registry.getCommands());
-
-        // получаем ключи
-        List<String> keys = commands.stream()
+        List<String> keys = registry
+                .getCommands()
+                .stream()
                 .map(BotCommand::getCommandKey)
                 .toList();
 
@@ -119,12 +118,14 @@ class CommandRegistryTest {
     }
 
     /**
-     * Возвращаемую коллекцию нельзя изменить снаружи.
+     * Возвращаемую коллекцию нельзя изменить снаружи:
+     * попытка очистки бросает исключение и не портит данные хранилища.
      */
     @Test
     void getCommands_isUnmodifiableTest() {
         Collection<BotCommand> commands = registry.getCommands();
 
         Assertions.assertThrows(UnsupportedOperationException.class, commands::clear);
+        Assertions.assertEquals(1, registry.getCommands().size());
     }
 }

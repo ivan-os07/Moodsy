@@ -48,7 +48,7 @@ class CommandDispatcherTest {
 
         Assertions.assertEquals(USER_ID, response.userId());
         Assertions.assertEquals("answer test", response.text());
-        Assertions.assertEquals(USER_ID, fakeCommand.getLastUSER_ID());
+        Assertions.assertEquals(USER_ID, fakeCommand.getLastUserId());
         Assertions.assertEquals(1, fakeCommand.getCallCount());
     }
 
@@ -61,7 +61,7 @@ class CommandDispatcherTest {
 
         Assertions.assertEquals(USER_ID, response.userId());
         Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
-        Assertions.assertNull(fakeCommand.getLastUSER_ID());
+        Assertions.assertNull(fakeCommand.getLastUserId());
         Assertions.assertEquals(0, fakeCommand.getCallCount());
 
     }
@@ -75,7 +75,7 @@ class CommandDispatcherTest {
 
         Assertions.assertEquals(USER_ID, response.userId());
         Assertions.assertEquals("Сообщение не может быть пустым!", response.text());
-        Assertions.assertNull(fakeCommand.getLastUSER_ID());
+        Assertions.assertNull(fakeCommand.getLastUserId());
         Assertions.assertEquals(0, fakeCommand.getCallCount());
 
     }

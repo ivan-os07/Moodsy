@@ -30,7 +30,7 @@ class CheckinCommandTest {
     /**
      * Идентификатор пользователя
      */
-    private final String USER_ID = "tg:6767";
+    private final String userId = "tg:6767";
     /**
      * Фиксированные часы, чтобы тесты не падали
      */
@@ -50,12 +50,12 @@ class CheckinCommandTest {
     @Test
     void executeTest() {
 
-        Assertions.assertEquals("✅ Настроение 1 успешно сохранено!", command.execute(USER_ID, new String[]{"1"}));
+        Assertions.assertEquals("✅ Настроение 1 успешно сохранено!", command.execute(userId, new String[]{"1"}));
         MoodEntry expectedEntry = new MoodEntry(LocalDateTime.of(2026, 10, 14, 12, 00), 1);
-        Assertions.assertEquals(Optional.of(expectedEntry), repository.findLatest(USER_ID));
-        Assertions.assertEquals("✅ Настроение 10 успешно сохранено!", command.execute(USER_ID, new String[]{"10"}));
+        Assertions.assertEquals(Optional.of(expectedEntry), repository.findLatest(userId));
+        Assertions.assertEquals("✅ Настроение 10 успешно сохранено!", command.execute(userId, new String[]{"10"}));
         MoodEntry expectedEntry2 = new MoodEntry(LocalDateTime.of(2026, 10, 14, 12, 00), 10);
-        Assertions.assertEquals(List.of(expectedEntry2, expectedEntry), repository.findLast(USER_ID, 10));
+        Assertions.assertEquals(List.of(expectedEntry2, expectedEntry), repository.findLast(userId, 10));
     }
 
     /**
@@ -67,14 +67,14 @@ class CheckinCommandTest {
     void executeError1Test() {
         Assertions.assertEquals("Использование команды /checkin: \n" +
                         "/checkin <n> - n число от 1 до 10",
-                command.execute(USER_ID, null));
+                command.execute(userId, null));
         Assertions.assertEquals("Использование команды /checkin: \n" +
                         "/checkin <n> - n число от 1 до 10",
-                command.execute(USER_ID, new String[]{}));
+                command.execute(userId, new String[]{}));
         Assertions.assertEquals("Использование команды /checkin: \n" +
                         "/checkin <n> - n число от 1 до 10",
-                command.execute(USER_ID, new String[]{"6", "7", "3"}));
-        Assertions.assertTrue(repository.findLast(USER_ID, 10).isEmpty());
+                command.execute(userId, new String[]{"6", "7", "3"}));
+        Assertions.assertTrue(repository.findLast(userId, 10).isEmpty());
 
 
     }
@@ -87,12 +87,12 @@ class CheckinCommandTest {
     @Test
     void executeError2Test() {
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
-                command.execute(USER_ID, new String[]{"abcdefg"})
+                command.execute(userId, new String[]{"abcdefg"})
         );
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
-                command.execute(USER_ID, new String[]{"a"})
+                command.execute(userId, new String[]{"a"})
         );
-        Assertions.assertTrue(repository.findLast(USER_ID, 10).isEmpty());
+        Assertions.assertTrue(repository.findLast(userId, 10).isEmpty());
     }
 
     /**
@@ -103,11 +103,11 @@ class CheckinCommandTest {
     @Test
     void executeError3Test() {
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
-                command.execute(USER_ID, new String[]{"0"})
+                command.execute(userId, new String[]{"0"})
         );
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
-                command.execute(USER_ID, new String[]{"33"})
+                command.execute(userId, new String[]{"33"})
         );
-        Assertions.assertTrue(repository.findLast(USER_ID, 10).isEmpty());
+        Assertions.assertTrue(repository.findLast(userId, 10).isEmpty());
     }
 }
