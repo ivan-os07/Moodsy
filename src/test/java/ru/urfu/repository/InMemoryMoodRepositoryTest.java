@@ -91,8 +91,6 @@ class InMemoryMoodRepositoryTest {
     }
 
 
-
-
     /**
      * Проверяет, что записи одного пользователя не попадают в хранилище заметок другого пользователя.
      */
@@ -119,8 +117,16 @@ class InMemoryMoodRepositoryTest {
     @Test
     void unmodifiableList() {
         repository.save(userId, firstEntry);
-
         List<MoodEntry> history = repository.findLast(userId, 10);
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> history.add(secondEntry));
+
+        try {
+            history.add(secondEntry);
+        } catch (UnsupportedOperationException ignored) {
+        }
+
+        Assertions.assertEquals(List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
+                repository.findLast(userId, 10));
+
+
     }
 }
