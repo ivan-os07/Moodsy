@@ -43,7 +43,7 @@ class CommandDispatcherTest {
      * проверяем количество вызовов и id пользователя
      */
     @Test
-    void handle_knownCommand() {
+    void handle_knownCommandTest() {
         BotResponse response = dispatcher.handle(USER_ID, "/test");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -56,7 +56,7 @@ class CommandDispatcherTest {
      * Тестирование обработки неизвестной(незарегистрированной) команды.
      */
     @Test
-    void handle_unknownCommand() {
+    void handle_unknownCommandTest() {
         BotResponse response = dispatcher.handle(USER_ID, "/unknown");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -70,7 +70,7 @@ class CommandDispatcherTest {
      * Тестирование обработки ошибки при регистрации пустой команды
      */
     @Test
-    void handle_blankCommand() {
+    void handle_blankCommandTest() {
         BotResponse response = dispatcher.handle(USER_ID, "");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -84,7 +84,7 @@ class CommandDispatcherTest {
      * Тестирование обработки команды с несколькими аргументами
      */
     @Test
-    void handle_commandWithArguments() {
+    void handle_commandWithArgumentsTest() {
         dispatcher.handle(USER_ID, "/test arg1 arg2 arg3");
         Assertions.assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
     }

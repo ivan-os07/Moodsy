@@ -16,7 +16,7 @@ class TelegramConfigTest {
      * конфиг устанавливает это значение в качестве ключа
      */
     @Test
-    void getBotToken_withValidToken() {
+    void getBotToken_withValidTokenTest() {
         TelegramConfig config = new TelegramConfig(_ -> "valid_secret_token");
 
         Assertions.assertEquals("valid_secret_token", config.getBotToken());
@@ -27,7 +27,7 @@ class TelegramConfigTest {
      * если переменная окружения с токеном отсутствует (равна null).
      */
     @Test
-    void getBotToken_withInvalidToken() {
+    void getBotToken_withInvalidTokenTest() {
         Assertions.assertThrows(IllegalStateException.class, () -> new TelegramConfig(_ -> null));
     }
 
@@ -36,7 +36,7 @@ class TelegramConfigTest {
      * если переменная окружения задана, но состоит только из пробелов (пустая строка).
      */
     @Test
-    void getBotToken_withBlankToken() {
+    void getBotToken_withBlankTokenTest() {
         Assertions.assertThrows(IllegalStateException.class, () -> new TelegramConfig(_ -> "   "));
     }
 
