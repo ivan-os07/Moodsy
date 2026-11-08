@@ -70,7 +70,7 @@ public class HistoryCommandTest {
      * выводится именно 10 заметок.
      */
     @Test
-    void executeTestLimit() {
+    void executeLimitTest() {
         for (int i = 1; i <= 23; i++) {
             repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1));
         }
