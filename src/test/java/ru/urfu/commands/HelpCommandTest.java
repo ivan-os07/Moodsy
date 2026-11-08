@@ -40,7 +40,7 @@ class HelpCommandTest {
      * Тестируем валидность возврата описания команды
      */
     @Test
-    void getDescription_returnsNonEmptyTest() {
+    void getValidDescriptionTest() {
         Assertions.assertEquals("Получить помощь и список команд", command.getDescription());
     }
 

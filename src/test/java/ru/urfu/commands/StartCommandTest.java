@@ -36,7 +36,7 @@ class StartCommandTest {
      * Тестируем валидность возврата описания команды
      */
     @Test
-    void getDescription_returnsNonEmptyTest() {
+    void getValidDescriptionTest() {
         String result = command.getDescription();
         Assertions.assertEquals("Начать работу", result);
     }
