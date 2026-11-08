@@ -40,43 +40,13 @@ public class InMemoryMoodRepository implements MoodRepository {
         }
         int end = userEntries.size();
         int start = Math.max(0, end - limit);
-        List<MoodEntry> result = new ArrayList<>(userEntries.subList(start, end));
-        Collections.reverse(result);
+        List<MoodEntry> result = new ArrayList<>(end - start);
+        //Заполняем с конца
+        for (int i = end -1; i >= start; i--){
+            result.add(userEntries.get(i));
+        }
         return Collections.unmodifiableList(result);
     }
 
-
-    @Override
-    public Optional<MoodEntry> findLatest(String userId) {
-        List<MoodEntry> userEntries = entries.get(userId);
-        if (userEntries == null || userEntries.isEmpty()) {
-            return Optional.empty();
-
-        }
-        return Optional.of(userEntries.get(userEntries.size() - 1));
-    }
-
-
-    @Override
-    public boolean updateLast(String userId, MoodEntry updatedEntry) {
-        List<MoodEntry> userEntries = entries.get(userId);
-        if (userEntries == null || userEntries.isEmpty()) {
-            return false;
-        }
-        userEntries.set(userEntries.size() - 1, updatedEntry);
-        return true;
-    }
-
-
-    @Override
-    public boolean deleteLast(String userId) {
-        List<MoodEntry> userEntries = entries.get(userId);
-        if (userEntries == null || userEntries.isEmpty()) {
-            return false;
-
-        }
-        userEntries.removeLast();
-        return true;
-    }
 }
 

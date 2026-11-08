@@ -25,28 +25,4 @@ public interface MoodRepository {
      * @return список последних записей
      */
     List<MoodEntry> findLast(String userId, int limit);
-    //[R]ead: получение самой последней записи
-    /**
-     * Возвращает последнюю запись пользователя
-     *
-     * @param userId идентификатор пользователя
-     * @return последняя запись, иначе пустой Optional
-     */
-    Optional<MoodEntry> findLatest(String userId);
-    //[U]pdate: обновление последней записи пользователя
-    /**
-     * Обновляет последнюю запись пользователя
-     *
-     * @param userId       идентификатор пользователя
-     * @param updatedEntry новая версия записи
-     * @return true, если обновлена, иначе false
-     */
-    boolean updateLast(String userId, MoodEntry updatedEntry);
-    //[D]elete: удаление последней записи пользователя
-    /**
-     * Удаляет последнюю запись пользователя
-     * @param userId идентификатор пользователя
-     * @return true, если запись удалена, иначе false
-     */
-    boolean deleteLast(String userId);
 }

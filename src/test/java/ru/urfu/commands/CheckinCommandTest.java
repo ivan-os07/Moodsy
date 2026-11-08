@@ -52,7 +52,6 @@ class CheckinCommandTest {
 
         Assertions.assertEquals("✅ Настроение 1 успешно сохранено!", command.execute(userId, new String[]{"1"}));
         MoodEntry expectedEntry = new MoodEntry(LocalDateTime.of(2026, 10, 14, 12, 00), 1);
-        Assertions.assertEquals(Optional.of(expectedEntry), repository.findLatest(userId));
         Assertions.assertEquals("✅ Настроение 10 успешно сохранено!", command.execute(userId, new String[]{"10"}));
         MoodEntry expectedEntry2 = new MoodEntry(LocalDateTime.of(2026, 10, 14, 12, 00), 10);
         Assertions.assertEquals(List.of(expectedEntry2, expectedEntry), repository.findLast(userId, 10));
