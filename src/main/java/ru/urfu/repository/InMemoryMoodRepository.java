@@ -2,10 +2,7 @@ package ru.urfu.repository;
 
 import ru.urfu.model.MoodEntry;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -17,7 +14,7 @@ public class InMemoryMoodRepository implements MoodRepository {
     /**
      * Записи настроения, разделенные по идентификаторам пользователей
      */
-    private final ConcurrentHashMap<String, List<MoodEntry>> entries = new ConcurrentHashMap<>();
+    private final Map<String, List<MoodEntry>> entries = new ConcurrentHashMap<>();
 
 
 
