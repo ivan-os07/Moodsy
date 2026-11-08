@@ -48,7 +48,7 @@ class InMemoryMoodRepositoryTest {
      * от новых к старым
      */
     @Test
-    void saveOneOrMoreEntries() {
+    void saveOneOrMoreEntriesTest() {
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
@@ -69,7 +69,7 @@ class InMemoryMoodRepositoryTest {
      * unknown userId
      */
     @Test
-    void findLastLimitTests() {
+    void findLastLimitTest() {
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
@@ -95,7 +95,7 @@ class InMemoryMoodRepositoryTest {
      * Проверяет, что записи одного пользователя не попадают в хранилище заметок другого пользователя.
      */
     @Test
-    void secondUser() {
+    void secondUserInRepositoryTest() {
         String secondUserId = "tg:911";
 
         repository.save(userId, firstEntry);
@@ -115,15 +115,15 @@ class InMemoryMoodRepositoryTest {
      * Проверяет, что невозможно изменить отметки пользователя из вне.
      */
     @Test
-    void unmodifiableList() {
+    void repositoryStateIsImmutableFromOutsideTest() {
         repository.save(userId, firstEntry);
         List<MoodEntry> history = repository.findLast(userId, 10);
 
-        try {
-            history.add(secondEntry);
-        } catch (UnsupportedOperationException ignored) {
-        }
+        UnsupportedOperationException exception = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> history.add(secondEntry));
 
+        Assertions.assertNull(exception.getMessage());
         Assertions.assertEquals(List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
                 repository.findLast(userId, 10));
 
