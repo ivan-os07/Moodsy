@@ -4,7 +4,7 @@ import ru.urfu.model.MoodEntry;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+
 
 /**
  * Реализация репозитория для хранения записей в оперативной памяти
@@ -17,10 +17,9 @@ public class InMemoryMoodRepository implements MoodRepository {
     private final Map<String, List<MoodEntry>> entries = new ConcurrentHashMap<>();
 
 
-
     @Override
     public void save(String userId, MoodEntry entry) {
-        entries.computeIfAbsent(userId, key -> new CopyOnWriteArrayList<>()).add(entry);
+        entries.computeIfAbsent(userId, key -> Collections.synchronizedList(new ArrayList<>())).add(entry);
 
     }
 
@@ -35,12 +34,15 @@ public class InMemoryMoodRepository implements MoodRepository {
             return Collections.emptyList();
 
         }
-        int end = userEntries.size();
-        int start = Math.max(0, end - limit);
-        List<MoodEntry> result = new ArrayList<>(end - start);
-        //Заполняем с конца
-        for (int i = end -1; i >= start; i--){
-            result.add(userEntries.get(i));
+        List<MoodEntry> result;
+        synchronized (userEntries) {
+            int end = userEntries.size();
+            int start = Math.max(0, end - limit);
+            result = new ArrayList<>(end - start);
+            // Заполняем с конца
+            for (int i = end - 1; i >= start; i--) {
+                result.add(userEntries.get(i));
+            }
         }
         return Collections.unmodifiableList(result);
     }
