@@ -1,11 +1,8 @@
 package ru.urfu.commands;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collection;
-
-import org.junit.jupiter.api.Assertions;
 
 /**
  * Тестируем работу диспетчера команд.
@@ -24,14 +21,15 @@ class CommandDispatcherTest {
 
     /**
      * Инициализация окружения перед каждым тестом.
-     * Создаем новый диспетчер и регистрируем одну тестовую команду (/test),
-     * используя заглушку FakeCommand
+     * Создаем хранилище с одной тестовой командой (/test), используя заглушку FakeCommand,
+     * и диспетчер, работающий с этим хранилищем.
      */
     @BeforeEach
     void setup() {
-        dispatcher = new CommandDispatcher();
+        CommandRegistry registry = new CommandRegistry();
         fakeCommand = new FakeCommand("/test", "test description", "answer test");
-        dispatcher.register(fakeCommand);
+        registry.register(fakeCommand);
+        dispatcher = new CommandDispatcher(registry);
     }
 
     /**
@@ -84,65 +82,5 @@ class CommandDispatcherTest {
     void handle_commandWithArguments() {
         dispatcher.handle("tg:123", "/test arg1 arg2 arg3");
         Assertions.assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
-    }
-
-    /**
-     * Тестирование обработки возвращаемого количества команд.
-     * Тк мы при инициализации добавили одну команду, то размер коллекции должен быть 1
-     */
-    @Test
-    void getCommands_returnsAllRegisteredCommands() {
-        Collection<BotCommand> commands = dispatcher.getCommands();
-
-        Assertions.assertEquals(1, commands.size());
-        Assertions.assertTrue(commands.contains(fakeCommand));
-    }
-
-    /**
-     * Тестирование добавления новой команды.
-     * Убеждаемся в корректности обработки диспетчера.
-     */
-    @Test
-    void getCommands_addNewCommand() {
-        FakeCommand secondCommand = new FakeCommand("/test2", "test2 description", "answer test2");
-        dispatcher.register(secondCommand);
-
-        Collection<BotCommand> commands = dispatcher.getCommands();
-
-        Assertions.assertEquals(2, commands.size());
-        Assertions.assertTrue(commands.contains(fakeCommand));
-        Assertions.assertTrue(commands.contains(secondCommand));
-    }
-
-    /**
-     * Тестирование регистрации новой команды.
-     * Убеждаемся в корректности обработки диспетчера этой новой команды
-     */
-    @Test
-    void register_addNewCommand() {
-        FakeCommand newCommand = new FakeCommand("/ping", "check conn", "pong");
-
-        dispatcher.register(newCommand);
-
-        BotResponse response = dispatcher.handle("tg:123", "/ping");
-
-        Assertions.assertEquals("pong", response.text());
-        Assertions.assertEquals("tg:123", response.userId());
-    }
-
-    /**
-     * Тестирование поведения диспетчера при перерегистрации команды.
-     * Добавляется команда с ключом который есть в коллекции, но с новым описанием,
-     * проверяем валидность после перерегистрации
-     */
-    @Test
-    void register_sameKeyRegister() {
-        FakeCommand newCommand = new FakeCommand("/test", "new test", "i am new test");
-
-        dispatcher.register(newCommand);
-
-        BotResponse response = dispatcher.handle("tg:123", "/test");
-
-        Assertions.assertEquals("i am new test", response.text());
     }
 }

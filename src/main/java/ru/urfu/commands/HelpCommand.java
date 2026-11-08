@@ -6,19 +6,19 @@ package ru.urfu.commands;
 public class HelpCommand implements BotCommand {
 
     /**
-     * Диспетчер
+     * Хранилище команд, из которого берём список для вывода.
      */
-    private final CommandDispatcher dispatcher;
+    private final CommandRegistry registry;
 
     /**
-     * Конструктор для инициализации команды помощи.
+     * Конструктор.
      *
-     * @param dispatcher диспетчер команд, используемый для получения списка
-     *                   всех доступных в приложении команд и их описаний
+     * @param registry хранилище, содержащее все доступные команды
      */
-    public HelpCommand(CommandDispatcher dispatcher) {
-        this.dispatcher = dispatcher;
+    public HelpCommand(CommandRegistry registry) {
+        this.registry = registry;
     }
+
 
     @Override
     public String getCommandKey() {
@@ -34,7 +34,7 @@ public class HelpCommand implements BotCommand {
     public String execute(String userId, String[] args) {
         StringBuilder builder = new StringBuilder("Привет! Я бот Moodsy\n");
 
-        for (BotCommand command : this.dispatcher.getCommands()) {
+        for (BotCommand command : registry.getCommands()) {
             builder.append(command.getCommandKey());
             builder.append(" - ");
             builder.append(command.getDescription());

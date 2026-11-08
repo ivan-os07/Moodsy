@@ -32,14 +32,15 @@ public class Main {
 
         // Инициализация инфраструктурных компонентов и слоев данных
         MoodRepository moodRepository = new InMemoryMoodRepository();
-        CommandDispatcher dispatcher = new CommandDispatcher();
 
-        // Регистрируем команды в диспетчере
-        dispatcher.register(new StartCommand());
-        dispatcher.register(new HelpCommand(dispatcher));
-        dispatcher.register(new CheckinCommand(moodRepository, Clock.systemDefaultZone()));
-        dispatcher.register(new HistoryCommand(moodRepository));
+        // Регистрируем команды в хранилище
+        CommandRegistry registry = new CommandRegistry();
+        registry.register(new StartCommand());
+        registry.register(new HelpCommand(registry));
+        registry.register(new CheckinCommand(moodRepository, Clock.systemDefaultZone()));
+        registry.register(new HistoryCommand(moodRepository));
 
+        CommandDispatcher dispatcher = new CommandDispatcher(registry);
 
         // Инициализация и запуск транспортного слоя (Telegram-бота)
         // Использование try-with-resources гарантирует корректное закрытие ресурсов бота

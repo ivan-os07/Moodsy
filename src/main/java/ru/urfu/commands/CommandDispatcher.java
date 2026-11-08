@@ -1,6 +1,7 @@
 package ru.urfu.commands;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Маршрутизатор. Получает сырой текст от пользователя, находит нужную команду и вызывает её
@@ -8,17 +9,17 @@ import java.util.*;
 public class CommandDispatcher {
 
     /**
-     * Словарь зарегистрированных команд: ключ команды -> объект
-     * команды.
+     * Хранилище зарегистрированных команд, в котором ищем команду по ключу.
      */
-    private final Map<String, BotCommand> commands;
+    private final CommandRegistry registry;
 
     /**
      * Конструктор диспетчера.
-     * Создает пустое хранилище для команд.
+     *
+     * @param registry хранилище команд
      */
-    public CommandDispatcher() {
-        this.commands = new LinkedHashMap<>();
+    public CommandDispatcher(CommandRegistry registry) {
+        this.registry = registry;
     }
 
     /**
@@ -38,35 +39,16 @@ public class CommandDispatcher {
         String commandKey = parts[0];
         String[] args = Arrays.copyOfRange(parts, 1, parts.length);
 
-        // Ищем команду в мапе
-        BotCommand command = this.commands.get(commandKey);
+        // Ищем команду в хранилище
+        Optional<BotCommand> command = this.registry.find(commandKey);
 
         // Если не нашли - возвращаем сообщение об ошибке
-        if (command == null) {
+        if (command.isEmpty()) {
             return new BotResponse(userId, "Неизвестная команда. Введите /help для справки.");
         }
 
         // Если нашли - выполняем и возвращаем результат
-        String responseText = command.execute(userId, args);
+        String responseText = command.get().execute(userId, args);
         return new BotResponse(userId, responseText);
-
-    }
-
-    /**
-     * Возвращает коллекцию из всех зарегистрированных команд.
-     *
-     * @return коллекция команд
-     */
-    public Collection<BotCommand> getCommands() {
-        return this.commands.values();
-    }
-
-    /**
-     * Регистрирует команды по одной.
-     *
-     * @param command команда для регистрации
-     */
-    public void register(BotCommand command) {
-        this.commands.put(command.getCommandKey(), command);
     }
 }
