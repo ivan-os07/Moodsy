@@ -94,7 +94,9 @@ class CommandRegistryTest {
     }
 
     /**
-     * Команды возвращаются в порядке регистрации (для вывода /help).
+     * Проверяет, что команды возвращаются в порядке регистрации:
+     * /help выводит список именно в этом порядке, а не по алфавиту.
+     * Ключи /b и /a выбраны так, чтобы порядок регистрации не совпадал с алфавитным.
      */
     @Test
     void getCommands_keepsRegistrationOrder() {
@@ -105,7 +107,15 @@ class CommandRegistryTest {
 
         List<BotCommand> commands = new ArrayList<>(registry.getCommands());
 
-        Assertions.assertEquals(List.of(fakeCommand, second, third), commands);
+        // получаем ключи
+        List<String> keys = commands.stream()
+                .map(BotCommand::getCommandKey)
+                .toList();
+
+        // Ключи, а не объекты: FakeCommand не переопределяет equals(),
+        // поэтому assertEquals на списке команд сравнивал бы ссылки.
+        Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
+        Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
     }
 
     /**
