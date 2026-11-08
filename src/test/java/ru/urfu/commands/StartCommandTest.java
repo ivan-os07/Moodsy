@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
 /**
- * Тестирование команды /test
+ * Тестирование команды /start
  */
 class StartCommandTest {
 
@@ -27,7 +27,7 @@ class StartCommandTest {
      * Тестируем валидность возврата команды
      */
     @Test
-    void getCommandKey_returnsCorrectKey() {
+    void getCommandKey_returnsCorrectKeyTest() {
         String result = command.getCommandKey();
         Assertions.assertEquals("/start", result);
     }
@@ -36,7 +36,7 @@ class StartCommandTest {
      * Тестируем валидность возврата описания команды
      */
     @Test
-    void getDescription_returnsNonEmpty() {
+    void getValidDescriptionTest() {
         String result = command.getDescription();
         Assertions.assertEquals("Начать работу", result);
     }
@@ -45,7 +45,7 @@ class StartCommandTest {
      * Тестируем, что команда возвращает корректное приветственное сообщение.
      */
     @Test
-    void execute_returnsWelcomeMessage() {
+    void execute_returnsWelcomeMessageTest() {
         String result = command.execute("tg:123", new String[]{});
         Assertions.assertEquals("Добро пожаловать!", result);
     }

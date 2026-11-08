@@ -65,11 +65,8 @@ public class HistoryCommand implements BotCommand {
         }
         StringBuilder result = new StringBuilder(" \uD83D\uDCC5 Ваша история записей:");
         for (MoodEntry entry : entries) {
-            if (!result.isEmpty()) {
-                result.append("\n");
-
-            }
-            result.append(entry.createdAt().format(formatter))
+            result.append("\n")
+                    .append(entry.createdAt().format(formatter))
                     .append(" - ")
                     .append(entry.score())
                     .append("/10");

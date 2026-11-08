@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Тестируем хранилище команд.
@@ -38,18 +37,15 @@ class CommandRegistryTest {
      * Зарегистрированную команду можно найти по ключу.
      */
     @Test
-    void find_registeredCommand_returnsIt() {
-        Optional<BotCommand> found = registry.find("/test");
-
-        Assertions.assertTrue(found.isPresent());
-        Assertions.assertSame(fakeCommand, found.get());
+    void find_registeredCommand_returnsItTest() {
+        Assertions.assertSame(fakeCommand, registry.find("/test").orElseThrow());
     }
 
     /**
      * Для незарегистрированного ключа возвращается пустой Optional.
      */
     @Test
-    void find_unknownKey_returnsEmpty() {
+    void find_unknownKey_returnsEmptyTest() {
         Assertions.assertTrue(registry.find("/unknown").isEmpty());
     }
 
@@ -57,23 +53,28 @@ class CommandRegistryTest {
      * Тк при инициализации добавлена одна команда, размер коллекции должен быть 1.
      */
     @Test
-    void getCommands_returnsAllRegisteredCommands() {
-        Collection<BotCommand> commands = registry.getCommands();
+    void getCommands_returnsAllRegisteredCommandsTest() {
+        List<BotCommand> commands = new ArrayList<>(registry.getCommands());
 
         Assertions.assertEquals(1, commands.size());
-        Assertions.assertTrue(commands.contains(fakeCommand));
+        // Сравниваем по ссылке осознанно: хранилище должно вернуть
+        // именно тот объект, который мы зарегистрировали.
+        Assertions.assertSame(fakeCommand, commands.getFirst());
     }
 
     /**
      * После регистрации новой команды в коллекции есть обе команды.
      */
     @Test
-    void register_addNewCommand() {
+    void register_addNewCommandTest() {
         FakeCommand secondCommand = new FakeCommand("/test2", "test2 description", "answer test2");
 
         registry.register(secondCommand);
 
         Assertions.assertEquals(2, registry.getCommands().size());
+
+        // Сравниваем по ссылке осознанно: хранилище должно вернуть
+        // именно те объекты, которые мы зарегистрировали.
         Assertions.assertSame(secondCommand, registry.find("/test2").orElseThrow());
     }
 
@@ -81,20 +82,24 @@ class CommandRegistryTest {
      * Повторная регистрация с тем же ключом заменяет команду, а не добавляет вторую.
      */
     @Test
-    void register_sameKey_replacesCommand() {
+    void register_sameKey_replacesCommandTest() {
         FakeCommand newCommand = new FakeCommand("/test", "new test", "i am new test");
 
         registry.register(newCommand);
 
         Assertions.assertEquals(1, registry.getCommands().size());
+        // Сравниваем по ссылке осознанно: хранилище должно вернуть
+        // именно те объекты, которые мы зарегистрировали.
         Assertions.assertSame(newCommand, registry.find("/test").orElseThrow());
     }
 
     /**
-     * Команды возвращаются в порядке регистрации (для вывода /help).
+     * Проверяет, что команды возвращаются в порядке регистрации:
+     * /help выводит список именно в этом порядке, а не по алфавиту.
+     * Ключи /b и /a выбраны так, чтобы порядок регистрации не совпадал с алфавитным.
      */
     @Test
-    void getCommands_keepsRegistrationOrder() {
+    void getCommands_keepsRegistrationOrderTest() {
         FakeCommand second = new FakeCommand("/b", "b", "b");
         FakeCommand third = new FakeCommand("/a", "a", "a");
         registry.register(second);
@@ -102,14 +107,22 @@ class CommandRegistryTest {
 
         List<BotCommand> commands = new ArrayList<>(registry.getCommands());
 
-        Assertions.assertEquals(List.of(fakeCommand, second, third), commands);
+        // получаем ключи
+        List<String> keys = commands.stream()
+                .map(BotCommand::getCommandKey)
+                .toList();
+
+        // Ключи, а не объекты: FakeCommand не переопределяет equals(),
+        // поэтому assertEquals на списке команд сравнивал бы ссылки.
+        Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
+        Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
     }
 
     /**
      * Возвращаемую коллекцию нельзя изменить снаружи.
      */
     @Test
-    void getCommands_isUnmodifiable() {
+    void getCommands_isUnmodifiableTest() {
         Collection<BotCommand> commands = registry.getCommands();
 
         Assertions.assertThrows(UnsupportedOperationException.class, commands::clear);

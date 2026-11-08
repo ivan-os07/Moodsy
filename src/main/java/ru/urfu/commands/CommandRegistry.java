@@ -7,6 +7,9 @@ import java.util.*;
  */
 public class CommandRegistry {
 
+    /**
+     * Команды.
+     */
     private final Map<String, BotCommand> commands = new LinkedHashMap<>();
 
     /**
