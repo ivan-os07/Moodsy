@@ -41,7 +41,10 @@ class CommandDispatcherTest {
      */
     @BeforeEach
     void setup() {
-        checkinFsmService = new CheckinFsmService(new InMemoryCheckinSessionStore(), new InMemoryMoodRepository(), Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC));
+        checkinFsmService = new CheckinFsmService(new InMemoryCheckinSessionStore(),
+                new InMemoryMoodRepository(),
+                Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC)
+        );
         dispatcher = new CommandDispatcher(checkinFsmService);
         fakeCommand = new FakeCommand("/test", "test description", "answer test");
         dispatcher.register(fakeCommand);
@@ -170,7 +173,7 @@ class CommandDispatcherTest {
         dispatcher.handle(userId, "/checkin");
         BotResponse response = dispatcher.handle(userId, "7");
 
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", response.text());
+        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", response.text());
         Assertions.assertTrue(checkinFsmService.hasActiveSession(userId));
     }
 

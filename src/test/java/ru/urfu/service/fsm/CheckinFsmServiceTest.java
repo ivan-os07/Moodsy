@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.urfu.model.MoodEntry;
+import ru.urfu.model.Sphere;
 import ru.urfu.repository.InMemoryMoodRepository;
 
 import java.time.Clock;
@@ -88,12 +89,16 @@ class CheckinFsmServiceTest {
 
         String response = service.handle(userId, "7");
 
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", response);
+        Assertions.assertEquals("""
+                Выберете сферу из предложенных:
+                Дела, Общение, Здоровье, Отдых
+                """, response
+        );
 
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
 
         Assertions.assertEquals(7, session.score());
-        Assertions.assertEquals(CheckinStep.NOTE, session.step());
+        Assertions.assertEquals(CheckinStep.SPHERE, session.step());
     }
 
     /**
@@ -104,8 +109,12 @@ class CheckinFsmServiceTest {
     void handle_invalidScoreStringAndStayOnSCORE() {
         service.start(userId);
 
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, "abc"));
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, ""));
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "abc")
+        );
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "")
+        );
 
         // Остаемся на SCORE
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
@@ -120,9 +129,15 @@ class CheckinFsmServiceTest {
     void handle_invalidScoreIntAndStayOnSCORE() {
         service.start(userId);
 
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, "0"));
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, "11"));
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, "100"));
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "0")
+        );
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "11")
+        );
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "100")
+        );
 
         // Остаемся на SCORE
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
@@ -212,6 +227,7 @@ class CheckinFsmServiceTest {
         // Идем к шагу PREVIEW
         service.start(userId);
         service.handle(userId, "1");
+        service.handle(userId, "Дела");
         service.handle(userId, "ZAMETKA");
 
 
@@ -234,12 +250,16 @@ class CheckinFsmServiceTest {
         // Успешный пройденный шаг NOTE
         service.handle(userId, "заметка");
 
+        // Успешный пройденный шаг SPHERE
+        service.handle(userId, "Дела");
+
         String response = service.handle(userId, "/approve");
         Assertions.assertEquals("✅ Запись сохранена.", response);
 
         // Проверяем, что запись появилась в репозитории
         MoodEntry savedEntry = moodRepository.findLatest(userId).orElseThrow();
         Assertions.assertEquals(7, savedEntry.score());
+        Assertions.assertEquals(Sphere.WORK, savedEntry.sphere());
         Assertions.assertEquals("заметка", savedEntry.note());
         Assertions.assertEquals(LocalDateTime.now(clock.withZone(ZoneOffset.ofHours(3))), savedEntry.createdAt());
 
@@ -334,7 +354,9 @@ class CheckinFsmServiceTest {
 
         String response = service.handle(userId, "что-то другое");
 
-        Assertions.assertEquals("Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.", response);
+        Assertions.assertEquals("Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.",
+                response
+        );
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
         Assertions.assertEquals(CheckinStep.PREVIEW, session.step());
     }
