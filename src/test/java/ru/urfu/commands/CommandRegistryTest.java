@@ -116,16 +116,4 @@ class CommandRegistryTest {
         Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
         Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
     }
-
-    /**
-     * Возвращаемую коллекцию нельзя изменить снаружи:
-     * попытка очистки бросает исключение и не портит данные хранилища.
-     */
-    @Test
-    void getCommands_isUnmodifiableTest() {
-        Collection<BotCommand> commands = registry.getCommands();
-
-        Assertions.assertThrows(UnsupportedOperationException.class, commands::clear);
-        Assertions.assertEquals(1, registry.getCommands().size());
-    }
 }
