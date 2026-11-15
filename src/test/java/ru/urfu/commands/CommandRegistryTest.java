@@ -87,8 +87,11 @@ class CommandRegistryTest {
         registry.register(newCommand);
 
         Assertions.assertEquals(1, registry.getCommands().size());
-        // Сравниваем по ссылке осознанно: хранилище должно вернуть
-        // именно те объекты, которые мы зарегистрировали.
+
+        /*
+         * Сравниваем по ссылке осознанно: хранилище должно вернуть
+         * именно те объекты, которые мы зарегистрировали.
+         */
         Assertions.assertSame(newCommand, registry.find("/test").orElseThrow());
     }
 
