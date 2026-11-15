@@ -3,6 +3,8 @@ package ru.urfu.service.analytics;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
 
+import java.util.Objects;
+
 /**
  * Результат анализа заметок пользователя
  *
@@ -19,4 +21,13 @@ public record MoodStatistics(
         Sphere mostFrequentSphere,
         int sphereCount
 ) {
+    public MoodStatistics {
+        Objects.requireNonNull(bestDay, "bestDay не может быть null");
+        Objects.requireNonNull(worstDay, "worstDay не может быть null");
+        Objects.requireNonNull(mostFrequentSphere, "mostFrequentSphere не может быть null");
+
+        if (sphereCount <= 0) {
+            throw new IllegalArgumentException("sphereCount должен быть натуральным");
+        }
+    }
 }

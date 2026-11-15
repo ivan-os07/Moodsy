@@ -27,6 +27,7 @@ public class MoodAnalyticsService {
         SphereAccumulator mostFrequentStats = null;
         for (MoodEntry entry : entries) {
             Objects.requireNonNull(entry, "entries не должен содержать null");
+            Objects.requireNonNull(entry.sphere(), "sphere не может быть null");
             scoreSum += entry.score();
             if (bestDay == null || isBetter(bestDay, entry)) {
                 bestDay = entry;

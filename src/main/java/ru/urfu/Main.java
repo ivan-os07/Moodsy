@@ -2,6 +2,7 @@ package ru.urfu;
 
 import ru.urfu.config.TelegramConfig;
 import ru.urfu.service.UserService;
+import ru.urfu.service.analytics.MoodAnalyticsService;
 import ru.urfu.service.fsm.CheckinFsmService;
 import ru.urfu.service.fsm.CheckinSessionStore;
 import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
@@ -39,6 +40,7 @@ public class Main {
         MoodRepository moodRepository = new InMemoryMoodRepository();
         UserRepository userRepository = new InMemoryUserRepository();
         UserService userService = new UserService(userRepository);
+        MoodAnalyticsService analyticsService = new MoodAnalyticsService();
 
         CheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();
         //время мск UTC+3
@@ -52,6 +54,7 @@ public class Main {
         dispatcher.register(new HelpCommand(dispatcher));
         dispatcher.register(new CheckinCommand(checkinFsmService));
         dispatcher.register(new HistoryCommand(moodRepository));
+        dispatcher.register(new StatsCommand(moodRepository, analyticsService, Clock.system(ZoneOffset.ofHours(3))));
 
 
         // Инициализация и запуск транспортного слоя (Telegram-бота)
