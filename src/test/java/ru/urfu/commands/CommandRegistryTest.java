@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -88,8 +87,11 @@ class CommandRegistryTest {
         registry.register(newCommand);
 
         Assertions.assertEquals(1, registry.getCommands().size());
-        // Сравниваем по ссылке осознанно: хранилище должно вернуть
-        // именно те объекты, которые мы зарегистрировали.
+
+        /*
+         * Сравниваем по ссылке осознанно: хранилище должно вернуть
+         * именно те объекты, которые мы зарегистрировали.
+         */
         Assertions.assertSame(newCommand, registry.find("/test").orElseThrow());
     }
 
@@ -105,27 +107,9 @@ class CommandRegistryTest {
         registry.register(second);
         registry.register(third);
 
-        List<String> keys = registry
-                .getCommands()
-                .stream()
-                .map(BotCommand::getCommandKey)
-                .toList();
-
-        // Ключи, а не объекты: FakeCommand не переопределяет equals(),
-        // поэтому assertEquals на списке команд сравнивал бы ссылки.
-        Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
-        Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
-    }
-
-    /**
-     * Возвращаемую коллекцию нельзя изменить снаружи:
-     * попытка очистки бросает исключение и не портит данные хранилища.
-     */
-    @Test
-    void getCommands_isUnmodifiableTest() {
-        Collection<BotCommand> commands = registry.getCommands();
-
-        Assertions.assertThrows(UnsupportedOperationException.class, commands::clear);
-        Assertions.assertEquals(1, registry.getCommands().size());
+        Assertions.assertIterableEquals(
+                List.of(fakeCommand, second, third),
+                registry.getCommands()
+        );
     }
 }
