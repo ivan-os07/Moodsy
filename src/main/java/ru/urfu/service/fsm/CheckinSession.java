@@ -1,5 +1,7 @@
 package ru.urfu.service.fsm;
 
+import ru.urfu.model.Sphere;
+
 import java.util.UUID;
 
 /**
@@ -12,8 +14,13 @@ import java.util.UUID;
  * @param userId идентификатор пользователя, которому принадлежит диалог.
  * @param step   текущий шаг
  * @param score  текущее значение оценки
+ * @param sphere выбранная сфера; null, пока пользователь не прошёл шаг SPHERE
  * @param note   текущее значение заметки
  */
-public record CheckinSession(UUID userId, CheckinStep step, int score, String note) {
-
+public record CheckinSession(
+        UUID userId,
+        CheckinStep step,
+        int score,
+        Sphere sphere,
+        String note) {
 }

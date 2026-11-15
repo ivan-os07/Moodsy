@@ -9,6 +9,10 @@ public enum CheckinStep {
      */
     SCORE,
     /**
+     * Ожидание выбора сферы.
+     */
+    SPHERE,
+    /**
      * Ожидание заметки или команды /skip.
      */
     NOTE,
