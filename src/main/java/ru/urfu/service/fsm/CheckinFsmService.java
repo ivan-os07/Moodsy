@@ -1,6 +1,7 @@
 package ru.urfu.service.fsm;
 
 import ru.urfu.model.MoodEntry;
+import ru.urfu.model.Sphere;
 import ru.urfu.repository.MoodRepository;
 
 import java.time.Clock;
@@ -108,6 +109,19 @@ public class CheckinFsmService {
     private static final String EXITED = "Сессия завершена без сохранения отметки";
 
     /**
+     * Сообщение о выборе сферы
+     */
+    private static final String SPHERE_PROMPT = """
+            Выберете сферу из предложенных:
+            Дела, Общение, Здоровье, Отдых
+            """;
+
+    /**
+     * Сообщение об ошибке при выборе сферы
+     */
+    private static final String SPHERE_ERROR = "❌Ошибка: НЕОБХОДИМО выбрать только из предложенных сфер.";
+
+    /**
      * Хранилище открытых сессий диалогов.
      */
     private final CheckinSessionStore sessionStore;
@@ -143,7 +157,7 @@ public class CheckinFsmService {
      * @return приглашение ввести оценку
      */
     public String start(UUID userId) {
-        CheckinSession session = new CheckinSession(userId, CheckinStep.SCORE, 0, "");
+        CheckinSession session = new CheckinSession(userId, CheckinStep.SCORE, 0, null, "");
         sessionStore.save(session);
         return SCORE_PROMPT;
     }
@@ -182,6 +196,7 @@ public class CheckinFsmService {
             // Идем по шагам
             default -> switch (session.step()) {
                 case SCORE -> handleScore(session, input);
+                case SPHERE -> handleSphere(session, input);
                 case NOTE -> handleNote(session, input);
                 case PREVIEW -> handlePreview(session, input);
             };
@@ -208,11 +223,11 @@ public class CheckinFsmService {
     }
 
     /**
-     * Принимает оценку на шаге SCORE и переводит диалог на шаг NOTE.
+     * Принимает оценку на шаге SCORE и переводит диалог на шаг SPHERE.
      *
      * @param session текущая сессия
      * @param text    введённый текст
-     * @return приглашение ввести заметку или сообщение об ошибке
+     * @return приглашение ввести сферу или сообщение об ошибке
      */
     private String handleScore(CheckinSession session, String text) {
         // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
@@ -231,15 +246,47 @@ public class CheckinFsmService {
         }
 
         // Создаем новую сессию
-        CheckinSession updatedSession = new CheckinSession(session.userId(), CheckinStep.NOTE,    // меняем шаг на следующий
+        CheckinSession updatedSession = new CheckinSession(session.userId(),
+                CheckinStep.SPHERE,    // меняем шаг на следующий
                 score,               // оценка
-                session.note());
+                session.sphere(),
+                session.note()
+        );
 
         // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
         sessionStore.save(updatedSession);
 
+        return SPHERE_PROMPT;
+    }
+
+    /**
+     * Принимает название сферы на шаге SPHERE и переводит диалог на шаг NOTE.
+     *
+     * @param session текущая сессия
+     * @param text    введённый текст
+     * @return приглашение ввести заметку или сообщение об ошибке
+     */
+    private String handleSphere(CheckinSession session, String text) {
+        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
+
+        // валидация сферы
+        Optional<Sphere> resolved = resolveSphere(text);
+        if (resolved.isEmpty()) {
+            return SPHERE_ERROR;
+        }
+
+        Sphere sphere = resolved.get();
+        CheckinSession updatedSession = new CheckinSession(session.userId(),
+                CheckinStep.NOTE, // меняем шаг на следующий
+                session.score(),
+                sphere,           // сфера
+                session.note()
+        );
+
+        sessionStore.save(updatedSession);
         return NOTE_PROMPT;
     }
+
 
     /**
      * Принимает заметку или пропускает(/skip) её и переводит диалог на шаг PREVIEW.
@@ -264,8 +311,11 @@ public class CheckinFsmService {
         }
 
         // Создаем новую сессию
-        CheckinSession updatedSession = new CheckinSession(session.userId(), CheckinStep.PREVIEW, // Меняем шаг на следующий,
-                session.score(), note // Новая заметка
+        CheckinSession updatedSession = new CheckinSession(session.userId(),
+                CheckinStep.PREVIEW, // Меняем шаг на следующий,
+                session.score(),
+                session.sphere(),
+                note // Новая заметка
         );
 
         // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
@@ -283,7 +333,7 @@ public class CheckinFsmService {
      * @return сообщение о сохранении записи
      */
     private String handleApprove(CheckinSession session) {
-        MoodEntry entry = new MoodEntry(LocalDateTime.now(clock), session.score(), session.note());
+        MoodEntry entry = new MoodEntry(LocalDateTime.now(clock), session.score(), session.sphere(), session.note());
 
         moodRepository.save(session.userId(), entry);
         sessionStore.remove(session.userId());
@@ -316,13 +366,36 @@ public class CheckinFsmService {
             case SCORE -> {
                 return FIRST_STEP;
             }
-            case NOTE -> {
-                updatedSession = new CheckinSession(session.userId(), CheckinStep.SCORE, session.score(), session.note());
+            case SPHERE -> {
+                updatedSession = new CheckinSession(session.userId(),
+                        CheckinStep.SCORE,
+                        session.score(),
+                        session.sphere(),
+                        session.note()
+                );
+
                 sessionStore.save(updatedSession);
                 return SCORE_PROMPT;
             }
+            case NOTE -> {
+                updatedSession = new CheckinSession(session.userId(),
+                        CheckinStep.SPHERE,
+                        session.score(),
+                        session.sphere(),
+                        session.note()
+                );
+
+                sessionStore.save(updatedSession);
+                return SPHERE_PROMPT;
+            }
             case PREVIEW -> {
-                updatedSession = new CheckinSession(session.userId(), CheckinStep.NOTE, session.score(), session.note());
+                updatedSession = new CheckinSession(session.userId(),
+                        CheckinStep.NOTE,
+                        session.score(),
+                        session.sphere(),
+                        session.note()
+                );
+
                 sessionStore.save(updatedSession);
                 return NOTE_PROMPT;
             }
@@ -351,7 +424,12 @@ public class CheckinFsmService {
         }
 
         // Иначе, пропускаем шаг NOTE, при этом поле note заполняем пустой строкой.
-        updatedSession = new CheckinSession(session.userId(), CheckinStep.PREVIEW, session.score(), "");
+        updatedSession = new CheckinSession(session.userId(),
+                CheckinStep.PREVIEW,
+                session.score(),
+                session.sphere(),
+                ""
+        );
 
         // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
         // При этом session почистит GC
@@ -365,11 +443,24 @@ public class CheckinFsmService {
      * Строит текст карточки предпросмотра.
      *
      * @param session текущая сессия
-     * @return карточка с оценкой, заметкой и командами подтверждения
+     * @return карточка с оценкой, сферой, заметкой и командами подтверждения
      */
     private String buildPreview(CheckinSession session) {
         String note = session.note();
-        return "📋 Предпросмотр карточки:\n" + "• Оценка: " + session.score() + "/" + MAX_SCORE + "\n" + "• Заметка:" + (note.isEmpty() ? "" : " " + note) + "\n" + "Подтвердите запись:\n" + "/approve — сохранить\n" + "/reject — отменить";
+        return """
+                📋 Предпросмотр карточки:
+                • Оценка: %s/%s
+                • Сфера: %s
+                • Заметка:%s
+                Подтвердите запись:
+                /approve — сохранить
+                /reject — отменить
+                """.formatted(session.score(),
+                MAX_SCORE,
+                session.sphere().getDisplayName(),
+                note.isEmpty() ? "" : " " + note
+        );
+
     }
 
     /**
@@ -383,4 +474,21 @@ public class CheckinFsmService {
         // Делегирование в хранилище сессий
         return sessionStore.hasSession(userId);
     }
+
+
+    /**
+     * Валидация сферы
+     *
+     * @param input потенциальная сфера
+     * @return сфера если прошла валидация, иначе пустой Optional
+     */
+    private Optional<Sphere> resolveSphere(String input) {
+        for (Sphere sphere : Sphere.values()) {
+            if (sphere.getDisplayName().equalsIgnoreCase(input)) {
+                return Optional.of(sphere);
+            }
+        }
+        return Optional.empty();
+    }
+
 }

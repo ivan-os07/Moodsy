@@ -62,7 +62,7 @@ public class TelegramBot implements LongPollingUpdateConsumer {
                 continue;
             }
             Message message = update.getMessage();
-            if (message.getFrom() == null){
+            if (message.getFrom() == null) {
                 continue;
             }
 

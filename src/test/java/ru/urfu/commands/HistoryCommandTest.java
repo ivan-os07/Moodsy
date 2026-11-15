@@ -3,6 +3,7 @@ package ru.urfu.commands;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.urfu.model.MoodEntry;
+import ru.urfu.model.Sphere;
 import ru.urfu.repository.InMemoryMoodRepository;
 
 import java.time.LocalDateTime;
@@ -46,9 +47,9 @@ public class HistoryCommandTest {
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, new String[]{"6"}));
 
         // пустые заметки
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 10), 10, ""));
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 11, 13, 12), 1, ""));
-        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 11, 12, 23, 56), 6, ""));
+        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 10), 10, Sphere.WORK, ""));
+        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 11, 13, 12), 1, Sphere.WORK, ""));
+        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 11, 12, 23, 56), 6, Sphere.WORK, ""));
 
         String response = command.execute(userId, null);
         String expected = """
@@ -74,7 +75,7 @@ public class HistoryCommandTest {
     @Test
     void executeTestLimit() {
         for (int i = 1; i <= 23; i++) {
-            repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1, ""));
+            repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1,Sphere.WORK, ""));
         }
         String response = command.execute(userId, null);
         long entriesCount = response.lines().filter(line -> line.matches("\\d{2}\\.\\d{2}\\.\\d{4}.*")).count();
@@ -106,7 +107,7 @@ public class HistoryCommandTest {
     @Test
     void execute_showsNoteAndKeepsTimeAsStored() {
         repository.save(userId,
-                new MoodEntry(LocalDateTime.of(2026, 12, 12, 23, 56), 6, "много тикетов"));
+                new MoodEntry(LocalDateTime.of(2026, 12, 12, 23, 56), 6, Sphere.WORK, "много тикетов"));
 
         String response = command.execute(userId, null);
 
