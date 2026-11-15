@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -105,15 +104,9 @@ class CommandRegistryTest {
         registry.register(second);
         registry.register(third);
 
-        List<String> keys = registry
-                .getCommands()
-                .stream()
-                .map(BotCommand::getCommandKey)
-                .toList();
-
-        // Ключи, а не объекты: FakeCommand не переопределяет equals(),
-        // поэтому assertEquals на списке команд сравнивал бы ссылки.
-        Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
-        Assertions.assertEquals(List.of("/test", "/b", "/a"), keys);
+        Assertions.assertIterableEquals(
+                List.of(fakeCommand, second, third),
+                registry.getCommands()
+        );
     }
 }
