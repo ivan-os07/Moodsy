@@ -2,8 +2,8 @@ package ru.urfu.service.fsm;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.Assertions;
+import ru.urfu.model.Sphere;
 
 import java.util.UUID;
 
@@ -41,7 +41,7 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void saveAndFindById() {
-        CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
+        CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
         store.save(session);
 
@@ -61,8 +61,8 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void saveReplacesExistingSession() {
-        CheckinSession first = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
-        CheckinSession second = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
+        CheckinSession first = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        CheckinSession second = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
         store.save(first);
         store.save(second);
@@ -75,7 +75,7 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void removeExistingSession() {
-        CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
+        CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
         store.save(session);
 
         CheckinSession removed = store.remove(firstUserId).orElseThrow();
@@ -98,8 +98,8 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void sessionsOfDifferentUsersAreIsolated() {
-        CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
-        CheckinSession secondSession = new CheckinSession(secondUserId, CheckinStep.SCORE, 0, "");
+        CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        CheckinSession secondSession = new CheckinSession(secondUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
         store.save(firstSession);
         store.save(secondSession);
 
@@ -133,7 +133,7 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void hasSession() {
-        CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
+        CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
         store.save(firstSession);
 

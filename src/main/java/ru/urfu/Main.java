@@ -38,7 +38,7 @@ public class Main {
         // Инициализация инфраструктурных компонентов и слоев данных
         MoodRepository moodRepository = new InMemoryMoodRepository();
         UserRepository userRepository = new InMemoryUserRepository();
-        UserService userService  = new UserService(userRepository);
+        UserService userService = new UserService(userRepository);
 
         CheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();
         //время мск UTC+3

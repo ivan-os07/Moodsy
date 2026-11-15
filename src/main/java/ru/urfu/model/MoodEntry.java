@@ -8,6 +8,7 @@ import java.util.Objects;
  *
  * @param createdAt дата и время создания записи
  * @param score     оценка настроения от 1 до 10
+ * @param sphere    выбранная сфера;
  * @param note      короткая заметка; пустая строка означает отсутствие заметки
  */
 public record MoodEntry(LocalDateTime createdAt, int score, Sphere sphere, String note) {
