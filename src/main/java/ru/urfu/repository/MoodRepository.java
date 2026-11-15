@@ -1,6 +1,8 @@
 package ru.urfu.repository;
 
 import ru.urfu.model.MoodEntry;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,13 +30,15 @@ public interface MoodRepository {
      * @return список последних записей
      */
     List<MoodEntry> findLast(UUID userId, int limit);
-    //[R]ead: получение самой последней записи
+    //[R]ead: получение записей за указанный период
 
     /**
-     * Возвращает последнюю запись пользователя
+     * Возвращает записи пользователя за указанный период
      *
      * @param userId идентификатор пользователя
-     * @return последняя запись, иначе пустой Optional
+     * @param from начало периода включительно
+     * @param to конец периода исключительно
+     * @return записи пользователя за указанный период
      */
-    Optional<MoodEntry> findLatest(UUID userId);
+    List<MoodEntry> findByPeriod(UUID userId, LocalDateTime from, LocalDateTime to);
 }

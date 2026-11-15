@@ -2,6 +2,7 @@ package ru.urfu.repository;
 
 import ru.urfu.model.MoodEntry;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -43,13 +44,29 @@ public class InMemoryMoodRepository implements MoodRepository {
 
 
     @Override
-    public Optional<MoodEntry> findLatest(UUID userId) {
-        List<MoodEntry> userEntries = entries.get(userId);
-        if (userEntries == null || userEntries.isEmpty()) {
-            return Optional.empty();
+    public List<MoodEntry> findByPeriod(UUID userId, LocalDateTime from, LocalDateTime to){
+        Objects.requireNonNull(userId, "userId не может быть null");
+        Objects.requireNonNull(to, "to не может быть null");
+        Objects.requireNonNull(from, "from не может быть null");
 
+        if (!from.isBefore(to)) {
+            throw new IllegalArgumentException("Начало периода должно быть раньше конца");
         }
-        return Optional.of(userEntries.get(userEntries.size() - 1));
+
+        List<MoodEntry> userEntries = entries.get(userId);
+
+        if (userEntries == null || userEntries.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return userEntries.stream()
+                .filter(entry ->
+                        !entry.createdAt().isBefore(from)
+                                && entry.createdAt().isBefore(to))
+                .toList();
+
+
+
     }
 }
 

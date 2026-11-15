@@ -10,9 +10,14 @@ import java.util.Objects;
  * @param score     оценка настроения от 1 до 10
  * @param note      короткая заметка; пустая строка означает отсутствие заметки
  */
-public record MoodEntry(LocalDateTime createdAt, int score, String note) {
+public record MoodEntry(LocalDateTime createdAt, int score, Sphere sphere, String note) {
     public MoodEntry {
         Objects.requireNonNull(createdAt, "createdAt не может быть null");
+        Objects.requireNonNull(sphere, "sphere не может быть null");
+
+        if (score < 1 || score > 10) {
+            throw new IllegalArgumentException("score должен быть в диапазоне от 1 до 10: " + score);
+        }
         note = note == null ? "" : note;
 
     }
