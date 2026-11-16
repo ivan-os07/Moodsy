@@ -29,4 +29,8 @@ public interface BotCommand {
      * @return String - текст ответа
      */
     String execute(UUID userId, String[] args);
+
+    default BotResponse executeWithResponse(UUID userId, String[] args){
+        return new BotResponse(userId, execute(userId, args));
+    }
 }

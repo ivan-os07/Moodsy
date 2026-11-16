@@ -1,5 +1,6 @@
 package ru.urfu.service.fsm;
 
+import ru.urfu.application.InteractionType;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
 import ru.urfu.repository.MoodRepository;
@@ -163,6 +164,14 @@ public class CheckinFsmService {
     }
 
     /**
+     * Запускает диалог и возвращает результат с типом взаимодействия
+     */
+    public CheckinResult startWithResponse(UUID userId) {
+        String text = start(userId);
+        return createResult(userId, text);
+
+    }
+    /**
      * Обрабатывает ввод пользователя в зависимости от текущего шага диалога.
      * Команды /exit и /back доступны на любом шаге.
      *
@@ -201,6 +210,11 @@ public class CheckinFsmService {
                 case PREVIEW -> handlePreview(session, input);
             };
         };
+
+    }
+    public CheckinResult handleWithResponse(UUID userId, String text) {
+        String response = handle(userId, text);
+        return createResult(userId, response);
 
     }
 
@@ -491,4 +505,21 @@ public class CheckinFsmService {
         return Optional.empty();
     }
 
+    /**
+     * Формирует расширенный результат обработки FSM
+     */
+    private CheckinResult createResult(UUID userId, String text) {
+        InteractionType interactionType = sessionStore.findById(userId)
+                .map(session -> resolveInteractionType(session.step()))
+                .orElse(InteractionType.NONE);
+        return new CheckinResult(text, interactionType);
+    }
+    private InteractionType resolveInteractionType(CheckinStep step) {
+        return switch (step) {
+            case SCORE -> InteractionType.SCORE_SELECTION;
+            case SPHERE -> InteractionType.SPHERE_SELECTION;
+            case NOTE -> InteractionType.NOTE_INPUT;
+            case PREVIEW -> InteractionType.PREVIEW_CONFIRMATION;
+        };
+    }
 }

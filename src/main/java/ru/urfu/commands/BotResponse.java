@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import ru.urfu.application.InteractionType;
+
 import java.util.UUID;
 
 /**
@@ -11,5 +13,9 @@ import java.util.UUID;
  * @param userId идентификатор пользователя-получателя
  * @param text   текст сообщения
  */
-public record BotResponse(UUID userId, String text) {
+public record BotResponse(UUID userId, String text, InteractionType interactionType) {
+    public BotResponse( UUID userId, String text) {
+        this(userId, text, InteractionType.NONE);
+    }
+
 }
