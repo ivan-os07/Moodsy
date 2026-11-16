@@ -104,8 +104,7 @@ public class HistoryCommandTest {
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"0"}));
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"-67"}));
         Assertions.assertEquals("""
-                Использование команды /history:\s
-                 \
+                Использование команды /history:
                 /history <n> - показать последние n записей
                 /history - последние 10 записей""", command.execute(userId, new String[]{"6", "7"})
         );

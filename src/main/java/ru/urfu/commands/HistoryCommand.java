@@ -65,11 +65,10 @@ public class HistoryCommand implements BotCommand {
         int limit = 10;
         if (args != null && args.length > 0) {
             if (args.length != 1) {
-                return ("""
-                        Использование команды /history:\s
-                         \
+                return """
+                        Использование команды /history:
                         /history <n> - показать последние n записей
-                        /history - последние 10 записей""");
+                        /history - последние 10 записей""";
             }
             try {
                 limit = Integer.parseInt(args[0]);
