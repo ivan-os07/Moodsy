@@ -59,7 +59,7 @@ class CheckinFsmServiceTest {
      * Проверяет, что старт чекина создаёт сессию на шаге SCORE и возвращает приглашение.
      */
     @Test
-    void start_createsSessionAndAsksForScore() {
+    void start_createsSessionAndAsksForScoreTest() {
         String response = service.start(userId);
 
         Assertions.assertEquals("Введите оценку от 1 до 10", response);
@@ -71,7 +71,7 @@ class CheckinFsmServiceTest {
      * Проверяет открыта ли сессия у пользователя.
      */
     @Test
-    void hasActiveSession() {
+    void hasActiveSessionTest() {
         Assertions.assertFalse(service.hasActiveSession(userId));
 
         service.start(userId);
@@ -80,11 +80,11 @@ class CheckinFsmServiceTest {
     }
 
     /**
-     * Ввод оценки на шаге SCORE (переход к NOTE)
+     * Ввод оценки на шаге SCORE (переход к SPHERE)
      * Пользователь начал чекин и отправляет число, например "7".
      */
     @Test
-    void handle_validScore_savesScoreAndAsksForNote() {
+    void handle_validScore_savesScoreAndAsksForSphereTest() {
         service.start(userId);
 
         String response = service.handle(userId, "7");
@@ -106,7 +106,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет строку, например "abc".
      */
     @Test
-    void handle_invalidScoreStringAndStayOnSCORE() {
+    void handle_invalidScoreStringAndStayOnScoreTest() {
         service.start(userId);
 
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
@@ -126,7 +126,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет число не из диапазона, например "11".
      */
     @Test
-    void handle_invalidScoreIntAndStayOnSCORE() {
+    void handle_invalidScoreIntAndStayOnScoreTest() {
         service.start(userId);
 
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
@@ -148,14 +148,25 @@ class CheckinFsmServiceTest {
      * Успешный ввод строки для заметки на шаге NOTE → сохраняет заметку, переход в PREVIEW
      */
     @Test
-    void handle_validNOTE() {
+    void handle_validNoteTest() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
 
+        // Успешный пройденный шаг SPHERE
+        service.handle(userId, "Дела");
+
         String response = service.handle(userId, "очень много тикетов");
 
-        String expected = "\uD83D\uDCCB Предпросмотр карточки:\n• Оценка: 7/10\n• Заметка: очень много тикетов\nПодтвердите запись:\n/approve — сохранить\n/reject — отменить";
+        String expected = """
+                📋 Предпросмотр карточки:
+                • Оценка: 7/10
+                • Сфера: Дела
+                • Заметка: очень много тикетов
+                Подтвердите запись:
+                /approve — сохранить
+                /reject — отменить
+                """;
         Assertions.assertEquals(expected, response);
 
         // Переходим в PREVIEW
@@ -167,14 +178,25 @@ class CheckinFsmServiceTest {
      * Успешный ввод пустой строки(=команде skip) на шаге NOTE → пустая заметка, переход в PREVIEW
      */
     @Test
-    void handle_validEmptyNOTE() {
+    void handle_validEmptyNoteTest() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
 
+        // Успешный пройденный шаг SPHERE
+        service.handle(userId, "Дела");
+
         String response = service.handle(userId, "");
 
-        String expected = "\uD83D\uDCCB Предпросмотр карточки:\n• Оценка: 7/10\n• Заметка:\nПодтвердите запись:\n/approve — сохранить\n/reject — отменить";
+        String expected = """
+                \uD83D\uDCCB Предпросмотр карточки:
+                • Оценка: 7/10
+                • Сфера: Дела
+                • Заметка:
+                Подтвердите запись:
+                /approve — сохранить
+                /reject — отменить
+                """;
         Assertions.assertEquals(expected, response);
 
         // Переходим в PREVIEW
@@ -186,14 +208,25 @@ class CheckinFsmServiceTest {
      * Успешный ввод команды skip на шаге NOTE → пустая заметка, переход в PREVIEW
      */
     @Test
-    void handle_validCmdSkip() {
+    void handle_validCmdSkipTest() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
 
+        // Успешный пройденный шаг SPHERE
+        service.handle(userId, "Дела");
+
         String response = service.handle(userId, "/skip");
 
-        String expected = "\uD83D\uDCCB Предпросмотр карточки:\n• Оценка: 7/10\n• Заметка:\nПодтвердите запись:\n/approve — сохранить\n/reject — отменить";
+        String expected = """
+                \uD83D\uDCCB Предпросмотр карточки:
+                • Оценка: 7/10
+                • Сфера: Дела
+                • Заметка:
+                Подтвердите запись:
+                /approve — сохранить
+                /reject — отменить
+                """;
         Assertions.assertEquals(expected, response);
 
         // Переходим в PREVIEW
@@ -205,7 +238,7 @@ class CheckinFsmServiceTest {
      * Неуспешный ввод команды skip на шаге не NOTE, и не на PREVIEW → сообщение об ошибке
      */
     @Test
-    void handle_invalidCmdSkipNotPREVIEW() {
+    void handle_invalidCmdSkipNotPreviewTest() {
         String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.";
 
         // Например, на шаге SCORE
@@ -221,8 +254,10 @@ class CheckinFsmServiceTest {
      * Неуспешный ввод команды skip на шаге PREVIEW → сообщение об ошибке и доступные шаги
      */
     @Test
-    void handle_invalidCmdSkipPREVIEW() {
-        String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.\nПожалуйста, подтвердите запись с помощью /approve или отмените через /reject.";
+    void handle_invalidCmdSkipPreviewTest() {
+        String expected = """
+                ❌ Ошибка: команда /skip доступна только при вводе заметки.
+                Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.""";
 
         // Идем к шагу PREVIEW
         service.start(userId);
@@ -242,16 +277,16 @@ class CheckinFsmServiceTest {
      * Сохранение заметки при использовании /approve на шаге PREVIEW → сохраняет MoodEntry, удаляет сессию
      */
     @Test
-    void handle_save() {
+    void handleValidSaveTest() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
 
-        // Успешный пройденный шаг NOTE
-        service.handle(userId, "заметка");
-
         // Успешный пройденный шаг SPHERE
         service.handle(userId, "Дела");
+
+        // Успешный пройденный шаг NOTE
+        service.handle(userId, "заметка");
 
         String response = service.handle(userId, "/approve");
         Assertions.assertEquals("✅ Запись сохранена.", response);
@@ -271,9 +306,9 @@ class CheckinFsmServiceTest {
      * Выход из диалога по команде /exit: сессия удаляется, запись не сохраняется.
      */
     @Test
-    void handle_exitCancelsSessionWithoutSaving() {
+    void handle_exitCancelsSessionWithoutSavingTest() {
         service.start(userId);
-        service.handle(userId, "7"); // находимся на шаге NOTE
+        service.handle(userId, "7"); // находимся на шаге SPHERE
 
         String response = service.handle(userId, "/exit");
 
@@ -286,9 +321,10 @@ class CheckinFsmServiceTest {
      * Отмена записи по команде /reject на шаге PREVIEW: сессия удаляется, запись не сохраняется.
      */
     @Test
-    void handle_rejectCancelsSessionWithoutSaving() {
+    void handle_rejectCancelsSessionWithoutSavingTest() {
         service.start(userId);
         service.handle(userId, "7");
+        service.handle(userId, "Дела");
         service.handle(userId, "заметка");
 
         String response = service.handle(userId, "/reject");
@@ -304,8 +340,10 @@ class CheckinFsmServiceTest {
     @Test
     void handle_backFromNoteToScore() {
         service.start(userId);
-        service.handle(userId, "7"); // перешли на NOTE
+        service.handle(userId, "7"); // перешли на SPHERE
+        service.handle(userId, "Дела"); // перешли на NOTE
 
+        service.handle(userId, "/back");
         String response = service.handle(userId, "/back");
 
         Assertions.assertEquals("Введите оценку от 1 до 10", response);
@@ -317,9 +355,10 @@ class CheckinFsmServiceTest {
      * Возврат назад с шага PREVIEW на шаг NOTE по команде /back.
      */
     @Test
-    void handle_backFromPreviewToNote() {
+    void handle_backFromPreviewToNoteTest() {
         service.start(userId);
         service.handle(userId, "7");
+        service.handle(userId, "Дела");
         service.handle(userId, "заметка"); // перешли на PREVIEW
 
         String response = service.handle(userId, "/back");
@@ -347,9 +386,10 @@ class CheckinFsmServiceTest {
      * Некорректный ввод на шаге PREVIEW: напоминает о доступных командах.
      */
     @Test
-    void handle_invalidInputOnPreview() {
+    void handle_invalidInputOnPreviewTest() {
         service.start(userId);
         service.handle(userId, "7");
+        service.handle(userId, "Дела");
         service.handle(userId, "заметка");
 
         String response = service.handle(userId, "что-то другое");
