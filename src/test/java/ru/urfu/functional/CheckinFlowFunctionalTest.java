@@ -48,7 +48,10 @@ class CheckinFlowFunctionalTest {
     void setUp() {
         InMemoryCheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();
         moodRepository = new InMemoryMoodRepository();
-        CheckinFsmService checkinFsmService = new CheckinFsmService(sessionStore, moodRepository, Clock.fixed(Instant.parse("2026-11-02T09:00:00Z"), ZoneOffset.UTC));
+        CheckinFsmService checkinFsmService = new CheckinFsmService(sessionStore,
+                moodRepository,
+                Clock.fixed(Instant.parse("2026-11-02T09:00:00Z"), ZoneOffset.UTC)
+        );
         dispatcher = new CommandDispatcher(checkinFsmService);
         dispatcher.register(new CheckinCommand(checkinFsmService));
         dispatcher.register(new HistoryCommand(moodRepository));
@@ -70,8 +73,14 @@ class CheckinFlowFunctionalTest {
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
-        Assertions.assertTrue(note.text().contains("Предпросмотр карточки:"));
-        Assertions.assertTrue(note.text().contains("Оценка: 7/10"));
+        Assertions.assertEquals("""
+                📋 Предпросмотр карточки:
+                • Оценка: 7/10
+                • Заметка: много тикетов
+                Подтвердите запись:
+                /approve — сохранить
+                /reject — отменить""", note.text()
+        );
         Assertions.assertEquals("✅ Запись сохранена.", approve.text());
 
         // запись появилась в репозитории с нужными данными
@@ -80,9 +89,13 @@ class CheckinFlowFunctionalTest {
         Assertions.assertEquals("много тикетов", saved.note());
 
         // /history показывает запись (09:00 UTC = 12:00 по Мск)
-        String history = dispatcher.handle(userId, "/history").text();
-        Assertions.assertTrue(history.contains("02.11.2026 12:00 - 7/10"));
-        Assertions.assertTrue(history.contains("Заметка: много тикетов"));
+        BotResponse history = dispatcher.handle(userId, "/history");
+
+        Assertions.assertEquals("""
+                 📅 Ваша история записей:
+                02.11.2026 12:00 - 7/10
+                Заметка: много тикетов""", history.text()
+        );
     }
 
     /**
@@ -101,8 +114,16 @@ class CheckinFlowFunctionalTest {
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
-        Assertions.assertTrue(note.text().contains("Предпросмотр карточки:"));
-        Assertions.assertTrue(note.text().contains("Оценка: 8/10"));
+
+        Assertions.assertEquals("""
+                📋 Предпросмотр карточки:
+                • Оценка: 8/10
+                • Заметка:
+                Подтвердите запись:
+                /approve — сохранить
+                /reject — отменить""", note.text()
+        );
+
         Assertions.assertEquals("✅ Запись сохранена.", approve.text());
 
         // запись появилась в репозитории с нужными данными
@@ -111,9 +132,12 @@ class CheckinFlowFunctionalTest {
         Assertions.assertEquals("", saved.note());
 
         // /history показывает запись (09:00 UTC = 12:00 по Мск)
-        String history = dispatcher.handle(userId, "/history").text();
-        Assertions.assertTrue(history.contains("02.11.2026 12:00 - 8/10"));
-        Assertions.assertFalse(history.contains("Заметка: "));
+        BotResponse history = dispatcher.handle(userId, "/history");
+
+        Assertions.assertEquals("""
+                 📅 Ваша история записей:
+                02.11.2026 12:00 - 8/10""", history.text()
+        );
 
     }
 
@@ -133,16 +157,16 @@ class CheckinFlowFunctionalTest {
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
-        Assertions.assertTrue(exit.text().contains("Сессия завершена без сохранения отметки"));
+        Assertions.assertEquals("Сессия завершена без сохранения отметки", exit.text());
 
         // запись не появилась в репозитории
         Optional<MoodEntry> saved = moodRepository.findLatest(userId);
         Assertions.assertTrue(saved.isEmpty());
 
         // /history подсказывает, что заметок нет
-        String history = dispatcher.handle(userId, "/history").text();
-        Assertions.assertTrue(history.contains("История пуста. Попробуйте использовать команду /checkin"));
-        Assertions.assertFalse(history.contains("Заметка: "));
+        BotResponse history = dispatcher.handle(userId, "/history");
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", history.text());
+
     }
 
     /**
@@ -163,10 +187,9 @@ class CheckinFlowFunctionalTest {
         Assertions.assertTrue(saved.isEmpty());
 
         // /history подсказывает, что заметок нет
-        String history = dispatcher.handle(userId, "/history").text();
-        Assertions.assertTrue(history.contains("История пуста. Попробуйте использовать команду /checkin"));
-        Assertions.assertFalse(history.contains("Заметка: "));
-    }
+        BotResponse history = dispatcher.handle(userId, "/history");
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", history.text());
+  }
 
     /**
      * Сценарий использования команды /back. Сначала идем до шага PREVIEW,
@@ -198,9 +221,9 @@ class CheckinFlowFunctionalTest {
         Assertions.assertTrue(saved.isEmpty());
 
         // /history подсказывает, что заметок нет
-        String history = dispatcher.handle(userId, "/history").text();
-        Assertions.assertTrue(history.contains("История пуста. Попробуйте использовать команду /checkin"));
-        Assertions.assertFalse(history.contains("Заметка: "));
+        BotResponse history = dispatcher.handle(userId, "/history");
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", history.text());
+
     }
 
 }
