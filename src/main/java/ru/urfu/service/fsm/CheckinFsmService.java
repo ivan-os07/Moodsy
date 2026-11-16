@@ -165,12 +165,16 @@ public class CheckinFsmService {
 
     /**
      * Запускает диалог и возвращает результат с типом взаимодействия
+     *
+     * @param userId идентификатор пользователя
+     * @return результат запуска диалога
      */
     public CheckinResult startWithResponse(UUID userId) {
         String text = start(userId);
         return createResult(userId, text);
 
     }
+
     /**
      * Обрабатывает ввод пользователя в зависимости от текущего шага диалога.
      * Команды /exit и /back доступны на любом шаге.
@@ -212,6 +216,14 @@ public class CheckinFsmService {
         };
 
     }
+
+    /**
+     * Обрабатывает пользовательский ввод и определяет тип клавиатуры для следующего шага
+     *
+     * @param userId идентификатор пользователя
+     * @param text   текст ввода
+     * @return результат обработки вместе с необходимым типом клавиатуры
+     */
     public CheckinResult handleWithResponse(UUID userId, String text) {
         String response = handle(userId, text);
         return createResult(userId, response);
@@ -509,7 +521,12 @@ public class CheckinFsmService {
     }
 
     /**
-     * Формирует расширенный результат обработки FSM
+     * Создает результат и определяет тип взаимодействия по сохраненному состоянию сессии
+     *
+     * @param userId идентификатор пользователя
+     * @param text   текст ответа
+     * @return ответ с типом взаимодействия или NONE если сессия завершена
+     *
      */
     private CheckinResult createResult(UUID userId, String text) {
         InteractionType interactionType = sessionStore.findById(userId)
@@ -517,6 +534,13 @@ public class CheckinFsmService {
                 .orElse(InteractionType.NONE);
         return new CheckinResult(text, interactionType);
     }
+
+    /**
+     * Преобразует шаг диалога в тип взаимодействия для транспортного слоя
+     *
+     * @param step текущий шаг диалога
+     * @return тип взаимодействия для соответствующей клавиатуры
+     */
     private InteractionType resolveInteractionType(CheckinStep step) {
         return switch (step) {
             case SCORE -> InteractionType.SCORE_SELECTION;

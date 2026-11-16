@@ -55,8 +55,9 @@ public class TelegramBot implements LongPollingUpdateConsumer {
     /**
      * Инициализирует бота с заданным токеном.
      *
-     * @param botToken   токен для доступа к Telegram API
-     * @param dispatcher диспетчер для обработки команд
+     * @param botToken    токен для доступа к Telegram API
+     * @param dispatcher  диспетчер для обработки команд
+     * @param userService сервис для создания и поиска внутренних пользователей
      */
     public TelegramBot(String botToken, CommandDispatcher dispatcher, UserService userService) {
         this.telegramClient = new OkHttpTelegramClient(botToken);
@@ -86,6 +87,9 @@ public class TelegramBot implements LongPollingUpdateConsumer {
 
     /**
      * Обработка обычного сообщения
+     *
+     * @param update обновление Telegram с текстовым сообщением
+     * @throws TelegramApiException если Telegram API отклоняет отправку
      */
 
     private void handleMessage(Update update) throws TelegramApiException {
@@ -109,9 +113,14 @@ public class TelegramBot implements LongPollingUpdateConsumer {
         keyboard.ifPresent(sendMessage::setReplyMarkup);
 
         telegramClient.execute(sendMessage);
-        }
+    }
 
-
+    /**
+     * Обрабатывает Callback запрос, передает его в FSM и обновляет исходное сообщение
+     *
+     * @param update обновление Telegram с callback запросом
+     * @throws TelegramApiException если Tg API отклоняет отправку или изменение сообщения
+     */
     private void handleCallBack(Update update) throws TelegramApiException {
         CallbackQuery callbackQuery = update.getCallbackQuery();
         AnswerCallbackQuery answer = new AnswerCallbackQuery(callbackQuery.getId());
@@ -146,13 +155,6 @@ public class TelegramBot implements LongPollingUpdateConsumer {
 
         telegramClient.execute(editMessage);
 
-    }
-
-
-    private UUID getUserId(Long telegramUserId) {
-        String platformUserId = String.valueOf(telegramUserId);
-        PlatformIdentity identity = new PlatformIdentity(PlatformType.TELEGRAM, platformUserId);
-        return userService.getOrCreateUserId(identity);
     }
 
     /**

@@ -10,7 +10,14 @@ import java.util.*;
  * Сервис расчета статистики записей пользователя
  */
 public class MoodAnalyticsService {
-
+    /**
+     * Расчитывает среднюю оценку, лучший и худший дни, и наиболее частую сферу
+     *
+     * @param entries непустой список с отметками пользователя
+     * @return рассчитанные показатели статистики
+     * @throws NullPointerException     если список или одна из его записей null
+     * @throws IllegalArgumentException если список пуст
+     */
     public MoodStatistics calculate(List<MoodEntry> entries) {
         Objects.requireNonNull(entries, "entries не может быть null");
         if (entries.isEmpty()) {
@@ -94,9 +101,20 @@ public class MoodAnalyticsService {
      * Накопитель под статистику отдельной сферы
      */
     private class SphereAccumulator {
+        /**
+         * Количество отметок в сфере
+         */
         private int count;
+        /**
+         * Время последней отметки в сфере
+         */
         private LocalDateTime latestCreatedAt;
 
+        /**
+         * Учитывает очередную заметку и обновляет время последнего использования сферы
+         *
+         * @param createdAt дата и время создания отметки
+         */
         private void add(LocalDateTime createdAt) {
             count++;
 

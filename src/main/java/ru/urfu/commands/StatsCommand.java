@@ -9,28 +9,52 @@ import ru.urfu.service.analytics.StatisticsPeriod;
 import java.text.DecimalFormat;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Выполняет команду /stats и формирует статистику за календарный месяц или неделю
+ */
 public class StatsCommand implements BotCommand {
+    /**
+     * Репозиторий для хранения отметок пользователя
+     */
     private final MoodRepository moodRepository;
+    /**
+     * Сервис расчета показателей статистики
+     */
     private final MoodAnalyticsService analyticsService;
+    /**
+     * Источник времени, приведенный к временной зоне "МСК"
+     */
     private final Clock clock;
-
+    /**
+     * Шаблон для календарных дат в статистике
+     */
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
+    /**
+     * Шаблон для даты и времени в статистике
+     */
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-
+    /**
+     * Сообщение о корректном использовании команды, при некорректном вызове
+     */
     private final String usageMessage = """
             ❌ Неверные аргументы.
             Использование: /stats <период>
             Доступные периоды: week, month.
             """;
 
+    /**
+     * Создает команду статистики с репозиторием, сервисом аналитики и часами
+     *
+     * @param moodRepository   репозиторий для хранения отметок пользователя
+     * @param analyticsService сервис расчета статистики
+     * @param clock            источник текущего времени
+     */
     public StatsCommand(MoodRepository moodRepository, MoodAnalyticsService analyticsService, Clock clock) {
         this.moodRepository = Objects.requireNonNull(
                 moodRepository, "moodRepository не может быть null");
@@ -77,7 +101,12 @@ public class StatsCommand implements BotCommand {
         return formatStatistics(period, from, toExclusive, statistics);
     }
 
-
+    /**
+     * Находит переод по аргументу команды
+     *
+     * @param argument аргумент периода
+     * @return найденый период или null, если неизвестный аргумент
+     */
     private StatisticsPeriod findPeriod(String argument) {
         for (StatisticsPeriod period : StatisticsPeriod.values()) {
             if (period.getArgument().equalsIgnoreCase(argument)) {
@@ -87,6 +116,15 @@ public class StatsCommand implements BotCommand {
         return null;
     }
 
+    /**
+     * Формирует итоговое сообщение пользователю
+     *
+     * @param period      выбранный календарный период
+     * @param from        начало периода включительно
+     * @param toExclusive конец периода исключительно
+     * @param statistics  рассчитанные показатели
+     * @return текст статистики для пользователя
+     */
     private String formatStatistics(
             StatisticsPeriod period,
             LocalDateTime from,
@@ -122,10 +160,24 @@ public class StatsCommand implements BotCommand {
                 .append(")");
         return result.toString();
     }
-    private String formatEntry(MoodEntry entry ) {
+
+    /**
+     * Формирует дату, время и оценку одной отметки
+     *
+     * @param entry отметка пользователя
+     * @return отформатированный текст
+     */
+    private String formatEntry(MoodEntry entry) {
         return entry.createdAt().format(dateTimeFormatter)
                 + " - " + entry.score() + "/10";
     }
+
+    /**
+     * Возвращает правильную форму слова "отметка" для заданного количества
+     *
+     * @param count количество отметок
+     * @return правильная форма слова "отметка"
+     */
     private String getMarkWord(int count) {
         int lastTwoDigits = count % 100;
         if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {

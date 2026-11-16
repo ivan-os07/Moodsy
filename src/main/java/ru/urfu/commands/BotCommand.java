@@ -30,7 +30,15 @@ public interface BotCommand {
      */
     String execute(UUID userId, String[] args);
 
-    default BotResponse executeWithResponse(UUID userId, String[] args){
+    /**
+     * Выполняет команду и формирует ответ с типом взаимодействия по умолчанию
+     * Реализация может переопределять метод, если команде нужна другая клавиатура
+     *
+     * @param userId идентификатор пользователя
+     * @param args   аргументы команды
+     * @return ответ для пользователя
+     */
+    default BotResponse executeWithResponse(UUID userId, String[] args) {
         return new BotResponse(userId, execute(userId, args));
     }
 }

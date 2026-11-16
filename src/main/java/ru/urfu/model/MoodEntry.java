@@ -12,6 +12,12 @@ import java.util.Objects;
  * @param note      короткая заметка; пустая строка означает отсутствие заметки
  */
 public record MoodEntry(LocalDateTime createdAt, int score, Sphere sphere, String note) {
+    /**
+     * Проверяет обязательные значения и допустимый диапазон оценки
+     *
+     * @throws NullPointerException     если дата или сфера не заданы
+     * @throws IllegalArgumentException если оценка выходит за разрешенный диапазон (от 1 до 10)
+     */
     public MoodEntry {
         Objects.requireNonNull(createdAt, "createdAt не может быть null");
         Objects.requireNonNull(sphere, "sphere не может быть null");

@@ -21,6 +21,12 @@ public record MoodStatistics(
         Sphere mostFrequentSphere,
         int sphereCount
 ) {
+    /**
+     * Проверяет обязательные показатели на null
+     * @throws NullPointerException если лучший, худший или сфера равны null
+     * @throws IllegalArgumentException если количество отметок не натуральное число
+     *
+     */
     public MoodStatistics {
         Objects.requireNonNull(bestDay, "bestDay не может быть null");
         Objects.requireNonNull(worstDay, "worstDay не может быть null");

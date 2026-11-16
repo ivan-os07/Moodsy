@@ -10,10 +10,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Создает inline-клавиатуры Telegram в соответствии с текущим шагом в /checkin
+ */
 public class TelegramKeyboardFactory {
+    /**
+     * Создает клавиатуру под тип
+     *
+     * @param interactionType тип взаимодействия
+     * @return клавиатура или пустой Optional
+     */
     public Optional<InlineKeyboardMarkup> createKeyboard(
             InteractionType interactionType
-    ){
+    ) {
         Objects.requireNonNull(interactionType);
         return switch (interactionType) {
             case NONE -> Optional.empty();
@@ -23,10 +32,22 @@ public class TelegramKeyboardFactory {
             case PREVIEW_CONFIRMATION -> Optional.of(createPreviewKeyboard());
         };
     }
-    public InlineKeyboardMarkup createEmptyKeyboard(){
+
+    /**
+     * Создает клавиатуру без рядов кнопок для удаления ранее созданной клавиатуры
+     *
+     * @return пустая inline-клавиатура
+     */
+    public InlineKeyboardMarkup createEmptyKeyboard() {
         return new InlineKeyboardMarkup(List.of());
     }
-    public InlineKeyboardMarkup createScoreKeyboard(){
+
+    /**
+     * Создает inline-клавиатуру для выбора отметки настроения от 1 до 10
+     *
+     * @return inline-клавиатура для выбора отметки настроения от 1 до 10 и навигации
+     */
+    public InlineKeyboardMarkup createScoreKeyboard() {
         return InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(
                         button("1", "1"),
@@ -47,15 +68,21 @@ public class TelegramKeyboardFactory {
                 ))
                 .build();
     }
-    private InlineKeyboardMarkup createSphereKeyboard(){
+
+    /**
+     * Создает inline-клавиатуру для выбора сферы
+     *
+     * @return inline-клавиатура для выбора сферы и навигации
+     */
+    private InlineKeyboardMarkup createSphereKeyboard() {
         return InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(
-                        button(Sphere.WORK.getDisplayName(), Sphere.WORK.getDisplayName() ),
-                        button(Sphere.SOCIAL.getDisplayName(), Sphere.SOCIAL.getDisplayName() )
+                        button(Sphere.WORK.getDisplayName(), Sphere.WORK.getDisplayName()),
+                        button(Sphere.SOCIAL.getDisplayName(), Sphere.SOCIAL.getDisplayName())
                 ))
                 .keyboardRow(new InlineKeyboardRow(
-                        button(Sphere.HEALTH.getDisplayName(), Sphere.HEALTH.getDisplayName() ),
-                        button(Sphere.REST.getDisplayName(), Sphere.REST.getDisplayName() )
+                        button(Sphere.HEALTH.getDisplayName(), Sphere.HEALTH.getDisplayName()),
+                        button(Sphere.REST.getDisplayName(), Sphere.REST.getDisplayName())
                 ))
                 .keyboardRow(new InlineKeyboardRow(
                         button("Назад", "/back"),
@@ -64,7 +91,13 @@ public class TelegramKeyboardFactory {
                 .build();
 
     }
-    private InlineKeyboardMarkup createNoteKeyboard(){
+
+    /**
+     * Создает inline-клавиатуру для пропуска заметки
+     *
+     * @return inline-клавиатура для пропуска заметки и навигации
+     */
+    private InlineKeyboardMarkup createNoteKeyboard() {
         return InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(
                         button("Пропустить", "/skip")
@@ -75,7 +108,13 @@ public class TelegramKeyboardFactory {
                 ))
                 .build();
     }
-    private InlineKeyboardMarkup createPreviewKeyboard(){
+
+    /**
+     * Создает inline-клавиатуру для подтверждения и отмены сохранения отметки
+     *
+     * @return inline-клавиатура для подтверждения и отмены сохранения отметки, а так же навигации
+     */
+    private InlineKeyboardMarkup createPreviewKeyboard() {
         return InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(
                         button("✅ Сохранить", "/approve")
@@ -86,7 +125,15 @@ public class TelegramKeyboardFactory {
                 ))
                 .build();
     }
-    private InlineKeyboardButton button(String text, String callbackData){
+
+    /**
+     * Создает inline-кнопку с отображаемым текстом и callback значением
+     *
+     * @param text         отображаемый текст
+     * @param callbackData данные отправляемые Telegram при нажатии
+     * @return настроенная inline-кнопка
+     */
+    private InlineKeyboardButton button(String text, String callbackData) {
         return InlineKeyboardButton.builder()
                 .text(text)
                 .callbackData(callbackData)
