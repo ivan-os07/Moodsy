@@ -43,8 +43,12 @@ public class HistoryCommandTest {
      */
     @Test
     void executeTest() {
-        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, null));
-        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, new String[]{"6"}));
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin",
+                command.execute(userId, null)
+        );
+        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin",
+                command.execute(userId, new String[]{"6"})
+        );
 
         // пустые заметки
         repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 10), 10, Sphere.WORK, ""));
@@ -54,15 +58,21 @@ public class HistoryCommandTest {
         String response = command.execute(userId, null);
         String expected = """
                  \uD83D\uDCC5 Ваша история записей:
-                12.11.2026 23:56 - 6/10
-                11.10.2026 13:12 - 1/10
-                10.10.2026 10:10 - 10/10""";
+                12.11.2026
+                23:56 - 6/10 - Дела
+                11.10.2026
+                13:12 - 1/10 - Дела
+                10.10.2026
+                10:10 - 10/10 - Дела""";
+
         Assertions.assertEquals(expected, response);
         String response2 = command.execute(userId, new String[]{"2"});
         String expected2 = """
                  \uD83D\uDCC5 Ваша история записей:
-                12.11.2026 23:56 - 6/10
-                11.10.2026 13:12 - 1/10""";
+                12.11.2026
+                23:56 - 6/10 - Дела
+                11.10.2026
+                13:12 - 1/10 - Дела""";
         Assertions.assertEquals(expected2, response2);
         Assertions.assertFalse(response2.contains("10.10.2026 10:10 - 10/10"));
     }
@@ -75,7 +85,7 @@ public class HistoryCommandTest {
     @Test
     void executeTestLimit() {
         for (int i = 1; i <= 23; i++) {
-            repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1,Sphere.WORK, ""));
+            repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1, Sphere.WORK, ""));
         }
         String response = command.execute(userId, null);
         long entriesCount = response.lines().filter(line -> line.matches("\\d{2}\\.\\d{2}\\.\\d{4}.*")).count();
@@ -94,10 +104,10 @@ public class HistoryCommandTest {
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"0"}));
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"-67"}));
         Assertions.assertEquals("""
-                Использование команды /history:\s
-                 \
+                Использование команды /history:
                 /history <n> - показать последние n записей
-                /history - последние 10 записей""", command.execute(userId, new String[]{"6", "7"}));
+                /history - последние 10 записей""", command.execute(userId, new String[]{"6", "7"})
+        );
     }
 
 
@@ -106,18 +116,18 @@ public class HistoryCommandTest {
      */
     @Test
     void execute_showsNoteAndKeepsTimeAsStored() {
-        repository.save(userId,
-                new MoodEntry(LocalDateTime.of(2026, 12, 12, 23, 56), 6, Sphere.WORK, "много тикетов"));
+        repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 12, 12, 23, 56), 6, Sphere.WORK, "много тикетов"));
 
         String response = command.execute(userId, null);
 
         // проверка с заметкой
-        Assertions.assertTrue(response.contains(
-                "12.12.2026 23:56 - 6/10\nЗаметка: много тикетов"));
+        Assertions.assertEquals("""
+                 📅 Ваша история записей:
+                12.12.2026
+                23:56 - 6/10 - Дела
+                Заметка: много тикетов""", response);
 
-        long noteLines = response.lines()
-                .filter(line -> line.startsWith("Заметка:"))
-                .count();
+        long noteLines = response.lines().filter(line -> line.startsWith("Заметка:")).count();
         Assertions.assertEquals(1, noteLines);
     }
 }

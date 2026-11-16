@@ -268,6 +268,9 @@ public class CheckinFsmService {
      */
     private String handleSphere(CheckinSession session, String text) {
         // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
+        if (text.startsWith("/")) {
+            return UNKNOWN_COMMAND;
+        }
 
         // валидация сферы
         Optional<Sphere> resolved = resolveSphere(text);
