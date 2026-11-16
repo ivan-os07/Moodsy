@@ -338,7 +338,7 @@ class CheckinFsmServiceTest {
      * Возврат назад с шага NOTE на шаг SCORE по команде /back.
      */
     @Test
-    void handle_backFromNoteToScore() {
+    void handle_backFromNoteToScoreTest() {
         service.start(userId);
         service.handle(userId, "7"); // перешли на SPHERE
         service.handle(userId, "Дела"); // перешли на NOTE
@@ -372,7 +372,7 @@ class CheckinFsmServiceTest {
      * Попытка возврата назад с начального шага SCORE: возвращает ошибку и остаётся на SCORE.
      */
     @Test
-    void handle_backFromScoreReturnsError() {
+    void handle_backFromScoreReturnsErrorTest() {
         service.start(userId); // находимся на SCORE
 
         String response = service.handle(userId, "/back");

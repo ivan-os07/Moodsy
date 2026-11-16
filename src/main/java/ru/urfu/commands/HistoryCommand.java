@@ -3,6 +3,7 @@ package ru.urfu.commands;
 import ru.urfu.repository.MoodRepository;
 import ru.urfu.model.MoodEntry;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -15,10 +16,16 @@ public class HistoryCommand implements BotCommand {
      * Репозиторий для получения записей настроения
      */
     private final MoodRepository moodRepository;
+
     /**
-     * Формат даты, времени в истории записей
+     * Формат даты для группировки по дням
      */
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    /**
+     * Формат времени для конкретной записи
+     */
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     /**
      * Инициализация команды просмотра истории
@@ -27,7 +34,6 @@ public class HistoryCommand implements BotCommand {
      */
     public HistoryCommand(MoodRepository moodRepository) {
         this.moodRepository = moodRepository;
-
     }
 
     /**
@@ -38,9 +44,10 @@ public class HistoryCommand implements BotCommand {
      */
     private String formatEntry(MoodEntry entry) {
         String note = entry.note().isEmpty() ? "" : "\nЗаметка: " + entry.note();
-        return entry.createdAt().format(formatter)
-                + " - " + entry.score() + "/10"
-                + note;
+        return entry.createdAt().format(timeFormatter)
+                + " - " + entry.score()
+                + "/10" + " - "
+                + entry.sphere().getDisplayName() + note;
     }
 
     @Override
@@ -50,7 +57,7 @@ public class HistoryCommand implements BotCommand {
 
     @Override
     public String getDescription() {
-        return ("Показать историю отметок");
+        return "Показать историю отметок";
     }
 
     @Override
@@ -73,17 +80,22 @@ public class HistoryCommand implements BotCommand {
                 return ("❌ Ошибка: переданный формат числа не соответствует ожидаемому");
             }
         }
+
         List<MoodEntry> entries = moodRepository.findLast(userId, limit);
         if (entries.isEmpty()) {
             return ("История пуста. Попробуйте использовать команду /checkin");
         }
-        StringBuilder result = new StringBuilder(" \uD83D\uDCC5 Ваша история записей:");
-        for (MoodEntry entry : entries) {
-            if (!result.isEmpty()) {
-                result.append("\n");
 
+        StringBuilder result = new StringBuilder(" \uD83D\uDCC5 Ваша история записей:");
+        LocalDate lastDate = null;
+
+        for (MoodEntry entry : entries) {
+            LocalDate currentDate = entry.createdAt().toLocalDate();
+            if (!currentDate.equals(lastDate)) {
+                result.append("\n").append(currentDate.format(dateFormatter));
+                lastDate = currentDate;
             }
-            result.append(formatEntry(entry));
+            result.append("\n").append(formatEntry(entry));
         }
 
         return result.toString();
