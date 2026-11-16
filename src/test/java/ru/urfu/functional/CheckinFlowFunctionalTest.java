@@ -59,33 +59,38 @@ class CheckinFlowFunctionalTest {
 
     /**
      * Полный успешный сценарий с заметкой.
-     * Пользователь: /checkin → 7 → "много тикетов" → /approve → /history.
+     * Пользователь: /checkin → 7 → "дела" → "много тикетов" → /approve → /history.
      * Проверяются: ответы бота, факт сохранения записи и её вид в истории.
      */
     @Test
-    void happyPathWithNote() {
+    void happyPathWithNoteTest() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "7");
+        BotResponse sphere = dispatcher.handle(userId, "дела");
         BotResponse note = dispatcher.handle(userId, "много тикетов");
         BotResponse approve = dispatcher.handle(userId, "/approve");
 
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
+        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
+        Assertions.assertEquals("Добавьте заметку или отправьте /skip", sphere.text());
         Assertions.assertEquals("""
                 📋 Предпросмотр карточки:
                 • Оценка: 7/10
+                • Сфера: Дела
                 • Заметка: много тикетов
                 Подтвердите запись:
                 /approve — сохранить
-                /reject — отменить""", note.text()
+                /reject — отменить
+                """, note.text()
         );
         Assertions.assertEquals("✅ Запись сохранена.", approve.text());
 
         // запись появилась в репозитории с нужными данными
         MoodEntry saved = moodRepository.findLatest(userId).orElseThrow();
         Assertions.assertEquals(7, saved.score());
+        Assertions.assertEquals("Дела", saved.sphere().getDisplayName());
         Assertions.assertEquals("много тикетов", saved.note());
 
         // /history показывает запись (09:00 UTC = 12:00 по Мск)
@@ -93,35 +98,40 @@ class CheckinFlowFunctionalTest {
 
         Assertions.assertEquals("""
                  📅 Ваша история записей:
-                02.11.2026 12:00 - 7/10
+                02.11.2026
+                12:00 - 7/10 - Дела
                 Заметка: много тикетов""", history.text()
         );
     }
 
     /**
      * Полный успешный сценарий без заметки.
-     * Пользователь: /checkin → 8 → /skip → /approve → /history.
+     * Пользователь: /checkin → 8 → "дела" → /skip → /approve → /history.
      * Проверяются: ответы бота, факт сохранения записи и её вид в истории.
      */
     @Test
-    void happyPathWithoutNoteUsingSkip() {
+    void happyPathWithoutNoteUsingSkipTest() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "8");
+        BotResponse sphere = dispatcher.handle(userId, "дела");
         BotResponse note = dispatcher.handle(userId, "/skip");
         BotResponse approve = dispatcher.handle(userId, "/approve");
 
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
+        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
+        Assertions.assertEquals("Добавьте заметку или отправьте /skip", sphere.text());
 
         Assertions.assertEquals("""
                 📋 Предпросмотр карточки:
                 • Оценка: 8/10
+                • Сфера: Дела
                 • Заметка:
                 Подтвердите запись:
                 /approve — сохранить
-                /reject — отменить""", note.text()
+                /reject — отменить
+                """, note.text()
         );
 
         Assertions.assertEquals("✅ Запись сохранена.", approve.text());
@@ -129,6 +139,7 @@ class CheckinFlowFunctionalTest {
         // запись появилась в репозитории с нужными данными
         MoodEntry saved = moodRepository.findLatest(userId).orElseThrow();
         Assertions.assertEquals(8, saved.score());
+        Assertions.assertEquals("Дела", saved.sphere().getDisplayName());
         Assertions.assertEquals("", saved.note());
 
         // /history показывает запись (09:00 UTC = 12:00 по Мск)
@@ -136,19 +147,20 @@ class CheckinFlowFunctionalTest {
 
         Assertions.assertEquals("""
                  📅 Ваша история записей:
-                02.11.2026 12:00 - 8/10""", history.text()
+                02.11.2026
+                12:00 - 8/10 - Дела""", history.text()
         );
 
     }
 
 
     /**
-     * Сценарий выхода из диалога создания заметки.
+     * Сценарий выхода из диалога создания сферы.
      * Пользователь: /checkin → 1 → /exit.
      * Проверяются: ответы бота, факт несохранения записи и не появления её в истории.
      */
     @Test
-    void exitPath() {
+    void exitFromSpherePathTest() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "1");
@@ -156,7 +168,7 @@ class CheckinFlowFunctionalTest {
 
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
+        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
         Assertions.assertEquals("Сессия завершена без сохранения отметки", exit.text());
 
         // запись не появилась в репозитории
@@ -189,12 +201,12 @@ class CheckinFlowFunctionalTest {
         // /history подсказывает, что заметок нет
         BotResponse history = dispatcher.handle(userId, "/history");
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", history.text());
-  }
+    }
 
     /**
      * Сценарий использования команды /back. Сначала идем до шага PREVIEW,
      * а потом возвращаемся назад, пытаясь применить команду /back на первом шаге.
-     * Пользователь: /checkin → 8 → много тикетов → /back → /back → /back → /exit → /history.
+     * Пользователь: /checkin → 8 → дела → много тикетов → /back → /back → /back → /back → /exit → /history.
      * Проверяются: ответы бота (сообщение об ошибке), факт несохранения записи и не появления её в истории.
      */
     @Test
@@ -202,14 +214,19 @@ class CheckinFlowFunctionalTest {
         // подаём сообщения пользователя
         dispatcher.handle(userId, "/checkin");
         dispatcher.handle(userId, "7");
+        dispatcher.handle(userId, "дела");
         dispatcher.handle(userId, "много тикетов");
 
         BotResponse backToNote = dispatcher.handle(userId, "/back");
+        BotResponse backToSphere = dispatcher.handle(userId, "/back");
         BotResponse backToScore = dispatcher.handle(userId, "/back");
         BotResponse backWrong = dispatcher.handle(userId, "/back");
 
         // ответы совпадают с диалогом
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", backToNote.text());
+        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n",
+                backToSphere.text()
+        );
         Assertions.assertEquals("Введите оценку от 1 до 10", backToScore.text());
         Assertions.assertEquals("❌ Вы на первом шаге, вернуться назад нельзя.", backWrong.text());
 
