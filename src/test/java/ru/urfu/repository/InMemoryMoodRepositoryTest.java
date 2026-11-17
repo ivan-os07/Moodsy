@@ -52,7 +52,7 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
-        Assertions.assertEquals(
+        Assertions.assertIterableEquals(
                 List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
                         new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8),
                         new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
@@ -73,13 +73,13 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
-        Assertions.assertEquals(
+        Assertions.assertIterableEquals(
                 List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
                         new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8),
                         new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
                 repository.findLast(userId, 10)
         );
-        Assertions.assertEquals(
+        Assertions.assertIterableEquals(
                 List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
                         new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8)),
                 repository.findLast(userId, 2)
@@ -101,11 +101,11 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, firstEntry);
         repository.save(secondUserId, secondEntry);
 
-        Assertions.assertEquals(
+        Assertions.assertIterableEquals(
                 List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
                 repository.findLast(userId, 10)
         );
-        Assertions.assertEquals(
+        Assertions.assertIterableEquals(
                 List.of(new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8)),
                 repository.findLast(secondUserId, 10)
         );
@@ -122,9 +122,9 @@ class InMemoryMoodRepositoryTest {
         UnsupportedOperationException exception = Assertions.assertThrows(
                 UnsupportedOperationException.class,
                 () -> history.add(secondEntry));
-
+        // Стандартное поведение неизменной коллекции
         Assertions.assertNull(exception.getMessage());
-        Assertions.assertEquals(List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
+        Assertions.assertIterableEquals(List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
                 repository.findLast(userId, 10));
 
 
