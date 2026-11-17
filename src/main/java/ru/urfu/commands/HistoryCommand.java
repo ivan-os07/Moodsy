@@ -58,11 +58,11 @@ public class HistoryCommand implements BotCommand {
         int limit = 10;
         if (args != null && args.length > 0) {
             if (args.length != 1) {
-                return ("""
-                        Использование команды /history:\s
-                         \
+                return """
+                        Использование команды /history:
                         /history <n> - показать последние n записей
-                        /history - последние 10 записей""");
+                        /history - последние 10 записей
+                        """;
             }
             try {
                 limit = Integer.parseInt(args[0]);
@@ -79,10 +79,7 @@ public class HistoryCommand implements BotCommand {
         }
         StringBuilder result = new StringBuilder(" \uD83D\uDCC5 Ваша история записей:");
         for (MoodEntry entry : entries) {
-            if (!result.isEmpty()) {
-                result.append("\n");
-
-            }
+            result.append("\n");
             result.append(formatEntry(entry));
         }
 

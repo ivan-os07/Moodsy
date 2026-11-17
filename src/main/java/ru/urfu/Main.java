@@ -38,21 +38,21 @@ public class Main {
         // Инициализация инфраструктурных компонентов и слоев данных
         MoodRepository moodRepository = new InMemoryMoodRepository();
         UserRepository userRepository = new InMemoryUserRepository();
-        UserService userService  = new UserService(userRepository);
+        UserService userService = new UserService(userRepository);
 
         CheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();
-        //время мск UTC+3
+        // время мск UTC+3
         CheckinFsmService checkinFsmService = new CheckinFsmService(
                 sessionStore, moodRepository, Clock.system(ZoneOffset.ofHours(3)));
 
-        CommandDispatcher dispatcher = new CommandDispatcher(checkinFsmService);
+        // Регистрируем команды в хранилище
+        CommandRegistry registry = new CommandRegistry();
+        registry.register(new StartCommand());
+        registry.register(new HelpCommand(registry));
+        registry.register(new CheckinCommand(checkinFsmService));
+        registry.register(new HistoryCommand(moodRepository));
 
-        // Регистрируем команды в диспетчере
-        dispatcher.register(new StartCommand());
-        dispatcher.register(new HelpCommand(dispatcher));
-        dispatcher.register(new CheckinCommand(checkinFsmService));
-        dispatcher.register(new HistoryCommand(moodRepository));
-
+        CommandDispatcher dispatcher = new CommandDispatcher(registry, checkinFsmService);
 
         // Инициализация и запуск транспортного слоя (Telegram-бота)
         // Использование try-with-resources гарантирует корректное закрытие ресурсов бота
