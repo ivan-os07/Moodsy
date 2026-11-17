@@ -1,6 +1,7 @@
 package ru.urfu.commands;
 
 import ru.urfu.service.fsm.CheckinFsmService;
+import ru.urfu.service.fsm.CheckinResult;
 
 import java.util.*;
 
@@ -47,7 +48,8 @@ public class CommandDispatcher {
 
         // Сначала проверяем есть ли сессия
         if (checkinFsmService.hasActiveSession(userId)) {
-            return new BotResponse(userId, checkinFsmService.handle(userId, text));
+            CheckinResult result = checkinFsmService.handleWithResponse(userId, text);
+            return new BotResponse(userId, result.text(), result.interactionType());
         }
 
         // ИНАЧЕ
@@ -60,8 +62,7 @@ public class CommandDispatcher {
         }
 
         // Если нашли - выполняем и возвращаем результат
-        String responseText = command.execute(userId, args);
-        return new BotResponse(userId, responseText);
+        return command.executeWithResponse(userId, args);
 
     }
 

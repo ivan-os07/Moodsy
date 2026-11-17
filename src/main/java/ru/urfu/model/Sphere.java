@@ -1,27 +1,44 @@
 package ru.urfu.model;
 
-public enum Sphere {
-    WORK("Дела"),
-    SOCIAL("Общение"),
-    HEALTH("Здоровье"),
-    REST("Отдых");
+/**
+ * Сферы жизни, к которым пользователь может отнести свою отметку настроения
+ */
 
+public enum Sphere {
     /**
-     * Имя сферы
+     * Работа и учеба
+     */
+    WORK("Дела"),
+    /**
+     * Взаимодействие с другими людьми
+     */
+    SOCIAL("Общение"),
+    /**
+     * Физическое и эмоциональное состояние
+     */
+    HEALTH("Здоровье"),
+    /**
+     * Отдых, сон, восстановление
+     */
+    REST("Отдых");
+    /**
+     * Название сферы для пользователя
      */
     private final String displayName;
 
     /**
-     * Конструктор
-     * @param displayName имя
+     * Создает сферу с отображаемым названием
+     *
+     * @param displayName название сферы для пользователя
      */
     Sphere(String displayName) {
         this.displayName = displayName;
     }
 
     /**
-     * Получение имени
-     * @return displayName
+     * Возвращает локализованное название сферы
+     *
+     * @return отображаемое название сферы
      */
     public String getDisplayName() {
         return displayName;
