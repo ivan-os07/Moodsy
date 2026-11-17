@@ -84,7 +84,6 @@ public class HistoryCommand implements BotCommand {
         if (entries.isEmpty()) {
             return ("История пуста. Попробуйте использовать команду /checkin");
         }
-
         StringBuilder result = new StringBuilder(" \uD83D\uDCC5 Ваша история записей:");
         LocalDate lastDate = null;
 
