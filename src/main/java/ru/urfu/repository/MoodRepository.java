@@ -32,6 +32,8 @@ public interface MoodRepository {
     List<MoodEntry> findLast(UUID userId, int limit);
     //[R]ead: получение записей за указанный период
 
+    Optional<MoodEntry> findLatest(UUID userId);
+
     /**
      * Возвращает записи пользователя за указанный период
      *

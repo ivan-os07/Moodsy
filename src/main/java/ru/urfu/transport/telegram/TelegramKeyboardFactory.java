@@ -23,7 +23,7 @@ public class TelegramKeyboardFactory {
     public Optional<InlineKeyboardMarkup> createKeyboard(
             InteractionType interactionType
     ) {
-        Objects.requireNonNull(interactionType);
+        Objects.requireNonNull(interactionType, "interactionType не может быть null");
         return switch (interactionType) {
             case NONE -> Optional.empty();
             case SCORE_SELECTION -> Optional.of(createScoreKeyboard());

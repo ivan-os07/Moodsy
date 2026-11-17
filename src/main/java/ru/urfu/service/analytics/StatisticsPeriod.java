@@ -78,6 +78,7 @@ public enum StatisticsPeriod {
      * @return начало следующей недели или месяца
      */
     public LocalDateTime getEndExclusive(LocalDateTime currentDateTime) {
+        Objects.requireNonNull(currentDateTime, "currentDateTime не может быть null");
         LocalDateTime start = getStart(currentDateTime);
         if (this == WEEK) {
             return start.plusWeeks(1);

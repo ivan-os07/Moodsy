@@ -41,7 +41,15 @@ public class InMemoryMoodRepository implements MoodRepository {
         Collections.reverse(result);
         return Collections.unmodifiableList(result);
     }
+    @Override
+    public Optional<MoodEntry> findLatest(UUID userId) {
+        List<MoodEntry> userEntries = entries.get(userId);
+        if (userEntries == null || userEntries.isEmpty()) {
+            return Optional.empty();
 
+        }
+        return Optional.of(userEntries.get(userEntries.size() - 1));
+    }
 
     @Override
     public List<MoodEntry> findByPeriod(UUID userId, LocalDateTime from, LocalDateTime to){
