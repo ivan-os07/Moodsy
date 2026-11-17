@@ -148,7 +148,7 @@ public class StatsCommand implements BotCommand {
         result.append("Лучший день: ")
                 .append(formatEntry(statistics.bestDay()))
                 .append("\n");
-        result.append("Худщий день: ")
+        result.append("Худший день: ")
                 .append(formatEntry(statistics.worstDay()))
                 .append("\n");
         result.append("Самая частая сфера: ")

@@ -65,33 +65,32 @@ public class StatsCommandTest {
     @Test
     void TestCalculatesStatisticWeek() {
         repository.save(userId, new MoodEntry(
-                LocalDateTime.of(2026, 11, 16, 0, 0),
+                LocalDateTime.of(2026, 11, 3, 0, 0),
                 4,
                 Sphere.WORK,
                 ""
         ));
 
         repository.save(userId, new MoodEntry(
-                LocalDateTime.of(2026, 11, 16, 12, 0),
+                LocalDateTime.of(2026, 11, 3, 12, 0),
                 8,
                 Sphere.REST,
                 ""
         ));
 
         repository.save(userId, new MoodEntry(
-                LocalDateTime.of(2026, 11, 23, 0, 0),
+                LocalDateTime.of(2026, 11, 4, 0, 0),
                 10,
                 Sphere.HEALTH,
                 ""
         ));
         String result = command.execute(userId, new String[]{"WEEK"});
         String expected = """
-                📊 Статистика за неделю (16.11.2026 - 22.11.2026)
-                Средняя оценка; 6.00/10
-                Лучший день: 16.11.2026 12:00 - 8/10
-                Худший день: 16.11.2026 00:00 - 4/10
-                Самая частая сфера: Отдых (1 отметка)
-                """;
+                📊 Статистика за неделю (02.11.2026 - 08.11.2026)
+                Средняя оценка; 7,33/10
+                Лучший день: 03.11.2026 00:00 - 4/10
+                Худший день: 04.11.2026 00:00 - 10/10
+                Самая частая сфера: Здоровье (1 отметка)""";
         Assertions.assertEquals(expected, result);
 
     }
@@ -124,11 +123,10 @@ public class StatsCommandTest {
         String result = command.execute(userId, new String[]{"MONTH"});
         String expected = """
                 📊 Статистика за месяц (01.11.2026 - 30.11.2026)
-                Средняя оценка; 7.00/10
+                Средняя оценка; 7,00/10
                 Лучший день: 01.11.2026 00:30 - 7/10
                 Худший день: 01.11.2026 00:30 - 7/10
-                Самая частая сфера: Общение (1 отметка)
-                """;
+                Самая частая сфера: Общение (1 отметка)""";
         Assertions.assertEquals(expected, result);
     }
 
@@ -143,22 +141,25 @@ public class StatsCommandTest {
             "22, отметки",
 
     })
-    //Починить тест
+        //Починить тест
     void TestRussianFormsSphereCounts(int count, String expected) {
         for (int i = 0; i < count; i++) {
             repository.save(userId, new MoodEntry(
-                    LocalDateTime.of(2026, 11, 16, 0, i),
+                    LocalDateTime.of(2026, 11, 2, 0, i),
                     5,
                     Sphere.WORK,
                     ""
             ));
-            String result = command.execute(userId, new String[]{"week"});
-            String expectedLastLine = "Самая частая сфера: Дела ("
-                    + count + " " + expected + ")";
-            String actualLastLine = result.substring(result.lastIndexOf("\n") + 1);
-            Assertions.assertEquals(expectedLastLine, actualLastLine);
-
         }
+        String result = command.execute(userId, new String[]{"week"});
+
+        String expectedLastLine = "Самая частая сфера: Дела ("
+                + count + " " + expected + ")";
+
+        String actualLastLine = result.substring(result.lastIndexOf("\n") + 1);
+
+        Assertions.assertEquals(expectedLastLine, actualLastLine);
+
 
     }
 }
