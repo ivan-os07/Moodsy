@@ -19,7 +19,8 @@ public class InMemoryMoodRepository implements MoodRepository {
 
     @Override
     public void save(String userId, MoodEntry entry) {
-        entries.computeIfAbsent(userId, key -> Collections.synchronizedList(new ArrayList<>())).add(entry);
+        entries.computeIfAbsent(userId, k -> new ArrayList<>())
+                .add(entry);
 
     }
 
