@@ -1,5 +1,5 @@
-package ru.urfu.service.analytics;
 /**
  * Содержит сервисы для расчета статистики настроения
  * и определения календарных периодов
  */
+package ru.urfu.service.analytics;
