@@ -36,14 +36,14 @@ public class InMemoryMoodRepository implements MoodRepository {
 
         }
         List<MoodEntry> result;
-        synchronized (userEntries) {
-            int end = userEntries.size();
-            int start = Math.max(0, end - limit);
-            result = new ArrayList<>(end - start);
-            // Заполняем с конца
-            for (int i = end - 1; i >= start; i--) {
-                result.add(userEntries.get(i));
-            }
+
+        int end = userEntries.size();
+        int start = Math.max(0, end - limit);
+        result = new ArrayList<>(end - start);
+        // Заполняем с конца
+        for (int i = end - 1; i >= start; i--) {
+            result.add(userEntries.get(i));
+
         }
         return Collections.unmodifiableList(result);
     }
