@@ -36,7 +36,7 @@ class CommandRegistryTest {
      * Зарегистрированную команду можно найти по ключу.
      */
     @Test
-    void find_registeredCommand_returnsItTest() {
+    void TestFind_registeredCommand_returnsItTest() {
         Assertions.assertSame(fakeCommand, registry.find("/test").orElseThrow());
     }
 
@@ -44,7 +44,7 @@ class CommandRegistryTest {
      * Для незарегистрированного ключа возвращается пустой Optional.
      */
     @Test
-    void find_unknownKey_returnsEmptyTest() {
+    void TestFind_unknownKey_returnsEmptyTest() {
         Assertions.assertTrue(registry.find("/unknown").isEmpty());
     }
 
@@ -52,7 +52,7 @@ class CommandRegistryTest {
      * Тк при инициализации добавлена одна команда, размер коллекции должен быть 1.
      */
     @Test
-    void getCommands_returnsAllRegisteredCommandsTest() {
+    void TestGetCommands_returnsAllRegisteredCommandsTest() {
         List<BotCommand> commands = new ArrayList<>(registry.getCommands());
 
         Assertions.assertEquals(1, commands.size());
@@ -65,7 +65,7 @@ class CommandRegistryTest {
      * После регистрации новой команды в коллекции есть обе команды.
      */
     @Test
-    void register_addNewCommandTest() {
+    void TestRegister_addNewCommandTest() {
         FakeCommand secondCommand = new FakeCommand("/test2", "test2 description", "answer test2");
 
         registry.register(secondCommand);
@@ -81,7 +81,7 @@ class CommandRegistryTest {
      * Повторная регистрация с тем же ключом заменяет команду, а не добавляет вторую.
      */
     @Test
-    void register_sameKey_replacesCommandTest() {
+    void TestRegister_sameKey_replacesCommandTest() {
         FakeCommand newCommand = new FakeCommand("/test", "new test", "i am new test");
 
         registry.register(newCommand);
@@ -101,7 +101,7 @@ class CommandRegistryTest {
      * Ключи /b и /a выбраны так, чтобы порядок регистрации не совпадал с алфавитным.
      */
     @Test
-    void getCommands_keepsRegistrationOrderTest() {
+    void TestGetCommands_keepsRegistrationOrderTest() {
         FakeCommand second = new FakeCommand("/b", "b", "b");
         FakeCommand third = new FakeCommand("/a", "a", "a");
         registry.register(second);

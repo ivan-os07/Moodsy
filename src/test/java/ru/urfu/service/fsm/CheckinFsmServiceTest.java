@@ -10,6 +10,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -58,7 +59,7 @@ class CheckinFsmServiceTest {
      * Проверяет, что старт чекина создаёт сессию на шаге SCORE и возвращает приглашение.
      */
     @Test
-    void start_createsSessionAndAsksForScore() {
+    void TestStart_createsSessionAndAsksForScore() {
         String response = service.start(userId);
 
         Assertions.assertEquals("Введите оценку от 1 до 10", response);
@@ -70,7 +71,7 @@ class CheckinFsmServiceTest {
      * Проверяет открыта ли сессия у пользователя.
      */
     @Test
-    void hasActiveSession() {
+    void TestHasActiveSession() {
         Assertions.assertFalse(service.hasActiveSession(userId));
 
         service.start(userId);
@@ -83,7 +84,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет число, например "7".
      */
     @Test
-    void handle_validScore_savesScoreAndAsksForNote() {
+    void TestHandle_validScore_savesScoreAndAsksForNote() {
         service.start(userId);
 
         String response = service.handle(userId, "7");
@@ -101,11 +102,15 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет строку, например "abc".
      */
     @Test
-    void handle_invalidScoreStringAndStayOnSCORE() {
+    void TestHandle_invalidScoreStringAndStayOnSCORE() {
         service.start(userId);
 
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, "abc"));
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, ""));
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "abc")
+        );
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "")
+        );
 
         // Остаемся на SCORE
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
@@ -117,12 +122,18 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет число не из диапазона, например "11".
      */
     @Test
-    void handle_invalidScoreIntAndStayOnSCORE() {
+    void TestHandle_invalidScoreIntAndStayOnSCORE() {
         service.start(userId);
 
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, "0"));
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, "11"));
-        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.", service.handle(userId, "100"));
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "0")
+        );
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "11")
+        );
+        Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
+                service.handle(userId, "100")
+        );
 
         // Остаемся на SCORE
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
@@ -133,7 +144,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод строки для заметки на шаге NOTE → сохраняет заметку, переход в PREVIEW
      */
     @Test
-    void handle_validNOTE() {
+    void TestHandle_validNOTE() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -152,7 +163,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод пустой строки(=команде skip) на шаге NOTE → пустая заметка, переход в PREVIEW
      */
     @Test
-    void handle_validEmptyNOTE() {
+    void TestHandle_validEmptyNOTE() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -171,7 +182,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод команды skip на шаге NOTE → пустая заметка, переход в PREVIEW
      */
     @Test
-    void handle_validCmdSkip() {
+    void TestHandle_validCmdSkip() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -190,7 +201,7 @@ class CheckinFsmServiceTest {
      * Неуспешный ввод команды skip на шаге не NOTE, и не на PREVIEW → сообщение об ошибке
      */
     @Test
-    void handle_invalidCmdSkipNotPREVIEW() {
+    void TestHandle_invalidCmdSkipNotPREVIEW() {
         String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.";
 
         // Например, на шаге SCORE
@@ -206,7 +217,7 @@ class CheckinFsmServiceTest {
      * Неуспешный ввод команды skip на шаге PREVIEW → сообщение об ошибке и доступные шаги
      */
     @Test
-    void handle_invalidCmdSkipPREVIEW() {
+    void TestHandle_invalidCmdSkipPREVIEW() {
         String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.\nПожалуйста, подтвердите запись с помощью /approve или отмените через /reject.";
 
         // Идем к шагу PREVIEW
@@ -226,7 +237,7 @@ class CheckinFsmServiceTest {
      * Сохранение заметки при использовании /approve на шаге PREVIEW → сохраняет MoodEntry, удаляет сессию
      */
     @Test
-    void handle_save() {
+    void TestHandle_save() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -238,7 +249,11 @@ class CheckinFsmServiceTest {
         Assertions.assertEquals("✅ Запись сохранена.", response);
 
         // Проверяем, что запись появилась в репозитории
-        MoodEntry savedEntry = moodRepository.findLatest(userId).orElseThrow();
+        List<MoodEntry> savedEntries = moodRepository.findLast(userId, 1);
+        Assertions.assertEquals(1, savedEntries.size());
+
+        MoodEntry savedEntry = savedEntries.getFirst();
+
         Assertions.assertEquals(7, savedEntry.score());
         Assertions.assertEquals("заметка", savedEntry.note());
         Assertions.assertEquals(LocalDateTime.now(clock.withZone(ZoneOffset.ofHours(3))), savedEntry.createdAt());
@@ -251,38 +266,53 @@ class CheckinFsmServiceTest {
      * Выход из диалога по команде /exit: сессия удаляется, запись не сохраняется.
      */
     @Test
-    void handle_exitCancelsSessionWithoutSaving() {
+    void TestHandle_exitCancelsSessionWithoutSaving() {
         service.start(userId);
         service.handle(userId, "7"); // находимся на шаге NOTE
 
+        // до действия
+        List<MoodEntry> before = moodRepository.findLast(userId, 100);
+
         String response = service.handle(userId, "/exit");
+
+        // после действия; проверяем, что не добавились записи
+        List<MoodEntry> after = moodRepository.findLast(userId, 100);
+        // сравнение корректное тк используем record (сравнивает объекты по значению всех их полей)
+        Assertions.assertEquals(before, after);
 
         Assertions.assertEquals("Сессия завершена без сохранения отметки", response);
         Assertions.assertFalse(sessionStore.hasSession(userId));
-        Assertions.assertTrue(moodRepository.findLatest(userId).isEmpty());
+
     }
 
     /**
      * Отмена записи по команде /reject на шаге PREVIEW: сессия удаляется, запись не сохраняется.
      */
     @Test
-    void handle_rejectCancelsSessionWithoutSaving() {
+    void TestHandle_rejectCancelsSessionWithoutSaving() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "заметка");
 
+        // до действия
+        List<MoodEntry> before = moodRepository.findLast(userId, 100);
+
         String response = service.handle(userId, "/reject");
+
+        // после действия; проверяем, что не добавились записи
+        List<MoodEntry> after = moodRepository.findLast(userId, 100);
+        // сравнение корректное тк используем record (сравнивает объекты по значению всех их полей)
+        Assertions.assertEquals(before, after);
 
         Assertions.assertEquals("Сессия завершена без сохранения отметки", response);
         Assertions.assertFalse(sessionStore.hasSession(userId));
-        Assertions.assertTrue(moodRepository.findLatest(userId).isEmpty());
     }
 
     /**
      * Возврат назад с шага NOTE на шаг SCORE по команде /back.
      */
     @Test
-    void handle_backFromNoteToScore() {
+    void TestHandle_backFromNoteToScore() {
         service.start(userId);
         service.handle(userId, "7"); // перешли на NOTE
 
@@ -297,7 +327,7 @@ class CheckinFsmServiceTest {
      * Возврат назад с шага PREVIEW на шаг NOTE по команде /back.
      */
     @Test
-    void handle_backFromPreviewToNote() {
+    void TestHandle_backFromPreviewToNote() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "заметка"); // перешли на PREVIEW
@@ -313,7 +343,7 @@ class CheckinFsmServiceTest {
      * Попытка возврата назад с начального шага SCORE: возвращает ошибку и остаётся на SCORE.
      */
     @Test
-    void handle_backFromScoreReturnsError() {
+    void TestHandle_backFromScoreReturnsError() {
         service.start(userId); // находимся на SCORE
 
         String response = service.handle(userId, "/back");
@@ -327,14 +357,16 @@ class CheckinFsmServiceTest {
      * Некорректный ввод на шаге PREVIEW: напоминает о доступных командах.
      */
     @Test
-    void handle_invalidInputOnPreview() {
+    void TestHandle_invalidInputOnPreview() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "заметка");
 
         String response = service.handle(userId, "что-то другое");
 
-        Assertions.assertEquals("Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.", response);
+        Assertions.assertEquals("Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.",
+                response
+        );
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
         Assertions.assertEquals(CheckinStep.PREVIEW, session.step());
     }
