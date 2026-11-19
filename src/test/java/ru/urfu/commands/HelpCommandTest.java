@@ -39,7 +39,7 @@ class HelpCommandTest {
      * Тестируем валидность возврата ключа команды
      */
     @Test
-    void getCommandKeyTest() {
+    void TestGetCommandKey() {
         Assertions.assertEquals("/help", command.getCommandKey());
     }
 
@@ -47,7 +47,7 @@ class HelpCommandTest {
      * Тестируем валидность возврата описания команды
      */
     @Test
-    void getValidDescriptionTest() {
+    void TestGetValidDescription() {
         Assertions.assertEquals("Получить помощь и список команд", command.getDescription());
     }
 
@@ -56,7 +56,7 @@ class HelpCommandTest {
      * приветствие, затем команды в порядке регистрации.
      */
     @Test
-    void getListsAllRegisteredCommandsTest() {
+    void TestGetListsAllRegisteredCommands() {
         registry.register(new FakeCommand("/cmd1", "cmd1 description", "ans1"));
         registry.register(new FakeCommand("/cmd2", "cmd2 description", "ans2"));
 
@@ -74,7 +74,7 @@ class HelpCommandTest {
      * Если сама команда /help зарегистрирована в хранилище, она тоже попадает в список.
      */
     @Test
-    void getIncludesItselfWhenRegisteredTest() {
+    void TestGetIncludesItselfWhenRegistered() {
         registry.register(command);
 
         String result = command.execute(USER_ID, new String[]{});
@@ -90,7 +90,7 @@ class HelpCommandTest {
      * Если других команд нет, выводится только приветствие.
      */
     @Test
-    void getEmptyRegistry_returnsOnlyGreetingTest() {
+    void TestGetEmptyRegistry_returnsOnlyGreeting() {
         String result = command.execute(USER_ID, new String[]{});
 
         Assertions.assertEquals("Привет! Я бот Moodsy\n", result);

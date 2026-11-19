@@ -41,7 +41,7 @@ public class HistoryCommandTest {
      * проверка корректного отображения в истории (от старых к новым)
      */
     @Test
-    void executeTest() {
+    void TestExecute() {
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, null));
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, new String[]{"6"}));
 
@@ -72,7 +72,7 @@ public class HistoryCommandTest {
      * выводится именно 10 заметок.
      */
     @Test
-    void executeTestLimit() {
+    void TestExecuteTestLimit() {
         for (int i = 1; i <= 23; i++) {
             repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1, ""));
         }
@@ -86,7 +86,7 @@ public class HistoryCommandTest {
      * буквенная последовательность, отрицательные числа, нуль, несколько аргументов
      */
     @Test
-    void executeErrorTest() {
+    void TestExecuteErrorTest() {
         String exp = "❌ Ошибка: переданный формат числа не соответствует ожидаемому";
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"abc"}));
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"-1"}));
@@ -104,7 +104,7 @@ public class HistoryCommandTest {
      * Проверяет, что заметка выводится в верном формате.
      */
     @Test
-    void execute_showsNoteAndKeepsTimeAsStored() {
+    void TestExecute_showsNoteAndKeepsTimeAsStored() {
         repository.save(userId,
                 new MoodEntry(LocalDateTime.of(2026, 12, 12, 23, 56), 6, "много тикетов"));
 

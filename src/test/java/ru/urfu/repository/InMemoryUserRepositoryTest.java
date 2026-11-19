@@ -45,7 +45,7 @@ public class InMemoryUserRepositoryTest {
      *
      */
     @Test
-    void findByIdNoUser() {
+    void TestFindByIdNoUser() {
         Assertions.assertTrue(repository.findById(UUID.randomUUID()).isEmpty());
         Assertions.assertTrue(repository.findByPlatformIdentity(telegramIdentity).isEmpty());
     }
@@ -54,7 +54,7 @@ public class InMemoryUserRepositoryTest {
      * Тестирует метод getOrCreate - создание пользователя/ей и сохранение его в репозитории
      */
     @Test
-    void getOrCreateTests() {
+    void TestGetOrCreateTests() {
         User user = repository.getOrCreate(telegramIdentity);
 
         Assertions.assertNotNull(user);
@@ -78,7 +78,7 @@ public class InMemoryUserRepositoryTest {
      * привязка дополнительного аккаунта к существующему пользователю
      */
     @Test
-    void addPlatformTest() {
+    void TestAddPlatformTest() {
         User user = repository.getOrCreate(telegramIdentity);
         User updUser = repository.addPlatformIdentity(user.getId(), discordIdentity);
 
@@ -94,7 +94,7 @@ public class InMemoryUserRepositoryTest {
      * привязка второго аккаунта той же платформы запрещена
      */
     @Test
-    void addPlatformTest2() {
+    void TestAddPlatformTest2() {
         User user = repository.getOrCreate(telegramIdentity);
         User updUser = repository.addPlatformIdentity(user.getId(), telegramIdentity);
         Assertions.assertEquals(List.of(telegramIdentity), updUser.getPlatforms());
@@ -111,7 +111,7 @@ public class InMemoryUserRepositoryTest {
      * привязанного к другому пользователю
      */
     @Test
-    void addPlatformTest3() {
+    void TestAddPlatformTest3() {
 
         User firstUser = repository.getOrCreate(telegramIdentity);
         User secondUser = repository.getOrCreate(discordIdentity);
@@ -130,7 +130,7 @@ public class InMemoryUserRepositoryTest {
      * запрет привязки аккаунта к несуществующему пользователю
      */
     @Test
-    void addPlatformTest4() {
+    void TestAddPlatformTest4() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> repository.addPlatformIdentity(UUID.randomUUID(), telegramIdentity));
     }
 
@@ -138,7 +138,7 @@ public class InMemoryUserRepositoryTest {
      * Тестируем обработку null в аргументах методов репозитория
      */
     @Test
-    void methodsRejectNull() {
+    void TestMethodsRejectNull() {
         Assertions.assertAll(
                 () -> Assertions.assertThrows(NullPointerException.class, () -> repository.findById(null)),
                 () -> Assertions.assertThrows(NullPointerException.class, () -> repository.findByPlatformIdentity(null)),

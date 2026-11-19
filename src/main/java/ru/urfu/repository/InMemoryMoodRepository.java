@@ -46,16 +46,5 @@ public class InMemoryMoodRepository implements MoodRepository {
         }
         return Collections.unmodifiableList(result);
     }
-
-
-    @Override
-    public Optional<MoodEntry> findLatest(UUID userId) {
-        List<MoodEntry> userEntries = entries.get(userId);
-        if (userEntries == null || userEntries.isEmpty()) {
-            return Optional.empty();
-
-        }
-        return Optional.of(userEntries.get(userEntries.size() - 1));
-    }
 }
 

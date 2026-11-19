@@ -64,7 +64,7 @@ class CommandDispatcherTest {
      * проверяем количество вызовов и id пользователя
      */
     @Test
-    void handle_knownCommand() {
+    void TestHandle_knownCommand() {
         BotResponse response = dispatcher.handle(USER_ID, "/test");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -77,7 +77,7 @@ class CommandDispatcherTest {
      * Тестирование обработки неизвестной(незарегистрированной) команды.
      */
     @Test
-    void handle_unknownCommand() {
+    void TestHandle_unknownCommand() {
         BotResponse response = dispatcher.handle(USER_ID, "/unknown");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -91,7 +91,7 @@ class CommandDispatcherTest {
      * Тестирование обработки ошибки при регистрации пустой команды
      */
     @Test
-    void handle_blankCommand() {
+    void TestHandle_blankCommand() {
         BotResponse response = dispatcher.handle(USER_ID, "");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -105,7 +105,7 @@ class CommandDispatcherTest {
      * Тестирование обработки команды с несколькими аргументами
      */
     @Test
-    void handle_commandWithArguments() {
+    void TestHandle_commandWithArguments() {
         dispatcher.handle(USER_ID, "/test arg1 arg2 arg3");
         Assertions.assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
     }
@@ -114,7 +114,7 @@ class CommandDispatcherTest {
      * Проверяет, что при открытой сессии обычный текст передаётся в FSM чекина.
      */
     @Test
-    void handle_textWithActiveSession_routesToCheckinFsm() {
+    void TestHandle_textWithActiveSession_routesToCheckinFsm() {
         registry.register(new CheckinCommand(checkinFsmService));
 
         dispatcher.handle(USER_ID, "/checkin");
@@ -128,7 +128,7 @@ class CommandDispatcherTest {
      * Проверяет, что без открытой сессии обычный текст считается неизвестной командой.
      */
     @Test
-    void handle_plainTextWithoutSession_returnsUnknownCommand() {
+    void TestHandle_plainTextWithoutSession_returnsUnknownCommand() {
         BotResponse response = dispatcher.handle(USER_ID, "7");
 
         Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
