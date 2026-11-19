@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-
 import org.junit.jupiter.api.Assertions;
 
 
@@ -53,9 +52,10 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
         Assertions.assertIterableEquals(
-                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
-                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8),
-                        new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1, ""),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8, ""),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5, "")
+                ),
                 repository.findLast(userId, 10)
         );
     }
@@ -74,20 +74,24 @@ class InMemoryMoodRepositoryTest {
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
         Assertions.assertIterableEquals(
-                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
-                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8),
-                        new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1, ""),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8, ""),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5, "")
+                ),
                 repository.findLast(userId, 10)
         );
         Assertions.assertIterableEquals(
-                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1),
-                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8)),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 12, 12, 12), 1, ""),
+                        new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8, "")
+                ),
                 repository.findLast(userId, 2)
         );
         Assertions.assertTrue(repository.findLast(userId, 0).isEmpty());
         Assertions.assertTrue(repository.findLast(userId, -1).isEmpty());
         Assertions.assertTrue(repository.findLast(userId, -66).isEmpty());
-        Assertions.assertTrue(repository.findLast(UUID.fromString("00000000-0000-0000-0000-000000000000"), 10).isEmpty());
+        Assertions.assertTrue(repository.findLast(UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                10
+        ).isEmpty());
     }
 
 
@@ -102,11 +106,11 @@ class InMemoryMoodRepositoryTest {
         repository.save(secondUserId, secondEntry);
 
         Assertions.assertIterableEquals(
-                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5, "")),
                 repository.findLast(userId, 10)
         );
         Assertions.assertIterableEquals(
-                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8)),
+                List.of(new MoodEntry(LocalDateTime.of(2026, 10, 11, 11, 11), 8, "")),
                 repository.findLast(secondUserId, 10)
         );
     }
@@ -122,12 +126,12 @@ class InMemoryMoodRepositoryTest {
 
         UnsupportedOperationException exception = Assertions.assertThrows(
                 UnsupportedOperationException.class,
-                () -> history.add(secondEntry));
+                () -> history.add(secondEntry)
+        );
         // Стандартное поведение неизменной коллекции
         Assertions.assertNull(exception.getMessage());
-        Assertions.assertIterableEquals(List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5)),
-                repository.findLast(userId, 10));
-
-
+        Assertions.assertIterableEquals(List.of(new MoodEntry(LocalDateTime.of(2026, 10, 10, 10, 0), 5, "")),
+                repository.findLast(userId, 10)
+        );
     }
 }
