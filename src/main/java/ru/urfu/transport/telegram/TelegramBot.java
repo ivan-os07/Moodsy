@@ -45,8 +45,9 @@ public class TelegramBot implements LongPollingUpdateConsumer {
     /**
      * Инициализирует бота с заданным токеном.
      *
-     * @param botToken   токен для доступа к Telegram API
-     * @param dispatcher диспетчер для обработки команд
+     * @param botToken    токен для доступа к Telegram API
+     * @param dispatcher  диспетчер для обработки команд
+     * @param userService сервис поиска и создания пользователей
      */
     public TelegramBot(String botToken, CommandDispatcher dispatcher, UserService userService) {
         this.telegramClient = new OkHttpTelegramClient(botToken);
@@ -62,7 +63,7 @@ public class TelegramBot implements LongPollingUpdateConsumer {
                 continue;
             }
             Message message = update.getMessage();
-            if (message.getFrom() == null){
+            if (message.getFrom() == null) {
                 continue;
             }
 
@@ -91,7 +92,8 @@ public class TelegramBot implements LongPollingUpdateConsumer {
      * @throws Exception если произошла ошибка при запуске или регистрации бота
      */
     public void start() throws Exception {
-        try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+        try (TelegramBotsLongPollingApplication botsApplication =
+                     new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(this.botToken, this);
             System.out.println("Бот успешно запущен и слушает обновления...");
             Thread.currentThread().join();

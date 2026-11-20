@@ -47,7 +47,7 @@ class InMemoryMoodRepositoryTest {
      * от новых к старым
      */
     @Test
-    void TestSaveOneOrMoreEntries() {
+    void testSaveOneOrMoreEntries() {
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
@@ -69,7 +69,7 @@ class InMemoryMoodRepositoryTest {
      * unknown userId
      */
     @Test
-    void TestFindLastLimitTests() {
+    void testFindLastLimitTests() {
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
@@ -99,7 +99,7 @@ class InMemoryMoodRepositoryTest {
      * Проверяет, что записи одного пользователя не попадают в хранилище заметок другого пользователя.
      */
     @Test
-    void TestSecondUser() {
+    void testSecondUser() {
         UUID secondUserId = UUID.fromString("00000000-0000-0000-0000-000000000911");
 
         repository.save(userId, firstEntry);
@@ -119,7 +119,7 @@ class InMemoryMoodRepositoryTest {
      * Проверяет, что невозможно изменить отметки пользователя из вне.
      */
     @Test
-    void TestUnmodifiableList() {
+    void testUnmodifiableList() {
         repository.save(userId, firstEntry);
 
         List<MoodEntry> history = repository.findLast(userId, 10);

@@ -18,7 +18,8 @@ public class HistoryCommand implements BotCommand {
     /**
      * Формат даты, времени в истории записей
      */
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private final DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     /**
      * Инициализация команды просмотра истории

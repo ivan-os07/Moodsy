@@ -30,7 +30,8 @@ public class CommandDispatcher {
      */
     public CommandDispatcher(CommandRegistry registry, CheckinFsmService checkinFsmService) {
         this.registry = Objects.requireNonNull(registry, "registry не может быть null");
-        this.checkinFsmService = Objects.requireNonNull(checkinFsmService, "checkinFsmService не может быть null");
+        this.checkinFsmService = Objects.requireNonNull(checkinFsmService,
+                "checkinFsmService не может быть null");
     }
 
     /**
