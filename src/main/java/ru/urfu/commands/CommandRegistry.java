@@ -30,6 +30,7 @@ public class CommandRegistry {
      * Возвращает все зарегистрированные команды.
      */
     public Collection<BotCommand> getCommands() {
+
         return Collections.unmodifiableCollection(commands.values());
     }
 }

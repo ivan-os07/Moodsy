@@ -72,7 +72,8 @@ public final class User {
                     return;
                 }
 
-                throw new IllegalArgumentException("У пользователя уже привязан аккаунт на платформе " + identity.platform());
+                throw new IllegalArgumentException("У пользователя уже привязан аккаунт на платформе "
+                        + identity.platform());
             }
         }
         platforms.add(identity);

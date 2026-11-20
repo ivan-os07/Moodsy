@@ -18,7 +18,8 @@ public class InMemoryUserRepository implements UserRepository {
     /**
      * Связь платформенной идентичности с UUID пользователя
      */
-    private final Map<PlatformIdentity, UUID> userIdsByPlatform = new ConcurrentHashMap<>();
+    private final Map<PlatformIdentity, UUID> userIdsByPlatform =
+            new ConcurrentHashMap<>();
 
 
     @Override
@@ -49,7 +50,9 @@ public class InMemoryUserRepository implements UserRepository {
         });
         User user = usersById.get(userId);
         if (user == null) {
-            throw new IllegalStateException("Нарушена связь между пользователем и аккаунтом платформы");
+            throw new IllegalStateException(
+                    "Нарушена связь между пользователем и аккаунтом платформы"
+            );
         }
         return user;
     }

@@ -24,7 +24,8 @@ public class UserService {
      * @param userRepository репозиторий для хранения и поиска пользователей
      */
     public UserService(UserRepository userRepository) {
-        this.userRepository = Objects.requireNonNull(userRepository, "userRepository не может быть null");
+        this.userRepository = Objects.requireNonNull(
+                userRepository, "userRepository не может быть null");
     }
 
     /**
@@ -35,6 +36,7 @@ public class UserService {
      * @return внутренний UUID
      */
     public UUID getOrCreateUserId(PlatformIdentity identity) {
+
         return userRepository.getOrCreate(identity).getId();
     }
 
