@@ -74,7 +74,7 @@ public class CheckinFsmService {
     /**
      * Сообщение о неизвестной команде на шаге заметки.
      */
-    private static final String UNKNOWN_COMMAND = "❌ Неизвестная команда. Доступны: /back, /exit";
+    private static final String UNKNOWN_COMMAND = "❌ Неизвестная команда. Доступны: /skip, /back, /exit";
 
     /**
      * Сообщение об ошибке при вызове команды /skip не на шаге заметки.
@@ -141,8 +141,11 @@ public class CheckinFsmService {
      *
      * @param userId идентификатор пользователя
      * @return приглашение ввести оценку
+     * @throws NullPointerException если {@code userId} равен {@code null}
      */
     public String start(UUID userId) {
+        Objects.requireNonNull(userId, "userId не может быть null");
+
         CheckinSession session = new CheckinSession(userId, CheckinStep.SCORE, 0, "");
         sessionStore.save(session);
         return SCORE_PROMPT;
@@ -150,20 +153,17 @@ public class CheckinFsmService {
 
     /**
      * Обрабатывает ввод пользователя в зависимости от текущего шага диалога.
-     * Команды /exit и /back доступны на любом шаге.
+     * Команды /skip /exit и /back доступны на любом шаге.
      *
      * @param userId идентификатор пользователя
      * @param text   текст сообщения
      * @return сообщение с результатом обработки
+     * @throws NullPointerException если {@code userId} равен {@code null}
      */
     public String handle(UUID userId, String text) {
         Objects.requireNonNull(userId, "userId не может быть null");
 
         // Проверяем наличие сессии
-        if (!sessionStore.hasSession(userId)) {
-            return NO_SESSION;
-        }
-
         Optional<CheckinSession> found = sessionStore.findById(userId);
         if (found.isEmpty()) {
             return NO_SESSION;
@@ -183,7 +183,7 @@ public class CheckinFsmService {
             default -> switch (session.step()) {
                 case SCORE -> handleScore(session, input);
                 case NOTE -> handleNote(session, input);
-                case PREVIEW -> handlePreview(session, input);
+                case PREVIEW -> handlePreview(session, command);
             };
         };
 
@@ -231,9 +231,11 @@ public class CheckinFsmService {
         }
 
         // Создаем новую сессию
-        CheckinSession updatedSession = new CheckinSession(session.userId(), CheckinStep.NOTE,    // меняем шаг на следующий
+        CheckinSession updatedSession = new CheckinSession(session.userId(),
+                CheckinStep.NOTE,    // меняем шаг на следующий
                 score,               // оценка
-                session.note());
+                session.note()
+        );
 
         // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
         sessionStore.save(updatedSession);
@@ -242,36 +244,24 @@ public class CheckinFsmService {
     }
 
     /**
-     * Принимает заметку или пропускает(/skip) её и переводит диалог на шаг PREVIEW.
+     * Принимает заметку на шаге NOTE и переводит диалог на шаг PREVIEW.
      *
      * @param session текущая сессия
-     * @param text    введённый текст
+     * @param text    очищенный от пробелов текст заметки
      * @return текст карточки предпросмотра или сообщение об ошибке
      */
     private String handleNote(CheckinSession session, String text) {
-        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
-
-        // Защита от null и очистка пробелов по краям
-        String cleanText = (text == null) ? "" : text.trim();
-        String note;
-
-        if (CMD_SKIP.equalsIgnoreCase(cleanText)) {
-            note = "";
-        } else if (cleanText.startsWith("/")) {
+        if (text.startsWith("/")) {
             return UNKNOWN_COMMAND;
-        } else {
-            note = cleanText;
         }
 
-        // Создаем новую сессию
-        CheckinSession updatedSession = new CheckinSession(session.userId(), CheckinStep.PREVIEW, // Меняем шаг на следующий,
-                session.score(), note // Новая заметка
+        CheckinSession updatedSession = new CheckinSession(
+                session.userId(),
+                CheckinStep.PREVIEW,
+                session.score(),
+                text
         );
-
-        // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
-        // При этом session почистит GC
         sessionStore.save(updatedSession);
-
         return buildPreview(updatedSession);
     }
 
@@ -308,37 +298,41 @@ public class CheckinFsmService {
      * @return приглашение предыдущего шага или сообщение о невозможности возврата
      */
     private String handleBack(CheckinSession session) {
-        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
-
-        CheckinSession updatedSession;
-
-        switch (session.step()) {
-            case SCORE -> {
-                return FIRST_STEP;
-            }
+        return switch (session.step()) {
+            case SCORE -> FIRST_STEP;
             case NOTE -> {
-                updatedSession = new CheckinSession(session.userId(), CheckinStep.SCORE, session.score(), session.note());
-                sessionStore.save(updatedSession);
-                return SCORE_PROMPT;
+                sessionStore.save(
+                        new CheckinSession(
+                                session.userId(),
+                                CheckinStep.SCORE,
+                                session.score(),
+                                session.note()
+                        )
+                );
+                yield SCORE_PROMPT;
             }
             case PREVIEW -> {
-                updatedSession = new CheckinSession(session.userId(), CheckinStep.NOTE, session.score(), session.note());
-                sessionStore.save(updatedSession);
-                return NOTE_PROMPT;
+                sessionStore.save(
+                        new CheckinSession(
+                                session.userId(),
+                                CheckinStep.NOTE,
+                                session.score(),
+                                session.note()
+                        )
+                );
+                yield NOTE_PROMPT;
             }
-        }
-        return "Неизвестный шаг: " + session.step();
+        };
     }
 
     /**
      * Обработка команды /skip
      *
      * @param session текущая сессия
-     * @return сообщение об ошибке если не на шаге NOTE
+     * @return сообщение об ошибке если не на шаге NOTE,
+     * иначе карточку предпросмотра
      */
     private String handleSkip(CheckinSession session) {
-        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
-
         CheckinSession updatedSession;
 
         // Если не на шаге NOTE, то выбрасываем сообщение об ошибке
@@ -354,7 +348,6 @@ public class CheckinFsmService {
         updatedSession = new CheckinSession(session.userId(), CheckinStep.PREVIEW, session.score(), "");
 
         // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
-        // При этом session почистит GC
         sessionStore.save(updatedSession);
 
         return buildPreview(updatedSession);
@@ -369,7 +362,14 @@ public class CheckinFsmService {
      */
     private String buildPreview(CheckinSession session) {
         String note = session.note();
-        return "📋 Предпросмотр карточки:\n" + "• Оценка: " + session.score() + "/" + MAX_SCORE + "\n" + "• Заметка:" + (note.isEmpty() ? "" : " " + note) + "\n" + "Подтвердите запись:\n" + "/approve — сохранить\n" + "/reject — отменить";
+        return """
+                📋 Предпросмотр карточки:
+                • Оценка: %s/%s
+                • Заметка:%s
+                Подтвердите запись:
+                /approve — сохранить
+                /reject — отменить
+                """.formatted(session.score(), MAX_SCORE, note.isEmpty() ? "" : " " + note);
     }
 
     /**
@@ -377,10 +377,10 @@ public class CheckinFsmService {
      *
      * @param userId идентификатор пользователя
      * @return true, если у пользователя есть открытый диалог
+     * @throws NullPointerException если {@code userId} равен {@code null}
      */
     public boolean hasActiveSession(UUID userId) {
         Objects.requireNonNull(userId, "userId не может быть null");
-        // Делегирование в хранилище сессий
         return sessionStore.hasSession(userId);
     }
 }
