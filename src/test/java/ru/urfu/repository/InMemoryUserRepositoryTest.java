@@ -47,7 +47,7 @@ class InMemoryUserRepositoryTest {
      * если пользователь отсутствует
      */
     @Test
-    void TestFindByIdNoUser() {
+    void testFindByIdNoUser() {
         Assertions.assertTrue(repository.findById(UUID.randomUUID()).isEmpty());
         Assertions.assertTrue(repository.findByPlatformIdentity(telegramIdentity)
                 .isEmpty());
@@ -59,7 +59,7 @@ class InMemoryUserRepositoryTest {
      * пользователя при повторном обращении
      */
     @Test
-    void TestGetOrCreate() {
+    void testGetOrCreate() {
         User user = repository.getOrCreate(telegramIdentity);
 
         Assertions.assertNotNull(user);
@@ -84,7 +84,7 @@ class InMemoryUserRepositoryTest {
      * привязка дополнительного аккаунта к существующему пользователю
      */
     @Test
-    void TestAddPlatformIdentity() {
+    void testAddPlatformIdentity() {
         User user = repository.getOrCreate(telegramIdentity);
         User updUser = repository.addPlatformIdentity(user.getId(), discordIdentity);
 
@@ -102,7 +102,7 @@ class InMemoryUserRepositoryTest {
      * привязка второго аккаунта той же платформы запрещена
      */
     @Test
-    void TestAddPlatformIdentitySamePlatform() {
+    void testAddPlatformIdentitySamePlatform() {
         User user = repository.getOrCreate(telegramIdentity);
         User updUser = repository.addPlatformIdentity(user.getId(), telegramIdentity);
 
@@ -129,7 +129,7 @@ class InMemoryUserRepositoryTest {
      * привязанного к другому пользователю
      */
     @Test
-    void TestAddPlatformIdentityAlreadyLinked() {
+    void testAddPlatformIdentityAlreadyLinked() {
 
         User firstUser = repository.getOrCreate(telegramIdentity);
         User secondUser = repository.getOrCreate(discordIdentity);
@@ -171,7 +171,7 @@ class InMemoryUserRepositoryTest {
      * запрет привязки аккаунта к несуществующему пользователю
      */
     @Test
-    void TestAddPlatformIdentityUnknownUser() {
+    void testAddPlatformIdentityUnknownUser() {
         UUID unknownUserId = UUID.randomUUID();
         IllegalArgumentException exception = Assertions.assertThrows(
                 IllegalArgumentException.class,
@@ -186,7 +186,7 @@ class InMemoryUserRepositoryTest {
      * Тестируем обработку null в аргументах методов репозитория
      */
     @Test
-    void TestMethodsRejectNull() {
+    void testMethodsRejectNull() {
         NullPointerException findByIdException = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> repository.findById(null)
@@ -224,7 +224,7 @@ class InMemoryUserRepositoryTest {
      * Тестируем невозможность изменения списка платформ
      */
     @Test
-    void getPlatformsReturnsUnmodifiableList() {
+    void testGetPlatformsReturnsUnmodifiableList() {
         User user = repository.getOrCreate(telegramIdentity);
 
         UnsupportedOperationException exception = Assertions.assertThrows(

@@ -59,7 +59,7 @@ class CheckinFsmServiceTest {
      * Проверяет, что старт чекина создаёт сессию на шаге SCORE и возвращает приглашение.
      */
     @Test
-    void TestStart_createsSessionAndAsksForScore() {
+    void testStart_createsSessionAndAsksForScore() {
         String response = service.start(userId);
 
         Assertions.assertEquals("Введите оценку от 1 до 10", response);
@@ -71,7 +71,7 @@ class CheckinFsmServiceTest {
      * Проверяет открыта ли сессия у пользователя.
      */
     @Test
-    void TestHasActiveSession() {
+    void testHasActiveSession() {
         Assertions.assertFalse(service.hasActiveSession(userId));
 
         service.start(userId);
@@ -84,7 +84,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет число, например "7".
      */
     @Test
-    void TestHandle_validScore_savesScoreAndAsksForNote() {
+    void testHandle_validScore_savesScoreAndAsksForNote() {
         service.start(userId);
 
         String response = service.handle(userId, "7");
@@ -102,7 +102,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет строку, например "abc".
      */
     @Test
-    void TestHandle_invalidScoreStringAndStayOnSCORE() {
+    void testHandle_invalidScoreStringAndStayOnSCORE() {
         service.start(userId);
 
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
@@ -122,7 +122,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет число не из диапазона, например "11".
      */
     @Test
-    void TestHandle_invalidScoreIntAndStayOnSCORE() {
+    void testHandle_invalidScoreIntAndStayOnSCORE() {
         service.start(userId);
 
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
@@ -144,7 +144,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод строки для заметки на шаге NOTE → сохраняет заметку, переход в PREVIEW
      */
     @Test
-    void TestHandle_validNOTE() {
+    void testHandle_validNOTE() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -163,7 +163,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод пустой строки(=команде skip) на шаге NOTE → пустая заметка, переход в PREVIEW
      */
     @Test
-    void TestHandle_validEmptyNOTE() {
+    void testHandle_validEmptyNOTE() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -182,7 +182,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод команды skip на шаге NOTE → пустая заметка, переход в PREVIEW
      */
     @Test
-    void TestHandle_validCmdSkip() {
+    void testHandle_validCmdSkip() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -201,7 +201,7 @@ class CheckinFsmServiceTest {
      * Неуспешный ввод команды skip на шаге не NOTE, и не на PREVIEW → сообщение об ошибке
      */
     @Test
-    void TestHandle_invalidCmdSkipNotPREVIEW() {
+    void testHandle_invalidCmdSkipNotPREVIEW() {
         String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.";
 
         // Например, на шаге SCORE
@@ -217,7 +217,7 @@ class CheckinFsmServiceTest {
      * Неуспешный ввод команды skip на шаге PREVIEW → сообщение об ошибке и доступные шаги
      */
     @Test
-    void TestHandle_invalidCmdSkipPREVIEW() {
+    void testHandle_invalidCmdSkipPREVIEW() {
         String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.\nПожалуйста, подтвердите запись с помощью /approve или отмените через /reject.";
 
         // Идем к шагу PREVIEW
@@ -237,7 +237,7 @@ class CheckinFsmServiceTest {
      * Сохранение заметки при использовании /approve на шаге PREVIEW → сохраняет MoodEntry, удаляет сессию
      */
     @Test
-    void TestHandle_save() {
+    void testHandle_save() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -266,7 +266,7 @@ class CheckinFsmServiceTest {
      * Выход из диалога по команде /exit: сессия удаляется, запись не сохраняется.
      */
     @Test
-    void TestHandle_exitCancelsSessionWithoutSaving() {
+    void testHandle_exitCancelsSessionWithoutSaving() {
         service.start(userId);
         service.handle(userId, "7"); // находимся на шаге NOTE
 
@@ -289,7 +289,7 @@ class CheckinFsmServiceTest {
      * Отмена записи по команде /reject на шаге PREVIEW: сессия удаляется, запись не сохраняется.
      */
     @Test
-    void TestHandle_rejectCancelsSessionWithoutSaving() {
+    void testHandle_rejectCancelsSessionWithoutSaving() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "заметка");
@@ -312,7 +312,7 @@ class CheckinFsmServiceTest {
      * Возврат назад с шага NOTE на шаг SCORE по команде /back.
      */
     @Test
-    void TestHandle_backFromNoteToScore() {
+    void testHandle_backFromNoteToScore() {
         service.start(userId);
         service.handle(userId, "7"); // перешли на NOTE
 
@@ -327,7 +327,7 @@ class CheckinFsmServiceTest {
      * Возврат назад с шага PREVIEW на шаг NOTE по команде /back.
      */
     @Test
-    void TestHandle_backFromPreviewToNote() {
+    void testHandle_backFromPreviewToNote() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "заметка"); // перешли на PREVIEW
@@ -343,7 +343,7 @@ class CheckinFsmServiceTest {
      * Попытка возврата назад с начального шага SCORE: возвращает ошибку и остаётся на SCORE.
      */
     @Test
-    void TestHandle_backFromScoreReturnsError() {
+    void testHandle_backFromScoreReturnsError() {
         service.start(userId); // находимся на SCORE
 
         String response = service.handle(userId, "/back");
@@ -357,7 +357,7 @@ class CheckinFsmServiceTest {
      * Некорректный ввод на шаге PREVIEW: напоминает о доступных командах.
      */
     @Test
-    void TestHandle_invalidInputOnPreview() {
+    void testHandle_invalidInputOnPreview() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "заметка");

@@ -39,7 +39,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что сохранённая сессия возвращается тому же пользователю.
      */
     @Test
-    void TestSaveAndFindById() {
+    void testSaveAndFindById() {
         CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
 
         store.save(session);
@@ -51,7 +51,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что для пользователя без открытой сессии возвращается пустой Optional.
      */
     @Test
-    void TestFindByIdUnknownUser() {
+    void testFindByIdUnknownUser() {
         Assertions.assertTrue(store.findById(firstUserId).isEmpty());
     }
 
@@ -59,7 +59,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что повторное сохранение заменяет предыдущую сессию пользователя.
      */
     @Test
-    void TestSaveReplacesExistingSession() {
+    void testSaveReplacesExistingSession() {
         CheckinSession first = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
         CheckinSession second = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
 
@@ -73,7 +73,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что удаление возвращает удалённую сессию и убирает её из хранилища.
      */
     @Test
-    void TestRemoveExistingSession() {
+    void testRemoveExistingSession() {
         CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
         store.save(session);
 
@@ -87,7 +87,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что удаление несуществующей сессии ничего не возвращает.
      */
     @Test
-    void TestRemoveUnknownUser() {
+    void testRemoveUnknownUser() {
         Assertions.assertTrue(store.remove(firstUserId).isEmpty());
     }
 
@@ -96,7 +96,7 @@ class InMemoryCheckinSessionStoreTest {
      * удаление одного диалога не затрагивает другой.
      */
     @Test
-    void TestSessionsOfDifferentUsersAreIsolated() {
+    void testSessionsOfDifferentUsersAreIsolated() {
         CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
         CheckinSession secondSession = new CheckinSession(secondUserId, CheckinStep.SCORE, 0, "");
         store.save(firstSession);
@@ -116,7 +116,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что null в аргументах отклоняется с NullPointerException.
      */
     @Test
-    void TestNullArgumentsAreRejected() {
+    void testNullArgumentsAreRejected() {
         Assertions.assertThrows(NullPointerException.class, () -> store.save(null));
         Assertions.assertThrows(NullPointerException.class, () -> store.findById(null));
         Assertions.assertThrows(NullPointerException.class, () -> store.remove(null));
@@ -131,7 +131,7 @@ class InMemoryCheckinSessionStoreTest {
      * аналогично для пользователя без сессии закрыт - false
      */
     @Test
-    void TestHasSession() {
+    void testHasSession() {
         CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, "");
 
         store.save(firstSession);
