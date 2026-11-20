@@ -36,10 +36,10 @@ public class MoodAnalyticsService {
             Objects.requireNonNull(entry, "entries не должен содержать null");
             Objects.requireNonNull(entry.sphere(), "sphere не может быть null");
             scoreSum += entry.score();
-            if (bestDay == null || isBetter(bestDay, entry)) {
+            if (bestDay == null || isBetter(entry, bestDay)) {
                 bestDay = entry;
             }
-            if (worstDay == null || isWorse(worstDay, entry)) {
+            if (worstDay == null || isWorse(entry, worstDay)) {
                 worstDay = entry;
 
             }

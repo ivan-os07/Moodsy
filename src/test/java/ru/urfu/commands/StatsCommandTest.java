@@ -88,8 +88,8 @@ public class StatsCommandTest {
         String expected = """
                 📊 Статистика за неделю (02.11.2026 - 08.11.2026)
                 Средняя оценка; 7,33/10
-                Лучший день: 03.11.2026 00:00 - 4/10
-                Худший день: 04.11.2026 00:00 - 10/10
+                Лучший день: 04.11.2026 00:00 - 10/10
+                Худший день: 03.11.2026 00:00 - 4/10
                 Самая частая сфера: Здоровье (1 отметка)""";
         Assertions.assertEquals(expected, result);
 
@@ -141,7 +141,6 @@ public class StatsCommandTest {
             "22, отметки",
 
     })
-        //Починить тест
     void TestRussianFormsSphereCounts(int count, String expected) {
         for (int i = 0; i < count; i++) {
             repository.save(userId, new MoodEntry(
@@ -159,7 +158,6 @@ public class StatsCommandTest {
         String actualLastLine = result.substring(result.lastIndexOf("\n") + 1);
 
         Assertions.assertEquals(expectedLastLine, actualLastLine);
-
 
     }
 }
