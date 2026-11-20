@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Assertions;
 /**
  * Тестирование команды /history
  */
-public class HistoryCommandTest {
+class HistoryCommandTest {
     /**
      * Репозиторий для хранения отметок
      */
@@ -35,13 +35,13 @@ public class HistoryCommandTest {
     }
 
     /**
-     * Проверка:
+     * Тестируем:
      * попытки обращения к пустой истории (с аргументом и без)
      * корректности формирования строки для ответа пользователю (с лимитом и без)
      * проверка корректного отображения в истории (от старых к новым)
      */
     @Test
-    void TestExecute() {
+    void testExecute() {
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, null));
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", command.execute(userId, new String[]{"6"}));
 
@@ -67,12 +67,12 @@ public class HistoryCommandTest {
     }
 
     /**
-     * Проверка, что при использовании команды без аргумента
+     * Тестируем: что при использовании команды без аргумента
      * и наличия кол-ва заметок в истории большем чем 10
      * выводится именно 10 заметок.
      */
     @Test
-    void TestExecuteTestLimit() {
+    void testExecuteTestLimit() {
         for (int i = 1; i <= 23; i++) {
             repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 10, i, 10, 0), i % 10 + 1, ""));
         }
@@ -82,11 +82,11 @@ public class HistoryCommandTest {
     }
 
     /**
-     * Проверяем, сообщения об ошибках в сценариях:
+     * Тестируем, сообщения об ошибках в сценариях:
      * буквенная последовательность, отрицательные числа, нуль, несколько аргументов
      */
     @Test
-    void TestExecuteErrorTest() {
+    void testExecuteError() {
         String exp = "❌ Ошибка: переданный формат числа не соответствует ожидаемому";
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"abc"}));
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"-1"}));
@@ -101,10 +101,10 @@ public class HistoryCommandTest {
 
 
     /**
-     * Проверяет, что заметка выводится в верном формате.
+     * Тестируем, что заметка выводится в верном формате.
      */
     @Test
-    void TestExecute_showsNoteAndKeepsTimeAsStored() {
+    void testExecute_showsNoteAndKeepsTimeAsStored() {
         repository.save(userId,
                 new MoodEntry(LocalDateTime.of(2026, 12, 12, 23, 56), 6, "много тикетов"));
 

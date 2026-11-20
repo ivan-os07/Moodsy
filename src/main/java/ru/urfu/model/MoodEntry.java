@@ -13,6 +13,9 @@ import java.util.Objects;
 public record MoodEntry(LocalDateTime createdAt, int score, String note) {
     public MoodEntry {
         Objects.requireNonNull(createdAt, "createdAt не может быть null");
+        if (score < 1 || score > 10) {
+            throw new IllegalArgumentException("score должен быть в диапазоне от 1 до 10: " + score);
+        }
         note = note == null ? "" : note;
 
     }

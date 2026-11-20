@@ -24,7 +24,8 @@ public class UserService {
      * @param userRepository репозиторий для хранения и поиска пользователей
      */
     public UserService(UserRepository userRepository) {
-        this.userRepository = Objects.requireNonNull(userRepository, "userRepository не может быть null");
+        this.userRepository = Objects.requireNonNull(
+                userRepository, "userRepository не может быть null");
     }
 
     /**
@@ -35,14 +36,16 @@ public class UserService {
      * @return внутренний UUID
      */
     public UUID getOrCreateUserId(PlatformIdentity identity) {
+
         return userRepository.getOrCreate(identity).getId();
     }
 
     /**
      * Привязывает дополнительный аккаунт с платформы к существующему пользователю
-     * @param userId внутренний UUID пользователя, к которому добавляется новый аккаунт
+     *
+     * @param userId   внутренний UUID пользователя, к которому добавляется новый аккаунт
      * @param identity аккаунт внешней платформы
-     * @return внутренний UUID
+     * @return пользователь с обновленным списком идентичностей
      */
     public User linkPlatform(UUID userId, PlatformIdentity identity) {
         return userRepository.addPlatformIdentity(userId, identity);
