@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Assertions;
 /**
  * Тестирование команды /history
  */
-public class HistoryCommandTest {
+class HistoryCommandTest {
     /**
      * Репозиторий для хранения отметок
      */

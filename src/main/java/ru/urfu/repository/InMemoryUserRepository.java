@@ -37,7 +37,7 @@ public class InMemoryUserRepository implements UserRepository {
         return findById(userId);
     }
 
-    //атомарность обеспечивается за счет помещения пользователя в usersById до сохранения связи
+
     @Override
     public User getOrCreate(PlatformIdentity identity) {
         Objects.requireNonNull(identity, "identity не может быть null");

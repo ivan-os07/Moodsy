@@ -40,9 +40,10 @@ public class UserService {
 
     /**
      * Привязывает дополнительный аккаунт с платформы к существующему пользователю
-     * @param userId внутренний UUID пользователя, к которому добавляется новый аккаунт
+     *
+     * @param userId   внутренний UUID пользователя, к которому добавляется новый аккаунт
      * @param identity аккаунт внешней платформы
-     * @return внутренний UUID
+     * @return пользователь с обновленным списком идентичностей
      */
     public User linkPlatform(UUID userId, PlatformIdentity identity) {
         return userRepository.addPlatformIdentity(userId, identity);

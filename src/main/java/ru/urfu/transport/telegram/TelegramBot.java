@@ -45,8 +45,9 @@ public class TelegramBot implements LongPollingUpdateConsumer {
     /**
      * Инициализирует бота с заданным токеном.
      *
-     * @param botToken   токен для доступа к Telegram API
-     * @param dispatcher диспетчер для обработки команд
+     * @param botToken    токен для доступа к Telegram API
+     * @param dispatcher  диспетчер для обработки команд
+     * @param userService сервис поиска и создания пользователей
      */
     public TelegramBot(String botToken, CommandDispatcher dispatcher, UserService userService) {
         this.telegramClient = new OkHttpTelegramClient(botToken);
@@ -62,7 +63,7 @@ public class TelegramBot implements LongPollingUpdateConsumer {
                 continue;
             }
             Message message = update.getMessage();
-            if (message.getFrom() == null){
+            if (message.getFrom() == null) {
                 continue;
             }
 

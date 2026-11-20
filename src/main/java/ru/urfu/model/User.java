@@ -27,7 +27,6 @@ public final class User {
      */
     public User(UUID id, List<PlatformIdentity> platforms) {
         this.id = Objects.requireNonNull(id, "id не может быть null");
-        Objects.requireNonNull(platforms, "platforms не может быть null");
         this.platforms = new ArrayList<>();
 
         for (PlatformIdentity identity : platforms) {
@@ -38,6 +37,7 @@ public final class User {
 
     /**
      * Возвращает внутренний UUID пользователя
+     *
      * @return UUID пользователя
      */
     public UUID getId() {
@@ -46,6 +46,7 @@ public final class User {
 
     /**
      * Возвращает список привязанных платформ
+     *
      * @return неизменяемая копия списка
      */
     public List<PlatformIdentity> getPlatforms() {
@@ -56,6 +57,10 @@ public final class User {
      * Добавляет пользователю новую платформенную идентичность,
      * если такая идентичность уже привязана - ничего не происходит
      *
+     * @param identity идентификатор аккаунта внешней платформы
+     * @throws NullPointerException если identity равно null
+     * @throws IllegalArgumentException если у пользователя
+     * уже есть привязанный аккаунт на этой платформе
      */
     public void addPlatformIdentity(PlatformIdentity identity) {
         Objects.requireNonNull(identity, "identity не может быть null");
