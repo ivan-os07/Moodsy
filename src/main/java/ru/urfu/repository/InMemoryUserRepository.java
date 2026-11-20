@@ -3,10 +3,7 @@ package ru.urfu.repository;
 import ru.urfu.model.PlatformIdentity;
 import ru.urfu.model.User;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -17,11 +14,11 @@ public class InMemoryUserRepository implements UserRepository {
     /**
      * Пользователи, индексация по внутреннему UUID
      */
-    private final ConcurrentHashMap<UUID, User> usersById = new ConcurrentHashMap<>();
+    private final Map<UUID, User> usersById = new ConcurrentHashMap<>();
     /**
      * Связь платформенной идентичности с UUID пользователя
      */
-    private final ConcurrentHashMap<PlatformIdentity, UUID> userIdsByPlatform = new ConcurrentHashMap<>();
+    private final Map<PlatformIdentity, UUID> userIdsByPlatform = new ConcurrentHashMap<>();
 
 
     @Override

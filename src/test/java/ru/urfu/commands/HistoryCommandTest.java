@@ -86,7 +86,7 @@ public class HistoryCommandTest {
      * буквенная последовательность, отрицательные числа, нуль, несколько аргументов
      */
     @Test
-    void TestExecuteErrorTest() {
+    void TestExecuteError() {
         String exp = "❌ Ошибка: переданный формат числа не соответствует ожидаемому";
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"abc"}));
         Assertions.assertEquals(exp, command.execute(userId, new String[]{"-1"}));
