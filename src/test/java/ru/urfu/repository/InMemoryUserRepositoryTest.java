@@ -39,10 +39,9 @@ class InMemoryUserRepositoryTest {
     }
 
     /**
-     * Тестирует поиск по UUID, по аккаунту платформу
-     * в случае отсутствия зарегистрированного аккаунта
-     * и возвращает пустой результат
-     *
+     * Тестируем поиск пользователя по UUID
+     * и платформенной идентичности,
+     * если пользователь отсутствует
      */
     @Test
     void TestFindByIdNoUser() {
@@ -51,7 +50,9 @@ class InMemoryUserRepositoryTest {
     }
 
     /**
-     * Тестирует метод getOrCreate - создание пользователя/ей и сохранение его в репозитории
+     * Тестируем создание пользователя
+     * и возвращение существующего
+     * пользователя при повторном обращении
      */
     @Test
     void TestGetOrCreate() {
@@ -204,5 +205,23 @@ class InMemoryUserRepositoryTest {
         );
         Assertions.assertEquals("identity не может быть null", addNullIdentityException.getMessage());
 
+    }
+    /**
+     * Тестируем невозможность изменения списка платформ
+     */
+    @Test
+    void getPlatformsReturnsUnmodifiableList() {
+        User user = repository.getOrCreate(telegramIdentity);
+
+        UnsupportedOperationException exception = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> user.getPlatforms().add(discordIdentity)
+        );
+
+        Assertions.assertNull(exception.getMessage());
+        Assertions.assertEquals(
+                List.of(telegramIdentity),
+                user.getPlatforms()
+        );
     }
 }
