@@ -10,6 +10,7 @@ import ru.urfu.commands.CommandRegistry;
 import ru.urfu.commands.HistoryCommand;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.repository.InMemoryMoodRepository;
+import ru.urfu.repository.MoodRepository;
 import ru.urfu.service.fsm.CheckinFsmService;
 import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
 
@@ -34,7 +35,7 @@ class CheckinFlowFunctionalTest {
     /**
      * Репозиторий записей: по нему проверяем, что чекин действительно сохранился.
      */
-    private InMemoryMoodRepository moodRepository;
+    private MoodRepository moodRepository;
 
     /**
      * Внутренний идентификатор пользователя, проходящего чекин.
@@ -51,7 +52,9 @@ class CheckinFlowFunctionalTest {
         moodRepository = new InMemoryMoodRepository();
         CheckinFsmService checkinFsmService = new CheckinFsmService(sessionStore,
                 moodRepository,
-                Clock.fixed(Instant.parse("2026-11-02T09:00:00Z"), ZoneOffset.UTC)
+                Clock.fixed(Instant.parse("2026-11-02T09:00:00Z"),
+                        ZoneOffset.UTC
+                )
         );
         // Регистрируем команды в хранилище, как это делает Main
         CommandRegistry registry = new CommandRegistry();
@@ -66,7 +69,7 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота, факт сохранения записи и её вид в истории.
      */
     @Test
-    void TestHappyPathWithNote() {
+    void testHappyPathWithNote() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "7");
@@ -74,17 +77,27 @@ class CheckinFlowFunctionalTest {
         BotResponse approve = dispatcher.handle(userId, "/approve");
 
         // ответы совпадают с диалогом
-        Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
+        Assertions.assertEquals(
+                "Введите оценку от 1 до 10",
+                first.text()
+        );
+        Assertions.assertEquals(
+                "Добавьте заметку или отправьте /skip",
+                score.text()
+        );
         Assertions.assertEquals("""
                 📋 Предпросмотр карточки:
                 • Оценка: 7/10
                 • Заметка: много тикетов
                 Подтвердите запись:
                 /approve — сохранить
-                /reject — отменить""", note.text()
+                /reject — отменить
+                """, note.text()
         );
-        Assertions.assertEquals("✅ Запись сохранена.", approve.text());
+        Assertions.assertEquals(
+                "✅ Запись сохранена.",
+                approve.text()
+        );
 
         // запись появилась в репозитории с нужными данными
         List<MoodEntry> savedEntries = moodRepository.findLast(userId, 1);
@@ -110,7 +123,7 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота, факт сохранения записи и её вид в истории.
      */
     @Test
-    void TestHappyPathWithoutNoteUsingSkip() {
+    void testHappyPathWithoutNoteUsingSkip() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "8");
@@ -118,8 +131,14 @@ class CheckinFlowFunctionalTest {
         BotResponse approve = dispatcher.handle(userId, "/approve");
 
         // ответы совпадают с диалогом
-        Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
+        Assertions.assertEquals(
+                "Введите оценку от 1 до 10",
+                first.text()
+        );
+        Assertions.assertEquals(
+                "Добавьте заметку или отправьте /skip",
+                score.text()
+        );
 
         Assertions.assertEquals("""
                 📋 Предпросмотр карточки:
@@ -127,10 +146,14 @@ class CheckinFlowFunctionalTest {
                 • Заметка:
                 Подтвердите запись:
                 /approve — сохранить
-                /reject — отменить""", note.text()
+                /reject — отменить
+                """, note.text()
         );
 
-        Assertions.assertEquals("✅ Запись сохранена.", approve.text());
+        Assertions.assertEquals(
+                "✅ Запись сохранена.",
+                approve.text()
+        );
 
         // запись появилась в репозитории с нужными данными
         List<MoodEntry> savedEntries = moodRepository.findLast(userId, 1);
@@ -148,7 +171,6 @@ class CheckinFlowFunctionalTest {
                  📅 Ваша история записей:
                 02.11.2026 12:00 - 8/10""", history.text()
         );
-
     }
 
 
@@ -158,30 +180,34 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота, факт несохранения записи и не появления её в истории.
      */
     @Test
-    void TestExitPath() {
-        // до действия
-        List<MoodEntry> before = moodRepository.findLast(userId, 100);
-
+    void testExitPath() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "1");
         BotResponse exit = dispatcher.handle(userId, "/exit");
 
         // ответы совпадают с диалогом
-        Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", score.text());
-        Assertions.assertEquals("Сессия завершена без сохранения отметки", exit.text());
+        Assertions.assertEquals(
+                "Введите оценку от 1 до 10",
+                first.text()
+        );
+        Assertions.assertEquals(
+                "Добавьте заметку или отправьте /skip",
+                score.text()
+        );
+        Assertions.assertEquals(
+                "Сессия завершена без сохранения отметки",
+                exit.text()
+        );
 
-        // после действия; проверяем, что не добавились записи
-
-        List<MoodEntry> after = moodRepository.findLast(userId, 100);
-        // сравнение корректное тк используем record (сравнивает объекты по значению всех их полей)
-        Assertions.assertEquals(before, after);
+        Assertions.assertTrue(moodRepository.findLast(userId, 100).isEmpty());
 
         // /history подсказывает, что заметок нет
         BotResponse history = dispatcher.handle(userId, "/history");
-        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", history.text());
-
+        Assertions.assertEquals(
+                "История пуста. Попробуйте использовать команду /checkin",
+                history.text()
+        );
     }
 
     /**
@@ -190,25 +216,25 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота (сообщение об ошибке), факт несохранения записи и не появления её в истории.
      */
     @Test
-    void TestPathUsingArgs() {
-        // до действия
-        List<MoodEntry> before = moodRepository.findLast(userId, 100);
-
+    void testCheckinWithArgsReturnsError() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin 1");
 
         // ответы совпадают с диалогом
-        Assertions.assertEquals("❌ Команда /checkin вызывается без параметров.", first.text());
+        Assertions.assertEquals(
+                "❌ Команда /checkin вызывается без параметров.",
+                first.text()
+        );
 
-        // после действия; проверяем, что не добавились записи
-        List<MoodEntry> after = moodRepository.findLast(userId, 100);
-        // сравнение корректное тк используем record (сравнивает объекты по значению всех их полей)
-        Assertions.assertEquals(before, after);
+        Assertions.assertTrue(moodRepository.findLast(userId, 100).isEmpty());
 
         // /history подсказывает, что заметок нет
         BotResponse history = dispatcher.handle(userId, "/history");
-        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", history.text());
-  }
+        Assertions.assertEquals(
+                "История пуста. Попробуйте использовать команду /checkin",
+                history.text()
+        );
+    }
 
     /**
      * Сценарий использования команды /back. Сначала идем до шага PREVIEW,
@@ -217,13 +243,10 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота (сообщение об ошибке), факт несохранения записи и не появления её в истории.
      */
     @Test
-    void TestCheckinShouldNotSaveEntryWhenUserCancels() {
-        // до действия
-        List<MoodEntry> before = moodRepository.findLast(userId, 100);
-
+    void testBackNavigationAndExitWithoutSaving() {
         // подаём сообщения пользователя
         dispatcher.handle(userId, "/checkin");
-        dispatcher.handle(userId, "7");
+        dispatcher.handle(userId, "8");
         dispatcher.handle(userId, "много тикетов");
 
         BotResponse backToNote = dispatcher.handle(userId, "/back");
@@ -231,22 +254,70 @@ class CheckinFlowFunctionalTest {
         BotResponse backWrong = dispatcher.handle(userId, "/back");
 
         // ответы совпадают с диалогом
-        Assertions.assertEquals("Добавьте заметку или отправьте /skip", backToNote.text());
-        Assertions.assertEquals("Введите оценку от 1 до 10", backToScore.text());
-        Assertions.assertEquals("❌ Вы на первом шаге, вернуться назад нельзя.", backWrong.text());
+        Assertions.assertEquals(
+                "Добавьте заметку или отправьте /skip",
+                backToNote.text()
+        );
+        Assertions.assertEquals(
+                "Введите оценку от 1 до 10",
+                backToScore.text()
+        );
+        Assertions.assertEquals(
+                "❌ Вы на первом шаге, вернуться назад нельзя.",
+                backWrong.text()
+        );
 
 
         dispatcher.handle(userId, "/exit");
 
-        // после действия; проверяем, что не добавились записи
-        List<MoodEntry> after = moodRepository.findLast(userId, 100);
-        // сравнение корректное тк используем record (сравнивает объекты по значению всех их полей)
-        Assertions.assertEquals(before, after);
+        Assertions.assertTrue(moodRepository.findLast(userId, 100).isEmpty());
 
         // /history подсказывает, что заметок нет
         BotResponse history = dispatcher.handle(userId, "/history");
-        Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", history.text());
+        Assertions.assertEquals(
+                "История пуста. Попробуйте использовать команду /checkin",
+                history.text()
+        );
 
     }
 
+    /**
+     * Проверяет, что параллельные диалоги двух пользователей не влияют друг на друга
+     * и их записи в истории изолированы.
+     */
+    @Test
+    void testParallelDialogsOfTwoUsersAreIsolated() {
+        UUID secondUserId = UUID.randomUUID();
+
+        dispatcher.handle(userId, "/checkin");
+        dispatcher.handle(secondUserId, "/checkin");
+
+        dispatcher.handle(userId, "9");
+        dispatcher.handle(secondUserId, "3");
+
+        dispatcher.handle(userId, "отличный день");
+        dispatcher.handle(secondUserId, "/exit");
+
+        BotResponse approveFirst = dispatcher.handle(userId, "/approve");
+        Assertions.assertEquals(
+                "✅ Запись сохранена.",
+                approveFirst.text()
+        );
+
+        BotResponse firstHistory = dispatcher.handle(userId, "/history");
+        Assertions.assertEquals("""
+                 📅 Ваша история записей:
+                02.11.2026 12:00 - 9/10
+                Заметка: отличный день""", firstHistory.text()
+        );
+
+        BotResponse secondHistory = dispatcher.handle(
+                secondUserId,
+                "/history"
+        );
+        Assertions.assertEquals(
+                "История пуста. Попробуйте использовать команду /checkin",
+                secondHistory.text()
+        );
+    }
 }
