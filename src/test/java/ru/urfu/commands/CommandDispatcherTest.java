@@ -3,6 +3,14 @@ package ru.urfu.commands;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.urfu.repository.InMemoryMoodRepository;
+import ru.urfu.service.fsm.CheckinFsmService;
+import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.UUID;
 
 /**
  * Тестируем работу диспетчера команд.
@@ -10,19 +18,29 @@ import org.junit.jupiter.api.Test;
 class CommandDispatcherTest {
 
     /**
+     * Идентификатор пользователя, от имени которого вызываются команды.
+     */
+    private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000123");
+
+    /**
      * Диспетчер
      */
     private CommandDispatcher dispatcher;
 
     /**
+     * Хранилище команд, из которого диспетчер берёт команду по ключу.
+     */
+    private CommandRegistry registry;
+
+    /**
+     * Сервис диалога чекина, на который диспетчер передаёт ввод.
+     */
+    private CheckinFsmService checkinFsmService;
+
+    /**
      * Фейковая команда
      */
     private FakeCommand fakeCommand;
-
-    /**
-     * Идентификатор пользователя
-     */
-    private static final String USER_ID = "tg:123";
 
     /**
      * Инициализация окружения перед каждым тестом.
@@ -31,10 +49,13 @@ class CommandDispatcherTest {
      */
     @BeforeEach
     void setup() {
-        CommandRegistry registry = new CommandRegistry();
+        checkinFsmService = new CheckinFsmService(new InMemoryCheckinSessionStore(),
+                new InMemoryMoodRepository(),
+                Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC));
+        registry = new CommandRegistry();
         fakeCommand = new FakeCommand("/test", "test description", "answer test");
         registry.register(fakeCommand);
-        dispatcher = new CommandDispatcher(registry);
+        dispatcher = new CommandDispatcher(registry, checkinFsmService);
     }
 
     /**
@@ -43,7 +64,7 @@ class CommandDispatcherTest {
      * проверяем количество вызовов и id пользователя
      */
     @Test
-    void handle_knownCommandTest() {
+    void testHandle_knownCommand() {
         BotResponse response = dispatcher.handle(USER_ID, "/test");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -56,7 +77,7 @@ class CommandDispatcherTest {
      * Тестирование обработки неизвестной(незарегистрированной) команды.
      */
     @Test
-    void handle_unknownCommandTest() {
+    void testHandle_unknownCommand() {
         BotResponse response = dispatcher.handle(USER_ID, "/unknown");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -70,7 +91,7 @@ class CommandDispatcherTest {
      * Тестирование обработки ошибки при регистрации пустой команды
      */
     @Test
-    void handle_blankCommandTest() {
+    void testHandle_blankCommand() {
         BotResponse response = dispatcher.handle(USER_ID, "");
 
         Assertions.assertEquals(USER_ID, response.userId());
@@ -84,8 +105,32 @@ class CommandDispatcherTest {
      * Тестирование обработки команды с несколькими аргументами
      */
     @Test
-    void handle_commandWithArgumentsTest() {
+    void testHandle_commandWithArguments() {
         dispatcher.handle(USER_ID, "/test arg1 arg2 arg3");
         Assertions.assertArrayEquals(new String[]{"arg1", "arg2", "arg3"}, fakeCommand.getLastArgs());
+    }
+
+    /**
+     * Проверяет, что при открытой сессии обычный текст передаётся в FSM чекина.
+     */
+    @Test
+    void testHandle_textWithActiveSession_routesToCheckinFsm() {
+        registry.register(new CheckinCommand(checkinFsmService));
+
+        dispatcher.handle(USER_ID, "/checkin");
+        BotResponse response = dispatcher.handle(USER_ID, "7");
+
+        Assertions.assertEquals("Добавьте заметку или отправьте /skip", response.text());
+        Assertions.assertTrue(checkinFsmService.hasActiveSession(USER_ID));
+    }
+
+    /**
+     * Проверяет, что без открытой сессии обычный текст считается неизвестной командой.
+     */
+    @Test
+    void testHandle_plainTextWithoutSession_returnsUnknownCommand() {
+        BotResponse response = dispatcher.handle(USER_ID, "7");
+
+        Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
     }
 }

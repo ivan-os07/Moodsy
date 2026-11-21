@@ -1,7 +1,11 @@
 package ru.urfu.commands;
 
+import ru.urfu.service.fsm.CheckinFsmService;
+
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Маршрутизатор. Получает сырой текст от пользователя, находит нужную команду и вызывает её
@@ -14,22 +18,30 @@ public class CommandDispatcher {
     private final CommandRegistry registry;
 
     /**
+     * Сервис пошагового чекина.
+     */
+    private final CheckinFsmService checkinFsmService;
+
+    /**
      * Конструктор диспетчера.
      *
-     * @param registry хранилище команд
+     * @param registry          хранилище команд
+     * @param checkinFsmService сервис пошагового чекина
      */
-    public CommandDispatcher(CommandRegistry registry) {
-        this.registry = registry;
+    public CommandDispatcher(CommandRegistry registry, CheckinFsmService checkinFsmService) {
+        this.registry = Objects.requireNonNull(registry, "registry не может быть null");
+        this.checkinFsmService = Objects.requireNonNull(checkinFsmService,
+                "checkinFsmService не может быть null");
     }
 
     /**
      * Обработка входящего сообщения.
      *
-     * @param userId id пользователя.
+     * @param userId id пользователя
      * @param text   текст сообщения
      * @return ответ бота
      */
-    public BotResponse handle(String userId, String text) {
+    public BotResponse handle(UUID userId, String text) {
         if (text == null || text.isBlank()) {
             return new BotResponse(userId, "Сообщение не может быть пустым!");
         }
@@ -38,6 +50,11 @@ public class CommandDispatcher {
         String[] parts = text.trim().split("\\s+");
         String commandKey = parts[0];
         String[] args = Arrays.copyOfRange(parts, 1, parts.length);
+
+        // Сначала проверяем, есть ли активная сессия чекина
+        if (checkinFsmService.hasActiveSession(userId)) {
+            return new BotResponse(userId, checkinFsmService.handle(userId, text));
+        }
 
         // Ищем команду в хранилище
         Optional<BotCommand> command = this.registry.find(commandKey);

@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import java.util.UUID;
+
 /**
  * Контракт для всех команд. Каждая команда будет его реализовывать.
  * Диспетчер будет работать с этим интерфейсом и для него не важно какая именно команда пришла
@@ -26,5 +28,5 @@ public interface BotCommand {
      * @param args   массив аргументов команды
      * @return String - текст ответа
      */
-    String execute(String userId, String[] args);
+    String execute(UUID userId, String[] args);
 }

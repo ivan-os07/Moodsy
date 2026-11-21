@@ -1,11 +1,16 @@
 package ru.urfu;
 
 import ru.urfu.config.TelegramConfig;
+import ru.urfu.service.UserService;
+import ru.urfu.service.fsm.CheckinFsmService;
+import ru.urfu.service.fsm.CheckinSessionStore;
+import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
 import ru.urfu.transport.telegram.TelegramBot;
 import ru.urfu.commands.*;
 import ru.urfu.repository.*;
 
 import java.time.Clock;
+import java.time.ZoneOffset;
 
 
 /**
@@ -32,20 +37,27 @@ public class Main {
 
         // Инициализация инфраструктурных компонентов и слоев данных
         MoodRepository moodRepository = new InMemoryMoodRepository();
+        UserRepository userRepository = new InMemoryUserRepository();
+        UserService userService = new UserService(userRepository);
+
+        CheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();
+        // время мск UTC+3
+        CheckinFsmService checkinFsmService = new CheckinFsmService(
+                sessionStore, moodRepository, Clock.system(ZoneOffset.ofHours(3)));
 
         // Регистрируем команды в хранилище
         CommandRegistry registry = new CommandRegistry();
         registry.register(new StartCommand());
         registry.register(new HelpCommand(registry));
-        registry.register(new CheckinCommand(moodRepository, Clock.systemDefaultZone()));
+        registry.register(new CheckinCommand(checkinFsmService));
         registry.register(new HistoryCommand(moodRepository));
 
-        CommandDispatcher dispatcher = new CommandDispatcher(registry);
+        CommandDispatcher dispatcher = new CommandDispatcher(registry, checkinFsmService);
 
         // Инициализация и запуск транспортного слоя (Telegram-бота)
         // Использование try-with-resources гарантирует корректное закрытие ресурсов бота
 
-        try (TelegramBot bot = new TelegramBot(botToken, dispatcher)
+        try (TelegramBot bot = new TelegramBot(botToken, dispatcher, userService)
              // в будущем можно подключить этот же диспетчер к другим платформам
         ) {
             bot.start();

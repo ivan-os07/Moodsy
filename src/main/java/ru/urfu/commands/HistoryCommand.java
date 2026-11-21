@@ -5,6 +5,7 @@ import ru.urfu.model.MoodEntry;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Команда для просмотра записей пользователя
@@ -17,7 +18,8 @@ public class HistoryCommand implements BotCommand {
     /**
      * Формат даты, времени в истории записей
      */
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private final DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     /**
      * Инициализация команды просмотра истории
@@ -27,6 +29,19 @@ public class HistoryCommand implements BotCommand {
     public HistoryCommand(MoodRepository moodRepository) {
         this.moodRepository = moodRepository;
 
+    }
+
+    /**
+     * Формирует строку истории для одной записи.
+     *
+     * @param entry запись настроения
+     * @return дата и время в МСК, оценка и заметка, если она есть
+     */
+    private String formatEntry(MoodEntry entry) {
+        String note = entry.note().isEmpty() ? "" : "\nЗаметка: " + entry.note();
+        return entry.createdAt().format(formatter)
+                + " - " + entry.score() + "/10"
+                + note;
     }
 
     @Override
@@ -40,7 +55,7 @@ public class HistoryCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String userId, String[] args) {
+    public String execute(UUID userId, String[] args) {
         int limit = 10;
         if (args != null && args.length > 0) {
             if (args.length != 1) {
@@ -65,11 +80,8 @@ public class HistoryCommand implements BotCommand {
         }
         StringBuilder result = new StringBuilder(" \uD83D\uDCC5 Ваша история записей:");
         for (MoodEntry entry : entries) {
-            result.append("\n")
-                    .append(entry.createdAt().format(formatter))
-                    .append(" - ")
-                    .append(entry.score())
-                    .append("/10");
+            result.append("\n");
+            result.append(formatEntry(entry));
         }
 
         return result.toString();

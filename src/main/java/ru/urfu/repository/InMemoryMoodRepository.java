@@ -12,13 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryMoodRepository implements MoodRepository {
 
     /**
-     * Записи настроения, разделенные по идентификаторам пользователей
+     * Записи настроения, разделенные по внутренним идентификаторам пользователей
      */
-    private final Map<String, List<MoodEntry>> entries = new ConcurrentHashMap<>();
+    private final Map<UUID, List<MoodEntry>> entries = new ConcurrentHashMap<>();
 
 
     @Override
-    public void save(String userId, MoodEntry entry) {
+    public void save(UUID userId, MoodEntry entry) {
         entries.computeIfAbsent(userId, k -> new ArrayList<>())
                 .add(entry);
 
@@ -26,7 +26,7 @@ public class InMemoryMoodRepository implements MoodRepository {
 
 
     @Override
-    public List<MoodEntry> findLast(String userId, int limit) {
+    public List<MoodEntry> findLast(UUID userId, int limit) {
         if (limit <= 0) {
             return Collections.emptyList();
         }
@@ -47,6 +47,5 @@ public class InMemoryMoodRepository implements MoodRepository {
         }
         return Collections.unmodifiableList(result);
     }
-
 }
 
