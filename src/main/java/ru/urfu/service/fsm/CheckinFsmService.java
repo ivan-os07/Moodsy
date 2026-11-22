@@ -1,6 +1,8 @@
 package ru.urfu.service.fsm;
 
-import ru.urfu.application.InteractionType;
+import ru.urfu.application.Keyboard;
+import ru.urfu.application.KeyboardButton;
+import ru.urfu.application.KeyboardRow;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
 import ru.urfu.repository.MoodRepository;
@@ -8,10 +10,7 @@ import ru.urfu.repository.MoodRepository;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Управляет пошаговым диалогом чекина (управляет сессией):
@@ -520,33 +519,83 @@ public class CheckinFsmService {
         return Optional.empty();
     }
 
-    /**
-     * Создает результат и определяет тип взаимодействия по сохраненному состоянию сессии
-     *
-     * @param userId идентификатор пользователя
-     * @param text   текст ответа
-     * @return ответ с типом взаимодействия или NONE если сессия завершена
-     *
-     */
-    private CheckinResult createResult(UUID userId, String text) {
-        InteractionType interactionType = sessionStore.findById(userId)
-                .map(session -> resolveInteractionType(session.step()))
-                .orElse(InteractionType.NONE);
-        return new CheckinResult(text, interactionType);
+    private CheckinResult createResult(UUID userId, String text){
+        Optional<Keyboard> keyboard = sessionStore.findById(userId)
+                .map(session -> createKeyboard(session.step()));
+        return new CheckinResult(text, keyboard);
     }
+    private Keyboard createKeyboard(CheckinStep step) {
+        List<KeyboardRow> rows = new ArrayList<>();
+        switch (step) {
+            case SCORE ->{
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("1", "1"),
+                        new KeyboardButton("2", "2"),
+                        new KeyboardButton("3", "3"),
+                        new KeyboardButton("4", "4"),
+                        new KeyboardButton("5", "5")
 
-    /**
-     * Преобразует шаг диалога в тип взаимодействия для транспортного слоя
-     *
-     * @param step текущий шаг диалога
-     * @return тип взаимодействия для соответствующей клавиатуры
-     */
-    private InteractionType resolveInteractionType(CheckinStep step) {
-        return switch (step) {
-            case SCORE -> InteractionType.SCORE_SELECTION;
-            case SPHERE -> InteractionType.SPHERE_SELECTION;
-            case NOTE -> InteractionType.NOTE_INPUT;
-            case PREVIEW -> InteractionType.PREVIEW_CONFIRMATION;
-        };
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("6", "6"),
+                        new KeyboardButton("7", "7"),
+                        new KeyboardButton("8", "8"),
+                        new KeyboardButton("9", "9"),
+                        new KeyboardButton("10", "10")
+
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Отмена",  CMD_EXIT)
+                )));
+            }
+            case SPHERE ->{
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton(
+                                Sphere.WORK.getDisplayName(),
+                                Sphere.WORK.getDisplayName()
+                        ),
+                        new KeyboardButton(
+                                Sphere.SOCIAL.getDisplayName(),
+                                Sphere.SOCIAL.getDisplayName()
+                        )
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton(
+                                Sphere.HEALTH.getDisplayName(),
+                                Sphere.HEALTH.getDisplayName()
+                        ),
+                        new KeyboardButton(
+                                Sphere.REST.getDisplayName(),
+                                Sphere.REST.getDisplayName()
+                        )
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Назад",  CMD_BACK),
+                        new KeyboardButton("Отмена",  CMD_EXIT)
+                )));
+
+
+            }
+            case NOTE ->{
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Пропустить", CMD_SKIP)
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Назад",  CMD_BACK),
+                        new KeyboardButton("Отмена",  CMD_EXIT)
+                )));
+            }
+            case PREVIEW ->{
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("✅ Сохранить", CMD_APPROVE)
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Назад",  CMD_BACK),
+                        new KeyboardButton("Отмена",  CMD_EXIT)
+                )));
+            }
+
+        }
+        return new Keyboard(rows);
     }
 }

@@ -49,7 +49,7 @@ public class CommandDispatcher {
         // Сначала проверяем есть ли сессия
         if (checkinFsmService.hasActiveSession(userId)) {
             CheckinResult result = checkinFsmService.handleWithResponse(userId, text);
-            return new BotResponse(userId, result.text(), result.interactionType());
+            return new BotResponse(userId, result.text(), result.keyboard());
         }
 
         // ИНАЧЕ

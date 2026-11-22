@@ -56,6 +56,6 @@ public class CheckinCommand implements BotCommand {
             return new BotResponse(userId, ARGS_ERROR);
         }
         CheckinResult result = checkinFsmService.startWithResponse(userId);
-        return new BotResponse(userId, result.text(), result.interactionType());
+        return new BotResponse(userId, result.text(), result.keyboard());
     }
 }

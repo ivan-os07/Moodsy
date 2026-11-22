@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
-import ru.urfu.application.InteractionType;
 import ru.urfu.model.Sphere;
 import ru.urfu.transport.telegram.TelegramKeyboardFactory;
 

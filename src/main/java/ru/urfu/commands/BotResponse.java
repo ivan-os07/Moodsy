@@ -1,7 +1,8 @@
 package ru.urfu.commands;
 
-import ru.urfu.application.InteractionType;
+import ru.urfu.application.Keyboard;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -10,11 +11,11 @@ import java.util.UUID;
  * И record автоматически генерирует конструктор, геттеры и
  * equals(), hashCode() и toString()
  *
- * @param userId          идентификатор пользователя-получателя
- * @param text            текст сообщения
- * @param interactionType тип взаимодействия, определяет клавиатуру ответа
+ * @param userId   идентификатор пользователя-получателя
+ * @param text     текст сообщения
+ * @param keyboard определяет клавиатуру ответа
  */
-public record BotResponse(UUID userId, String text, InteractionType interactionType) {
+public record BotResponse(UUID userId, String text, Optional<Keyboard> keyboard) {
     /**
      * Создает ответ без дополнительной клавиатуры
      *
@@ -22,7 +23,7 @@ public record BotResponse(UUID userId, String text, InteractionType interactionT
      * @param text   текст сообщения
      */
     public BotResponse(UUID userId, String text) {
-        this(userId, text, InteractionType.NONE);
+        this(userId, text, Optional.empty());
     }
 
 }
