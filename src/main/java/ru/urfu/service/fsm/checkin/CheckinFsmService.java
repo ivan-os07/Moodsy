@@ -1,4 +1,4 @@
-package ru.urfu.service.fsm;
+package ru.urfu.service.fsm.checkin;
 
 import ru.urfu.application.Keyboard;
 import ru.urfu.application.KeyboardButton;
@@ -6,6 +6,8 @@ import ru.urfu.application.KeyboardRow;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
 import ru.urfu.repository.MoodRepository;
+import ru.urfu.service.fsm.FsmResult;
+import ru.urfu.service.fsm.FsmService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -20,7 +22,7 @@ import java.util.*;
  *     <li>Сохраняет готовую запись в репозиторий</li>
  * </ul>
  */
-public class CheckinFsmService {
+public class CheckinFsmService implements FsmService {
 
     /**
      * Команда завершения диалога без сохранения.
@@ -168,7 +170,7 @@ public class CheckinFsmService {
      * @param userId идентификатор пользователя
      * @return результат запуска диалога
      */
-    public CheckinResult startWithResponse(UUID userId) {
+    public FsmResult startWithResponse(UUID userId) {
         String text = start(userId);
         return createResult(userId, text);
 
@@ -216,14 +218,9 @@ public class CheckinFsmService {
 
     }
 
-    /**
-     * Обрабатывает пользовательский ввод и определяет тип клавиатуры для следующего шага
-     *
-     * @param userId идентификатор пользователя
-     * @param text   текст ввода
-     * @return результат обработки вместе с необходимым типом клавиатуры
-     */
-    public CheckinResult handleWithResponse(UUID userId, String text) {
+
+    @Override
+    public FsmResult handleWithResponse(UUID userId, String text) {
         String response = handle(userId, text);
         return createResult(userId, response);
 
@@ -491,12 +488,8 @@ public class CheckinFsmService {
 
     }
 
-    /**
-     * Проверяет наличие открытой сессии у пользователя.
-     *
-     * @param userId идентификатор пользователя
-     * @return true, если у пользователя есть открытый диалог
-     */
+
+    @Override
     public boolean hasActiveSession(UUID userId) {
         Objects.requireNonNull(userId, "userId не может быть null");
         // Делегирование в хранилище сессий
@@ -519,10 +512,10 @@ public class CheckinFsmService {
         return Optional.empty();
     }
 
-    private CheckinResult createResult(UUID userId, String text){
+    private FsmResult createResult(UUID userId, String text){
         Optional<Keyboard> keyboard = sessionStore.findById(userId)
                 .map(session -> createKeyboard(session.step()));
-        return new CheckinResult(text, keyboard);
+        return new FsmResult(text, keyboard);
     }
     private Keyboard createKeyboard(CheckinStep step) {
         List<KeyboardRow> rows = new ArrayList<>();

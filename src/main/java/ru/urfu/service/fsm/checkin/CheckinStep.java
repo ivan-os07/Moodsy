@@ -1,4 +1,4 @@
-package ru.urfu.service.fsm;
+package ru.urfu.service.fsm.checkin;
 
 /**
  * Шаги диалога чекина, которые проходит пользователь по порядку.

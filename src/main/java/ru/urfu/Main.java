@@ -3,9 +3,10 @@ package ru.urfu;
 import ru.urfu.config.TelegramConfig;
 import ru.urfu.service.UserService;
 import ru.urfu.service.analytics.MoodAnalyticsService;
-import ru.urfu.service.fsm.CheckinFsmService;
-import ru.urfu.service.fsm.CheckinSessionStore;
-import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
+import ru.urfu.service.fsm.checkin.CheckinFsmService;
+import ru.urfu.service.fsm.checkin.CheckinSessionStore;
+import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
+import ru.urfu.service.fsm.stats.StatsFsmService;
 import ru.urfu.transport.telegram.TelegramBot;
 import ru.urfu.commands.*;
 import ru.urfu.repository.*;
@@ -46,15 +47,17 @@ public class Main {
         //время мск UTC+3
         CheckinFsmService checkinFsmService = new CheckinFsmService(
                 sessionStore, moodRepository, Clock.system(ZoneOffset.ofHours(3)));
+        StatsFsmService statsFsmService = new StatsFsmService(
+                moodRepository, analyticsService ,Clock.system(ZoneOffset.ofHours(3)));
 
-        CommandDispatcher dispatcher = new CommandDispatcher(checkinFsmService);
+        CommandDispatcher dispatcher = new CommandDispatcher(checkinFsmService, statsFsmService);
 
         // Регистрируем команды в диспетчере
         dispatcher.register(new StartCommand());
         dispatcher.register(new HelpCommand(dispatcher));
         dispatcher.register(new CheckinCommand(checkinFsmService));
         dispatcher.register(new HistoryCommand(moodRepository));
-        dispatcher.register(new StatsCommand(moodRepository, analyticsService, Clock.system(ZoneOffset.ofHours(3))));
+        dispatcher.register(new StatsCommand(statsFsmService));
 
 
         // Инициализация и запуск транспортного слоя (Telegram-бота)

@@ -9,8 +9,8 @@ import ru.urfu.commands.CommandDispatcher;
 import ru.urfu.commands.HistoryCommand;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.repository.InMemoryMoodRepository;
-import ru.urfu.service.fsm.CheckinFsmService;
-import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
+import ru.urfu.service.fsm.checkin.CheckinFsmService;
+import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
 
 import java.time.Clock;
 import java.time.Instant;

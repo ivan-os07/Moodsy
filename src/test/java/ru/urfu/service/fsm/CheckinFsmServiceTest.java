@@ -8,6 +8,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
 import ru.urfu.repository.InMemoryMoodRepository;
+import ru.urfu.service.fsm.checkin.CheckinFsmService;
+import ru.urfu.service.fsm.checkin.CheckinSession;
+import ru.urfu.service.fsm.checkin.CheckinStep;
+import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
 
 import java.time.Clock;
 import java.time.Instant;

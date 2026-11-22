@@ -12,13 +12,13 @@ import java.util.Optional;
  * @param text            текст ответа
  * @param keyboard
  */
-public record CheckinResult(String text, Optional<Keyboard> keyboard) {
+public record FsmResult(String text, Optional<Keyboard> keyboard) {
     /**
      * Проверяет наличие текста и типа взаимодействия
      *
-     * @throws NullPointerException если text или interactionType равны null
+     * @throws NullPointerException если text или keyboard равны null
      */
-    public CheckinResult {
+    public FsmResult {
         Objects.requireNonNull(keyboard, "keyboard не должен быть null");
         Objects.requireNonNull(text, "text не должен быть null");
     }

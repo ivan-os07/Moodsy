@@ -1,7 +1,8 @@
 package ru.urfu.commands;
 
-import ru.urfu.service.fsm.CheckinFsmService;
-import ru.urfu.service.fsm.CheckinResult;
+import ru.urfu.service.fsm.checkin.CheckinFsmService;
+import ru.urfu.service.fsm.FsmResult;
+import ru.urfu.service.fsm.stats.StatsFsmService;
 
 import java.util.*;
 
@@ -19,13 +20,16 @@ public class CommandDispatcher {
      * Сервис для фсм чекина.
      */
     private final CheckinFsmService checkinFsmService;
+    private final StatsFsmService statsFsmService;
 
     /**
      * Конструктор диспетчера.
      * Создает пустое хранилище для команд и проверка на не null сервиса чекина
      */
-    public CommandDispatcher(CheckinFsmService checkinFsmService) {
+    public CommandDispatcher(CheckinFsmService checkinFsmService,
+                             StatsFsmService statsFsmService) {
         this.checkinFsmService = Objects.requireNonNull(checkinFsmService, "checkinFsmService не может быть null");
+        this.statsFsmService = Objects.requireNonNull(statsFsmService, "statsFsmService не может быть null");
         this.commands = new LinkedHashMap<>();
     }
 
@@ -48,7 +52,15 @@ public class CommandDispatcher {
 
         // Сначала проверяем есть ли сессия
         if (checkinFsmService.hasActiveSession(userId)) {
-            CheckinResult result = checkinFsmService.handleWithResponse(userId, text);
+            FsmResult result = checkinFsmService.handleWithResponse(userId, text);
+            return new BotResponse(userId, result.text(), result.keyboard());
+        }
+        if (statsFsmService.hasActiveSession(userId)) {
+            FsmResult result = statsFsmService.handleWithResponse(userId, text);
+            return new BotResponse(userId, result.text(), result.keyboard());
+        }
+        if (commands.equals("/stats")) {
+            FsmResult result = statsFsmService.startWithResponse(userId);
             return new BotResponse(userId, result.text(), result.keyboard());
         }
 

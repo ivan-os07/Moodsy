@@ -3,8 +3,8 @@ package ru.urfu.commands;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.urfu.repository.InMemoryMoodRepository;
-import ru.urfu.service.fsm.CheckinFsmService;
-import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
+import ru.urfu.service.fsm.checkin.CheckinFsmService;
+import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
 
 import java.time.Clock;
 import java.time.Instant;

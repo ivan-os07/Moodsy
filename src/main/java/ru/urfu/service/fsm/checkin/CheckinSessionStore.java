@@ -1,4 +1,4 @@
-package ru.urfu.service.fsm;
+package ru.urfu.service.fsm.checkin;
 
 import java.util.Optional;
 import java.util.UUID;

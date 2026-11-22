@@ -1,4 +1,4 @@
-package ru.urfu.service.fsm;
+package ru.urfu.service.fsm.checkin;
 
 import ru.urfu.model.Sphere;
 
