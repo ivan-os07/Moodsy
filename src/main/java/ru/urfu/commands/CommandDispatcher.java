@@ -69,10 +69,6 @@ public class CommandDispatcher {
 
         // Ищем команду в хранилище
         Optional<BotCommand> command = this.registry.find(commandKey);
-        if (commandKey.equals("/stats")) {
-            FsmResult result = statsFsmService.startWithResponse(userId);
-            return new BotResponse(userId, result.text(), result.keyboard());
-        }
         // Если не нашли - возвращаем сообщение об ошибке
         if (command.isEmpty()) {
             return new BotResponse(userId, "Неизвестная команда. Введите /help для справки.");

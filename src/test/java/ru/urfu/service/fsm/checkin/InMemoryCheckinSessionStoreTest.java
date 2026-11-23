@@ -1,12 +1,9 @@
-package ru.urfu.service.fsm;
+package ru.urfu.service.fsm.checkin;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import ru.urfu.model.Sphere;
-import ru.urfu.service.fsm.checkin.CheckinSession;
-import ru.urfu.service.fsm.checkin.CheckinStep;
-import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
 
 import java.util.UUID;
 

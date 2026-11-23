@@ -4,8 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.urfu.repository.InMemoryMoodRepository;
+import ru.urfu.service.analytics.MoodAnalyticsService;
 import ru.urfu.service.fsm.checkin.CheckinFsmService;
 import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
+import ru.urfu.service.fsm.stats.StatsFsmService;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -36,7 +38,10 @@ class CommandDispatcherTest {
      * Сервис диалога чекина, на который диспетчер передаёт ввод.
      */
     private CheckinFsmService checkinFsmService;
-
+    /**
+     * Сервис диалога stats, на который диспетчер передает ввод.
+     */
+    private StatsFsmService statsFsmService;
     /**
      * Фейковая команда
      */
@@ -49,13 +54,16 @@ class CommandDispatcherTest {
      */
     @BeforeEach
     void setup() {
+        Clock clock = Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC);
+        InMemoryMoodRepository repository = new InMemoryMoodRepository();
         checkinFsmService = new CheckinFsmService(new InMemoryCheckinSessionStore(),
-                new InMemoryMoodRepository(),
-                Clock.fixed(Instant.parse("2026-11-02T12:00:00Z"), ZoneOffset.UTC));
+                repository,
+                clock);
+        statsFsmService = new StatsFsmService(repository, new MoodAnalyticsService(), clock);
         registry = new CommandRegistry();
         fakeCommand = new FakeCommand("/test", "test description", "answer test");
         registry.register(fakeCommand);
-        dispatcher = new CommandDispatcher(registry, checkinFsmService);
+        dispatcher = new CommandDispatcher(registry, checkinFsmService, statsFsmService);
     }
 
     /**
@@ -132,5 +140,37 @@ class CommandDispatcherTest {
         BotResponse response = dispatcher.handle(USER_ID, "7");
 
         Assertions.assertEquals("Неизвестная команда. Введите /help для справки.", response.text());
+    }
+
+    /**
+     * Тестируем, что при открытой сессии (для статистики)
+     * обычный текст передается в FSM stats
+     */
+    @Test
+    void testHandle_textWithActiveStatsSession_routesToStatsFsm() {
+        registry.register(new StatsCommand(statsFsmService));
+        dispatcher.handle(USER_ID, "/stats");
+        BotResponse response = dispatcher.handle(USER_ID, "week");
+        Assertions.assertEquals("Записей нет, используйте /checkin", response.text()
+        );
+        Assertions.assertTrue(response.keyboard().isEmpty());
+        Assertions.assertFalse(statsFsmService.hasActiveSession(USER_ID));
+    }
+
+    /**
+     * Тестируем независимость сессий статистики разных пользователей
+     */
+    @Test
+    void testHandle_statsSessionsAreIndependent() {
+        registry.register(new StatsCommand(statsFsmService));
+        UUID anotherUserId = UUID.randomUUID();
+
+        dispatcher.handle(USER_ID, "/stats");
+        dispatcher.handle(anotherUserId, "/stats");
+
+        dispatcher.handle(USER_ID, "week");
+
+        Assertions.assertFalse(statsFsmService.hasActiveSession(USER_ID));
+        Assertions.assertTrue(statsFsmService.hasActiveSession(anotherUserId));
     }
 }

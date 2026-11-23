@@ -24,6 +24,7 @@ import java.util.*;
  * и формирует статистику
  */
 public class StatsFsmService implements FsmService {
+
     /**
      * Сообщение с предложением выбора статистики
      */
@@ -85,7 +86,7 @@ public class StatsFsmService implements FsmService {
      * @throws NullPointerException если userId равен null
      */
     public String start(UUID userId) {
-        Objects.requireNonNull(userId);
+        Objects.requireNonNull(userId, "userId не может быть null");
         activeSessions.add(userId);
         return PERIOD_MESSAGE;
     }
@@ -103,7 +104,7 @@ public class StatsFsmService implements FsmService {
 
     @Override
     public FsmResult handleWithResponse(UUID userId, String text) {
-        Objects.requireNonNull(userId);
+        Objects.requireNonNull(userId, "userId не может быть null");
         if (!activeSessions.contains(userId)) {
             return new FsmResult(text, Optional.empty());
         }
@@ -111,6 +112,14 @@ public class StatsFsmService implements FsmService {
         StatisticsPeriod period = findPeriod(input);
         if (period == null) {
             return new FsmResult(PERIOD_ERROR, Optional.of(createKeyboard()));
+        }
+        if ("/exit".equalsIgnoreCase(input)) {
+            activeSessions.remove(userId);
+
+            return new FsmResult(
+                    "Выбор периода статистики отменён.",
+                    Optional.empty()
+            );
         }
         activeSessions.remove(userId);
         String response = calculateStatistics(userId, period);
@@ -120,7 +129,7 @@ public class StatsFsmService implements FsmService {
 
     @Override
     public boolean hasActiveSession(UUID userId) {
-        Objects.requireNonNull(userId);
+        Objects.requireNonNull(userId, "userId не может быть null");
         return activeSessions.contains(userId);
     }
 
@@ -180,7 +189,7 @@ public class StatsFsmService implements FsmService {
                 " - " +
                 toExclusive.minusDays(1).format(dateFormatter) +
                 ")\n" +
-                "Средняя оценка; " +
+                "Средняя оценка: " +
                 averageFormatter.format(statistics.averageScore()) +
                 "/10\n" +
                 "Лучший день: " +
@@ -239,6 +248,9 @@ public class StatsFsmService implements FsmService {
         rows.add(new KeyboardRow(List.of(
                 new KeyboardButton("Неделя", "week"),
                 new KeyboardButton("Месяц", "month")
+        )));
+        rows.add(new KeyboardRow(List.of(
+                new KeyboardButton("Отмена", "/exit")
         )));
         return new Keyboard(rows);
     }

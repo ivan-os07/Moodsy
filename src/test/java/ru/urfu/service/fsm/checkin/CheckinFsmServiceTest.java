@@ -1,4 +1,4 @@
-package ru.urfu.service.fsm;
+package ru.urfu.service.fsm.checkin;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,10 +9,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
 import ru.urfu.repository.InMemoryMoodRepository;
-import ru.urfu.service.fsm.checkin.CheckinFsmService;
-import ru.urfu.service.fsm.checkin.CheckinSession;
-import ru.urfu.service.fsm.checkin.CheckinStep;
-import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -489,10 +485,10 @@ class CheckinFsmServiceTest {
         service.start(userId);
         service.handle(userId, "5"); // SCORE → SPHERE
 
-        Assertions.assertEquals("❌ Неизвестная команда. Доступны: /back, /exit",
+        Assertions.assertEquals("❌ Неизвестная команда. Доступны: /skip, /back, /exit",
                 service.handle(userId, "/approve")
         );
-        Assertions.assertEquals("❌ Неизвестная команда. Доступны: /back, /exit",
+        Assertions.assertEquals("❌ Неизвестная команда. Доступны: /skip, /back, /exit",
                 service.handle(userId, "/reject")
         );
 

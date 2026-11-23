@@ -77,7 +77,7 @@ public class CheckinFsmService implements FsmService {
     /**
      * Сообщение о неизвестной команде на шаге заметки.
      */
-    private static final String UNKNOWN_COMMAND = "❌ Неизвестная команда. Доступны: /back, /exit";
+    private static final String UNKNOWN_COMMAND = "❌ Неизвестная команда. Доступны: /skip, /back, /exit";
 
     /**
      * Сообщение об ошибке при вызове команды /skip не на шаге заметки.
@@ -159,6 +159,7 @@ public class CheckinFsmService implements FsmService {
      * @return приглашение ввести оценку
      */
     public String start(UUID userId) {
+        Objects.requireNonNull(userId, "userId не может быть null");
         CheckinSession session = new CheckinSession(userId, CheckinStep.SCORE, 0, null, "");
         sessionStore.save(session);
         return SCORE_PROMPT;

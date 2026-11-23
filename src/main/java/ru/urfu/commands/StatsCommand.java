@@ -28,11 +28,7 @@ public class StatsCommand implements BotCommand {
     /**
      * Сообщение о корректном использовании команды, при некорректном вызове
      */
-    private static final String ARGS_ERROR = """
-            ❌ Неверные аргументы.
-            Использование: /stats <период>
-            Доступные периоды: week, month.
-            """;
+    private static final String ARGS_ERROR = "❌ Команда /stats вызывается без параметров";
 
     /**
      * Создает команду получения статистики
@@ -52,12 +48,12 @@ public class StatsCommand implements BotCommand {
 
     @Override
     public String getDescription() {
-        return "Статистика ваших отметок: /stats <week, month>.";
+        return "Получить статистику своих отметок";
     }
 
     @Override
     public String execute(UUID userId, String[] args) {
-        if (args == null || args.length != 1) {
+        if (args != null && args.length > 0) {
             return ARGS_ERROR;
         }
         return statsFsmService.start(userId);

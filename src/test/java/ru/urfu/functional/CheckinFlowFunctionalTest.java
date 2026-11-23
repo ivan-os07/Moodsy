@@ -3,15 +3,13 @@ package ru.urfu.functional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.urfu.commands.BotResponse;
-import ru.urfu.commands.CheckinCommand;
-import ru.urfu.commands.CommandDispatcher;
-import ru.urfu.commands.CommandRegistry;
-import ru.urfu.commands.HistoryCommand;
+import ru.urfu.commands.*;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.repository.InMemoryMoodRepository;
+import ru.urfu.service.analytics.MoodAnalyticsService;
 import ru.urfu.service.fsm.checkin.CheckinFsmService;
 import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
+import ru.urfu.service.fsm.stats.StatsFsmService;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -52,11 +50,16 @@ class CheckinFlowFunctionalTest {
                 moodRepository,
                 Clock.fixed(Instant.parse("2026-11-02T09:00:00Z"), ZoneOffset.UTC)
         );
+        StatsFsmService statsFsmService = new StatsFsmService(moodRepository,
+                new MoodAnalyticsService(),
+                Clock.fixed(Instant.parse("2026-11-02T09:00:00Z"), ZoneOffset.UTC)
+        );
         // Регистрируем команды в хранилище, как это делает Main
         CommandRegistry registry = new CommandRegistry();
         registry.register(new CheckinCommand(checkinFsmService));
         registry.register(new HistoryCommand(moodRepository));
-        dispatcher = new CommandDispatcher(registry, checkinFsmService);
+        registry.register(new StatsCommand(statsFsmService));
+        dispatcher = new CommandDispatcher(registry, checkinFsmService, statsFsmService);
     }
 
     /**
