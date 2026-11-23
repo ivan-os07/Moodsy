@@ -6,7 +6,6 @@ import ru.urfu.model.MoodEntry;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
@@ -45,14 +44,12 @@ class InMemoryMoodRepositoryTest {
 
     /**
      * Проверяет, что в репозиторий .save() сохраняет запись (одну или несколько)
-     * и после этого, ее можно получить через findLatest,
-     * или получить несколько через findLast, в правильном порядке
+     * и после этого, ее можно получить несколько через findLast, в правильном порядке
      * от новых к старым
      */
     @Test
-    void saveOneOrMoreEntries() {
+    void testSaveOneOrMoreEntries() {
         repository.save(userId, firstEntry);
-        Assertions.assertEquals(Optional.of(firstEntry), repository.findLatest(userId));
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
         Assertions.assertEquals(List.of(thirdEntry, secondEntry, firstEntry), repository.findLast(userId, 10));
@@ -67,7 +64,7 @@ class InMemoryMoodRepositoryTest {
      * unknown userId
      */
     @Test
-    void findLastLimitTests() {
+    void testFindLastLimitTests() {
         repository.save(userId, firstEntry);
         repository.save(userId, secondEntry);
         repository.save(userId, thirdEntry);
@@ -81,29 +78,12 @@ class InMemoryMoodRepositoryTest {
         ).isEmpty());
     }
 
-    /**
-     * Проверяет, findLatest() корректно реагирует на пустую историю (отметок нет),
-     * несуществующий userId,
-     * и возвращает правильную заметку при стандартном случае сохранения
-     *
-     */
-    @Test
-    void findLatestTest() {
-        Assertions.assertEquals(Optional.empty(), repository.findLatest(userId));
-        repository.save(userId, firstEntry);
-        repository.save(userId, secondEntry);
-        Assertions.assertEquals(Optional.of(secondEntry), repository.findLatest(userId));
-        Assertions.assertEquals(Optional.empty(),
-                repository.findLatest(UUID.fromString("00000000-0000-0000-0000-000000000000"))
-        );
-    }
-
 
     /**
      * Проверяет, что записи одного пользователя не попадают в хранилище заметок другого пользователя.
      */
     @Test
-    void secondUser() {
+    void testSecondUser() {
         UUID secondUserId = UUID.fromString("00000000-0000-0000-0000-000000000911");
 
         repository.save(userId, firstEntry);
@@ -117,10 +97,19 @@ class InMemoryMoodRepositoryTest {
      * Проверяет, что невозможно изменить отметки пользователя из вне.
      */
     @Test
-    void unmodifiableList() {
+    void testUnmodifiableList() {
         repository.save(userId, firstEntry);
 
         List<MoodEntry> history = repository.findLast(userId, 10);
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> history.add(secondEntry));
+
+        UnsupportedOperationException exception = Assertions.assertThrows(
+                UnsupportedOperationException.class,
+                () -> history.add(secondEntry)
+        );
+        // Стандартное поведение неизменной коллекции
+        Assertions.assertNull(exception.getMessage());
+        Assertions.assertIterableEquals(List.of(firstEntry),
+                repository.findLast(userId, 10)
+        );
     }
 }

@@ -35,7 +35,7 @@ public class TelegramKeyboardFactoryTest {
      * Тестируем, что в обычном взаимодействии inline-клавиатура не создается
      */
     @Test
-    void noCreateTelegramKeyboardForNoneInteractionTest() {
+    void testNoCreateTelegramKeyboardForNoneInteraction() {
         Assertions.assertEquals(Optional.empty(),
                 factory.createKeyboard(InteractionType.NONE));
     }
@@ -44,7 +44,7 @@ public class TelegramKeyboardFactoryTest {
      * Тестируем, что есть 10 кнопок с оценками и одна на выход
      */
     @Test
-    void createScoreKeyboardTest() {
+    void testCreateScoreKeyboard() {
         InlineKeyboardMarkup keyboard = factory.createScoreKeyboard();
         Assertions.assertEquals(3, keyboard.getKeyboard().size());
         Assertions.assertEquals(List.of("1", "2", "3", "4", "5"), texts(keyboard.getKeyboard().get(0)));
@@ -58,7 +58,7 @@ public class TelegramKeyboardFactoryTest {
      *
      */
     @Test
-    void createSphereKeyboardTest() {
+    void testCreateSphereKeyboard() {
         InlineKeyboardMarkup keyboard = factory
                 .createKeyboard(InteractionType.SPHERE_SELECTION)
                 .orElseThrow();
@@ -80,7 +80,7 @@ public class TelegramKeyboardFactoryTest {
      * Тестируем, клавиатуру на шаге заметки
      */
     @Test
-    void createKeyboardNoteTest() {
+    void testCreateKeyboardNote() {
         InlineKeyboardMarkup keyboard = factory
                 .createKeyboard(InteractionType.NOTE_INPUT)
                 .orElseThrow();
@@ -95,7 +95,7 @@ public class TelegramKeyboardFactoryTest {
      * Тестируем клавиатуру на шаге предпросмотра
      */
     @Test
-    void createKeyboardPreviewTest() {
+    void testCreateKeyboardPreview() {
         InlineKeyboardMarkup keyboard = factory
                 .createKeyboard(InteractionType.PREVIEW_CONFIRMATION)
                 .orElseThrow();
@@ -109,7 +109,7 @@ public class TelegramKeyboardFactoryTest {
      * Тестируем на исключения
      */
     @Test
-    void rejectNullInteractionTypeTest() {
+    void testRejectNullInteractionType() {
 
         NullPointerException expected = Assertions.assertThrows(NullPointerException.class,
                 () -> factory.createKeyboard(null));
@@ -120,7 +120,7 @@ public class TelegramKeyboardFactoryTest {
     /**
      * Тестируем, что пустая клавиатура не содержит рядов кнопок
      */
-    void createsEmptyKeyboardTest() {
+    void testCreatesEmptyKeyboard() {
         InlineKeyboardMarkup keyboard = factory.createEmptyKeyboard();
         Assertions.assertTrue(keyboard.getKeyboard().isEmpty());
     }
