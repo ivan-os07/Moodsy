@@ -25,7 +25,8 @@ class BotCompositionTest {
             "/start",
             "/help",
             "/checkin",
-            "/history"
+            "/history",
+            "/stats"
     );
 
 

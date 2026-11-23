@@ -510,6 +510,12 @@ public class CheckinFsmService implements FsmService {
         return Optional.empty();
     }
 
+    /**
+     * Создает результат обработки пользовательского ввода
+     * @param userId внутренний идентификатор пользователя
+     * @param text текст ответа
+     * @return результат обработки без дополнительной клавиатуры
+     */
     private FsmResult createResult(UUID userId, String text){
         Optional<Keyboard> keyboard = sessionStore.findById(userId)
                 .map(session -> createKeyboard(session.step()));

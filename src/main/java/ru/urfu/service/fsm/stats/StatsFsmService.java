@@ -109,18 +109,16 @@ public class StatsFsmService implements FsmService {
             return new FsmResult(text, Optional.empty());
         }
         String input = text == null ? "" : text.trim();
+        if ("/exit".equalsIgnoreCase(input)) {
+            activeSessions.remove(userId);
+            return new FsmResult("Выбор периода статистики отменён.",
+                    Optional.empty());
+        }
         StatisticsPeriod period = findPeriod(input);
         if (period == null) {
             return new FsmResult(PERIOD_ERROR, Optional.of(createKeyboard()));
         }
-        if ("/exit".equalsIgnoreCase(input)) {
-            activeSessions.remove(userId);
 
-            return new FsmResult(
-                    "Выбор периода статистики отменён.",
-                    Optional.empty()
-            );
-        }
         activeSessions.remove(userId);
         String response = calculateStatistics(userId, period);
         return new FsmResult(response, Optional.empty());

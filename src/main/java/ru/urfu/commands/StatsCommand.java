@@ -1,19 +1,8 @@
 package ru.urfu.commands;
 
-import ru.urfu.model.MoodEntry;
-import ru.urfu.repository.MoodRepository;
-import ru.urfu.service.analytics.MoodAnalyticsService;
-import ru.urfu.service.analytics.MoodStatistics;
-import ru.urfu.service.analytics.StatisticsPeriod;
 import ru.urfu.service.fsm.FsmResult;
 import ru.urfu.service.fsm.stats.StatsFsmService;
 
-import java.text.DecimalFormat;
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -32,6 +21,7 @@ public class StatsCommand implements BotCommand {
 
     /**
      * Создает команду получения статистики
+     *
      * @param statsFsmService сервис конечного автомата статистики
      * @throws NullPointerException если statsFsmService равно null
      */
@@ -58,8 +48,9 @@ public class StatsCommand implements BotCommand {
         }
         return statsFsmService.start(userId);
     }
+
     @Override
-    public BotResponse executeWithResponse(UUID userId, String[] args){
+    public BotResponse executeWithResponse(UUID userId, String[] args) {
         if (args != null && args.length > 0) {
             return new BotResponse(userId, ARGS_ERROR);
         }

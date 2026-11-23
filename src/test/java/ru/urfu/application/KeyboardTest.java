@@ -14,7 +14,7 @@ class KeyboardTest {
      * Тестируем исключение при null вместо списка строк
      */
     @Test
-    void testRejectNullRows(){
+    void testRejectNullRows() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> new Keyboard(null)
@@ -38,6 +38,7 @@ class KeyboardTest {
         rows.clear();
         Assertions.assertEquals(1, keyboard.rows().size());
     }
+
     /**
      * Тестируем неизменяемость списка строк
      */

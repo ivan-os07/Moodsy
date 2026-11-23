@@ -61,16 +61,16 @@ public class StatisticPeriodTest {
      */
     @Test
     void testRejectNull() {
-        NullPointerException weekExeption =
+        NullPointerException weekException =
                 Assertions.assertThrows(NullPointerException.class,
                         () -> StatisticsPeriod.WEEK.getStart(null));
-        NullPointerException monthExeption =
+        NullPointerException monthException =
                 Assertions.assertThrows(NullPointerException.class,
                         () -> StatisticsPeriod.MONTH.getEndExclusive(null));
         Assertions.assertEquals("currentDateTime не может быть null",
-                weekExeption.getMessage());
+                weekException.getMessage());
         Assertions.assertEquals("currentDateTime не может быть null",
-                monthExeption.getMessage());
+                monthException.getMessage());
 
     }
 }
