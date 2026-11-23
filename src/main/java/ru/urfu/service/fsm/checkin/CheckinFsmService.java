@@ -22,7 +22,7 @@ import java.util.*;
  *     <li>Сохраняет готовую запись в репозиторий</li>
  * </ul>
  */
-public class CheckinFsmService {
+public class CheckinFsmService implements FsmService {
 
     /**
      * Команда завершения диалога без сохранения.

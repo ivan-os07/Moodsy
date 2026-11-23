@@ -1,19 +1,16 @@
 package ru.urfu;
 
-import ru.urfu.commands.CheckinCommand;
-import ru.urfu.commands.CommandDispatcher;
-import ru.urfu.commands.CommandRegistry;
-import ru.urfu.commands.HelpCommand;
-import ru.urfu.commands.HistoryCommand;
-import ru.urfu.commands.StartCommand;
+import ru.urfu.commands.*;
 import ru.urfu.repository.InMemoryMoodRepository;
 import ru.urfu.repository.InMemoryUserRepository;
 import ru.urfu.repository.MoodRepository;
 import ru.urfu.repository.UserRepository;
 import ru.urfu.service.UserService;
-import ru.urfu.service.fsm.CheckinFsmService;
-import ru.urfu.service.fsm.CheckinSessionStore;
-import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
+import ru.urfu.service.analytics.MoodAnalyticsService;
+import ru.urfu.service.fsm.checkin.CheckinFsmService;
+import ru.urfu.service.fsm.checkin.CheckinSessionStore;
+import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
+import ru.urfu.service.fsm.stats.StatsFsmService;
 
 import java.time.Clock;
 import java.util.Objects;
@@ -39,6 +36,7 @@ public class BotComposition {
      * Сервис пользователей.
      */
     private final UserService userService;
+    private final MoodAnalyticsService analyticsService;
 
     /**
      * Собирает все компоненты приложения.
@@ -52,19 +50,21 @@ public class BotComposition {
         MoodRepository moodRepository = new InMemoryMoodRepository();
         UserRepository userRepository = new InMemoryUserRepository();
         this.userService = new UserService(userRepository);
+        this.analyticsService = new MoodAnalyticsService();
 
         // Диалог чекина: один экземпляр на команду и диспетчер
         CheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();
         CheckinFsmService checkinFsmService = new CheckinFsmService(sessionStore, moodRepository, clock);
-
+        StatsFsmService statsFsmService = new StatsFsmService(moodRepository, analyticsService, clock);
         // Команды
         this.registry = new CommandRegistry();
         registry.register(new StartCommand());
         registry.register(new HelpCommand(registry));
         registry.register(new CheckinCommand(checkinFsmService));
+        registry.register(new StatsCommand(statsFsmService));
         registry.register(new HistoryCommand(moodRepository));
 
-        this.dispatcher = new CommandDispatcher(registry, checkinFsmService);
+        this.dispatcher = new CommandDispatcher(registry, checkinFsmService, statsFsmService );
     }
 
     /**

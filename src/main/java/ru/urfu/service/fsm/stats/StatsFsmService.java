@@ -21,7 +21,8 @@ import java.util.*;
 public class StatsFsmService implements FsmService {
     private static final String PERIOD_MESSAGE = "Выберите период статистики:";
     private static final String PERIOD_ERROR = "❌ Ошибка: необходимо выбрать один из предложенных периодов";
-    private static final String NO_SESSION = "Диалога нет. /stats";
+
+
     private static final String NO_ENTRIES = "Записей нет, используйте /checkin";
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
@@ -86,10 +87,10 @@ public class StatsFsmService implements FsmService {
         return formatStatistics(period, from, toExclusive, statistics);
     }
     /**
-     * Находит переод по аргументу команды
+     * Находит период по аргументу команды
      *
      * @param argument аргумент периода
-     * @return найденый период или null, если неизвестный аргумент
+     * @return найденный период или null, если неизвестный аргумент
      */
     private StatisticsPeriod findPeriod(String argument) {
         for (StatisticsPeriod period : StatisticsPeriod.values()) {
@@ -115,34 +116,30 @@ public class StatsFsmService implements FsmService {
             LocalDateTime toExclusive,
             MoodStatistics statistics) {
         DecimalFormat averageFormatter = new DecimalFormat("0.00");
-        StringBuilder result = new StringBuilder();
 
-        result.append("\uD83D\uDCCA Статистика за ")
-                .append(period.getDisplayName())
-                .append(" (")
-                .append(from.format(dateFormatter))
-                .append(" - ")
-                .append(toExclusive.minusDays(1).format(dateFormatter))
-                .append(")\n");
-
-        result.append("Средняя оценка; ")
-                .append(averageFormatter.format(statistics.averageScore()))
-                .append("/10\n");
-
-        result.append("Лучший день: ")
-                .append(formatEntry(statistics.bestDay()))
-                .append("\n");
-        result.append("Худший день: ")
-                .append(formatEntry(statistics.worstDay()))
-                .append("\n");
-        result.append("Самая частая сфера: ")
-                .append(statistics.mostFrequentSphere().getDisplayName())
-                .append(" (")
-                .append(statistics.sphereCount())
-                .append(" ")
-                .append(getMarkWord(statistics.sphereCount()))
-                .append(")");
-        return result.toString();
+        return "\uD83D\uDCCA Статистика за " +
+                period.getDisplayName() +
+                " (" +
+                from.format(dateFormatter) +
+                " - " +
+                toExclusive.minusDays(1).format(dateFormatter) +
+                ")\n" +
+                "Средняя оценка; " +
+                averageFormatter.format(statistics.averageScore()) +
+                "/10\n" +
+                "Лучший день: " +
+                formatEntry(statistics.bestDay()) +
+                "\n" +
+                "Худший день: " +
+                formatEntry(statistics.worstDay()) +
+                "\n" +
+                "Самая частая сфера: " +
+                statistics.mostFrequentSphere().getDisplayName() +
+                " (" +
+                statistics.sphereCount() +
+                " " +
+                getMarkWord(statistics.sphereCount()) +
+                ")";
     }
 
     /**
