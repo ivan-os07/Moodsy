@@ -9,8 +9,8 @@ import java.util.Optional;
  * Результат обработки шага диалога чекина:
  * текст ответа и тип клавиатуры
  *
- * @param text            текст ответа
- * @param keyboard
+ * @param text     текст ответа
+ * @param keyboard клавиатура, которая должна отображаться на текущем шаге
  */
 public record FsmResult(String text, Optional<Keyboard> keyboard) {
     /**

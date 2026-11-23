@@ -514,6 +514,12 @@ public class CheckinFsmService implements FsmService {
                 .map(session -> createKeyboard(session.step()));
         return new FsmResult(text, keyboard);
     }
+
+    /**
+     * Создает клавиатуру в зависимости от текущего шага в чекине
+     * @param step текущий шаг в диалоге
+     * @return универсальная клавиатура с доступными действиями
+     */
     private Keyboard createKeyboard(CheckinStep step) {
         List<KeyboardRow> rows = new ArrayList<>();
         switch (step) {

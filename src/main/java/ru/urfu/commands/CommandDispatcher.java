@@ -20,6 +20,9 @@ public class CommandDispatcher {
      * Сервис пошагового чекина.
      */
     private final CheckinFsmService checkinFsmService;
+    /**
+     * Сервис пошаговой stats
+     */
     private final StatsFsmService statsFsmService;
 
     /**
@@ -27,6 +30,7 @@ public class CommandDispatcher {
      *
      * @param registry          хранилище команд
      * @param checkinFsmService сервис пошагового чекина
+     * @param statsFsmService  сервис пошаговой stats
      */
     public CommandDispatcher(CommandRegistry registry, CheckinFsmService checkinFsmService, StatsFsmService statsFsmService) {
         this.registry = Objects.requireNonNull(registry, "registry не может быть null");

@@ -17,6 +17,11 @@ import java.util.Optional;
  * Создает inline-клавиатуры Telegram в соответствии с текущим шагом в /checkin
  */
 public class TelegramKeyboardFactory {
+    /**
+     * Создает Telegram клавиатуру по универсальной
+     * @param keyboard универсальная клавиатура
+     * @return Telegram inline клавиатура
+     */
     public InlineKeyboardMarkup createKeyboard(Keyboard keyboard) {
         Objects.requireNonNull(keyboard, "keyboard не может быть null");
 
@@ -33,6 +38,12 @@ public class TelegramKeyboardFactory {
         }
         return new InlineKeyboardMarkup(rows);
     }
+
+    /**
+     * Создает пустую inline клавиатуру Telegram
+     * используется для удаления клавиатуры из сообщения
+     * @return пустая inline клавиатура
+     */
     public InlineKeyboardMarkup createEmptyKeyboard() {
         return new InlineKeyboardMarkup(List.of());
     }

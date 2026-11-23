@@ -21,6 +21,9 @@ import java.util.UUID;
  * Выполняет команду /stats и формирует статистику за календарный месяц или неделю
  */
 public class StatsCommand implements BotCommand {
+    /**
+     * Сервис конечного автомата, отвечающий за команду /stats
+     */
     private final StatsFsmService statsFsmService;
     /**
      * Сообщение о корректном использовании команды, при некорректном вызове
@@ -32,8 +35,9 @@ public class StatsCommand implements BotCommand {
             """;
 
     /**
-     * Создает команду статистики с репозиторием, сервисом аналитики и часами
-     *
+     * Создает команду получения статистики
+     * @param statsFsmService сервис конечного автомата статистики
+     * @throws NullPointerException если statsFsmService равно null
      */
     public StatsCommand(StatsFsmService statsFsmService) {
         this.statsFsmService = Objects.requireNonNull(statsFsmService, "statsFsmService не должен быть null");

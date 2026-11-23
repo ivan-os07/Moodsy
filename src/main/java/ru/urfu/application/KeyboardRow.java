@@ -9,6 +9,12 @@ import java.util.Objects;
  * @param buttons кнопки строки в порядке отображения
  */
 public record KeyboardRow(List<KeyboardButton> buttons) {
+    /**
+     * Проверяет наличие кнопок и создаёт неизменяемую копию списка
+     * @param buttons кнопки строки
+     * @throws NullPointerException если buttons равен null
+     * @throws IllegalArgumentException если строка не содержит кнопок (пустая)
+     */
     public KeyboardRow {
         Objects.requireNonNull(buttons, "buttons не может быть null");
         buttons = List.copyOf(buttons);

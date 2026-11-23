@@ -36,7 +36,6 @@ public class BotComposition {
      * Сервис пользователей.
      */
     private final UserService userService;
-    private final MoodAnalyticsService analyticsService;
 
     /**
      * Собирает все компоненты приложения.
@@ -50,7 +49,7 @@ public class BotComposition {
         MoodRepository moodRepository = new InMemoryMoodRepository();
         UserRepository userRepository = new InMemoryUserRepository();
         this.userService = new UserService(userRepository);
-        this.analyticsService = new MoodAnalyticsService();
+        MoodAnalyticsService analyticsService = new MoodAnalyticsService();
 
         // Диалог чекина: один экземпляр на команду и диспетчер
         CheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();

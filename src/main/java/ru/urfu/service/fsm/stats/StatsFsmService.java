@@ -18,19 +18,56 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * Управляет процессом выполнения команды /stats
+ * предлагает выбрать период, обрабатывает выбор
+ * и формирует статистику
+ */
 public class StatsFsmService implements FsmService {
+    /**
+     * Сообщение с предложением выбора статистики
+     */
     private static final String PERIOD_MESSAGE = "Выберите период статистики:";
+    /**
+     * Сообщение об ошибке - выбор неизвестного периода
+     */
     private static final String PERIOD_ERROR = "❌ Ошибка: необходимо выбрать один из предложенных периодов";
 
-
+    /**
+     * Сообщение об отсутствии отметок за период
+     */
     private static final String NO_ENTRIES = "Записей нет, используйте /checkin";
+    /**
+     * Шаблон для отображения календарных дат
+     */
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    /**
+     * Шаблон для отображения даты и времени
+     */
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    /**
+     * Идентификаторы пользователей, которые находятся на этапе выбора периода
+     */
     private final Set<UUID> activeSessions = new HashSet<>();
+    /**
+     * Репозиторий для хранения отметок пользователя
+     */
     private final MoodRepository moodRepository;
+    /**
+     * Сервис вычисляющий статистику по периоду
+     */
     private final MoodAnalyticsService moodAnalyticsService;
+    /**
+     * Источник времени
+     */
     private final Clock clock;
 
+    /**
+     * Создает сервис команды статистики
+     * @param moodRepository репозиторий для отметок
+     * @param analyticsService сервис для расчета статистики
+     * @param clock источник времени
+     */
     public StatsFsmService(
             MoodRepository moodRepository,
             MoodAnalyticsService analyticsService,
@@ -41,12 +78,24 @@ public class StatsFsmService implements FsmService {
         this.clock = Objects.requireNonNull(clock).withZone(ZoneOffset.ofHours(3));
     }
 
+    /**
+     * Запускает диалог выбора периода статистики
+     * @param userId внутренний идентификатор пользователя
+     * @return сообщение с предложением выбрать период
+     * @throws NullPointerException если userId равен null
+     */
     public String start(UUID userId) {
         Objects.requireNonNull(userId);
         activeSessions.add(userId);
         return PERIOD_MESSAGE;
     }
 
+    /**
+     * Запускает диалог выбора периода и формирует клавиатуру
+     * с доступными вариантами
+     * @param userId внутренний идентификатор пользователя
+     * @return результат запуска диалога с клавиатурой
+     */
     public FsmResult startWithResponse(UUID userId) {
         String text = start(userId);
         return new FsmResult(text, Optional.of(createKeyboard()));
@@ -75,6 +124,13 @@ public class StatsFsmService implements FsmService {
         return activeSessions.contains(userId);
     }
 
+    /**
+     * Получает отметки пользователя за указанный период,
+     * вычисляет статистику и формирует ответ
+     * @param userId внутренний идентификатор пользователя
+     * @param period выбранный период
+     * @return статистика или сообщение об отсутствии отметок
+     */
     private String calculateStatistics(UUID userId, StatisticsPeriod period){
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime from = period.getStart(now);
@@ -174,6 +230,10 @@ public class StatsFsmService implements FsmService {
 
     }
 
+    /**
+     * Создает клавиатуру для выбора периода
+     * @return клавиатура с выбором периода
+     */
     private Keyboard createKeyboard() {
         List<KeyboardRow> rows = new ArrayList<>();
         rows.add(new KeyboardRow(List.of(
