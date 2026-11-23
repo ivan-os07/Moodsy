@@ -63,7 +63,7 @@ class CheckinFsmServiceTest {
      * Проверяет, что старт чекина создаёт сессию на шаге SCORE и возвращает приглашение.
      */
     @Test
-    void start_createsSessionAndAsksForScoreTest() {
+    void testStartCreatesSessionAndAsksForScore() {
         String response = service.start(userId);
 
         Assertions.assertEquals("Введите оценку от 1 до 10", response);
@@ -75,7 +75,7 @@ class CheckinFsmServiceTest {
      * Проверяет открыта ли сессия у пользователя.
      */
     @Test
-    void hasActiveSessionTest() {
+    void testHasActiveSession() {
         Assertions.assertFalse(service.hasActiveSession(userId));
 
         service.start(userId);
@@ -88,7 +88,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет число, например "7".
      */
     @Test
-    void handle_validScore_savesScoreAndAsksForSphereTest() {
+    void testHandleValidScoreSavesScoreAndAsksForSphere() {
         service.start(userId);
 
         String response = service.handle(userId, "7");
@@ -110,7 +110,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет строку, например "abc".
      */
     @Test
-    void handle_invalidScoreStringAndStayOnScoreTest() {
+    void testHandleInvalidScoreStringAndStayOnScore() {
         service.start(userId);
 
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
@@ -130,7 +130,7 @@ class CheckinFsmServiceTest {
      * Пользователь начал чекин и отправляет число не из диапазона, например "11".
      */
     @Test
-    void handle_invalidScoreIntAndStayOnScoreTest() {
+    void testHandleInvalidScoreIntAndStayOnScore() {
         service.start(userId);
 
         Assertions.assertEquals("❌ Ошибка: оценка настроения должна быть числом от 1 до 10.",
@@ -152,7 +152,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод строки для заметки на шаге NOTE → сохраняет заметку, переход в PREVIEW
      */
     @Test
-    void handle_validNoteTest() {
+    void testHandleValidNote() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -182,7 +182,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод пустой строки(=команде skip) на шаге NOTE → пустая заметка, переход в PREVIEW
      */
     @Test
-    void handle_validEmptyNoteTest() {
+    void testHandleValidEmptyNote() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -212,7 +212,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод команды skip на шаге NOTE → пустая заметка, переход в PREVIEW
      */
     @Test
-    void handle_validCmdSkipTest() {
+    void testHandleValidCmdSkip() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -242,7 +242,7 @@ class CheckinFsmServiceTest {
      * Неуспешный ввод команды skip на шаге не NOTE, и не на PREVIEW → сообщение об ошибке
      */
     @Test
-    void handle_invalidCmdSkipNotPreviewTest() {
+    void testHandleInvalidCmdSkipNotPreview() {
         String expected = "❌ Ошибка: команда /skip доступна только при вводе заметки.";
 
         // Например, на шаге SCORE
@@ -258,7 +258,7 @@ class CheckinFsmServiceTest {
      * Неуспешный ввод команды skip на шаге PREVIEW → сообщение об ошибке и доступные шаги
      */
     @Test
-    void handle_invalidCmdSkipPreviewTest() {
+    void testHandleInvalidCmdSkipPreview() {
         String expected = """
                 ❌ Ошибка: команда /skip доступна только при вводе заметки.
                 Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.""";
@@ -281,7 +281,7 @@ class CheckinFsmServiceTest {
      * Сохранение заметки при использовании /approve на шаге PREVIEW → сохраняет MoodEntry, удаляет сессию
      */
     @Test
-    void handleValidSaveTest() {
+    void testHandleValidSave() {
         service.start(userId);
         // Успешный пройденный шаг SCORE
         service.handle(userId, "7");
@@ -310,7 +310,7 @@ class CheckinFsmServiceTest {
      * Выход из диалога по команде /exit: сессия удаляется, запись не сохраняется.
      */
     @Test
-    void handle_exitCancelsSessionWithoutSavingTest() {
+    void testHandleExitCancelsSessionWithoutSaving() {
         service.start(userId);
         service.handle(userId, "7"); // находимся на шаге SPHERE
 
@@ -325,7 +325,7 @@ class CheckinFsmServiceTest {
      * Отмена записи по команде /reject на шаге PREVIEW: сессия удаляется, запись не сохраняется.
      */
     @Test
-    void handle_rejectCancelsSessionWithoutSavingTest() {
+    void testHandleRejectCancelsSessionWithoutSaving() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "Дела");
@@ -342,7 +342,7 @@ class CheckinFsmServiceTest {
      * Возврат назад с шага NOTE на шаг SCORE по команде /back.
      */
     @Test
-    void handle_backFromNoteToScoreTest() {
+    void testHandleBackFromNoteToScore() {
         service.start(userId);
         service.handle(userId, "7"); // перешли на SPHERE
         service.handle(userId, "Дела"); // перешли на NOTE
@@ -359,7 +359,7 @@ class CheckinFsmServiceTest {
      * Возврат назад с шага PREVIEW на шаг NOTE по команде /back.
      */
     @Test
-    void handle_backFromPreviewToNoteTest() {
+    void testHandleBackFromPreviewToNote() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "Дела");
@@ -376,7 +376,7 @@ class CheckinFsmServiceTest {
      * Попытка возврата назад с начального шага SCORE: возвращает ошибку и остаётся на SCORE.
      */
     @Test
-    void handle_backFromScoreReturnsErrorTest() {
+    void testHandleBackFromScoreReturnsError() {
         service.start(userId); // находимся на SCORE
 
         String response = service.handle(userId, "/back");
@@ -390,7 +390,7 @@ class CheckinFsmServiceTest {
      * Некорректный ввод на шаге PREVIEW: напоминает о доступных командах.
      */
     @Test
-    void handle_invalidInputOnPreviewTest() {
+    void testHandleInvalidInputOnPreview() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "Дела");
@@ -409,7 +409,7 @@ class CheckinFsmServiceTest {
      * Успешный ввод каждой валидной сферы на шаге SPHERE → переход к NOTE.
      */
     @Test
-    void handle_validSphereTransitionsToNoteTest() {
+    void testHandleValidSphereTransitionsToNote() {
         List<String> spheres = List.of("Дела", "Общение", "Здоровье", "Отдых");
 
         // Проверяем все 4 сферы
@@ -434,7 +434,7 @@ class CheckinFsmServiceTest {
      * Команда /exit на шаге SPHERE → сессия удаляется без сохранения.
      */
     @Test
-    void handle_exitOnSphereCancelsSessionTest() {
+    void testHandleExitOnSphereCancelsSession() {
         service.start(userId);
         service.handle(userId, "5"); // SCORE → SPHERE
 
@@ -449,7 +449,7 @@ class CheckinFsmServiceTest {
      * Команда /back на шаге SPHERE → возврат на SCORE, оценка сохраняется.
      */
     @Test
-    void handle_backFromSphereToScoreTest() {
+    void testHandleBackFromSphereToScore() {
         service.start(userId);
         service.handle(userId, "5");
 
@@ -466,7 +466,7 @@ class CheckinFsmServiceTest {
      * Команда /skip на шаге SPHERE → ошибка, остаёмся на SPHERE.
      */
     @Test
-    void handle_skipOnSphereReturnsErrorTest() {
+    void testHandleSkipOnSphereReturnsError() {
         service.start(userId);
         service.handle(userId, "5"); // SCORE → SPHERE
 
@@ -481,7 +481,7 @@ class CheckinFsmServiceTest {
      * Команды /approve и /reject на шаге SPHERE → ошибка неизвестной команды, остаёмся на SPHERE.
      */
     @Test
-    void handle_approveRejectOnSphereReturnsUnknownCommandTest() {
+    void testHandleApproveRejectOnSphereReturnsUnknownCommand() {
         service.start(userId);
         service.handle(userId, "5"); // SCORE → SPHERE
 
@@ -509,7 +509,7 @@ class CheckinFsmServiceTest {
             " Дела ",
             "   дела   "
     })
-    void handle_validSphereWithWhitespaceAndCaseTransitionsToNoteTest(String sphereInput) {
+    void testHandleValidSphereWithWhitespaceAndCaseTransitionsToNote(String sphereInput) {
         service.start(userId);
         service.handle(userId, "5");
 
@@ -524,7 +524,7 @@ class CheckinFsmServiceTest {
      * Обработка сообщения без открытой сессии возвращает подсказку и не создаёт сессию.
      */
     @Test
-    void handle_withoutActiveSessionReturnsNoSessionTest() {
+    void testHandleWithoutActiveSessionReturnsNoSession() {
         String response = service.handle(userId, "7");
 
         Assertions.assertEquals("Диалог не запущен. Отправьте /checkin", response);
@@ -535,7 +535,7 @@ class CheckinFsmServiceTest {
      * Повторный старт перезаписывает незавершённую сессию и сбрасывает введённые данные.
      */
     @Test
-    void start_overwritesExistingSessionTest() {
+    void testStartOverwritesExistingSession() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "дела");
@@ -557,7 +557,7 @@ class CheckinFsmServiceTest {
      * Неизвестная команда на шаге NOTE возвращает ошибку и не меняет шаг.
      */
     @Test
-    void handle_unknownCommandOnNoteStaysOnNoteTest() {
+    void testHandleUnknownCommandOnNoteStaysOnNote() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "дела");
@@ -586,7 +586,7 @@ class CheckinFsmServiceTest {
             "10, 10",
             "'  7  ', 7"
     })
-    void handle_validBoundaryAndTrimmedScoreTest(String input, int expectedScore) {
+    void testHandleValidBoundaryAndTrimmedScore(String input, int expectedScore) {
         service.start(userId);
 
         String response = service.handle(userId, input);
@@ -607,7 +607,7 @@ class CheckinFsmServiceTest {
      * Команда /approve работает независимо от регистра и пробелов по краям.
      */
     @Test
-    void handle_approveIgnoresCaseAndWhitespaceTest() {
+    void testHandleApproveIgnoresCaseAndWhitespace() {
         service.start(userId);
         service.handle(userId, "8");
         service.handle(userId, "дела");
@@ -624,7 +624,7 @@ class CheckinFsmServiceTest {
      * Команда /reject работает независимо от регистра.
      */
     @Test
-    void handle_rejectIgnoresCaseTest() {
+    void testHandleRejectIgnoresCase() {
         service.start(userId);
         service.handle(userId, "8");
         service.handle(userId, "дела");
@@ -641,7 +641,7 @@ class CheckinFsmServiceTest {
      * Глобальные команды /back и /exit работают независимо от регистра.
      */
     @Test
-    void handle_backAndExitIgnoreCaseTest() {
+    void testHandleBackAndExitIgnoreCase() {
         service.start(userId);
         service.handle(userId, "8");
 
@@ -664,7 +664,7 @@ class CheckinFsmServiceTest {
      * перед сохранением записи.
      */
     @Test
-    void handle_editAllFieldsViaBackSavesUpdatedEntryTest() {
+    void testHandleEditAllFieldsViaBackSavesUpdatedEntry() {
         service.start(userId);
         service.handle(userId, "7");
         service.handle(userId, "дела");
@@ -699,7 +699,7 @@ class CheckinFsmServiceTest {
      * Передача {@code null} вместо хранилища сессий вызывает {@link NullPointerException}.
      */
     @Test
-    void constructor_rejectsNullSessionStoreTest() {
+    void testConstructorRejectsNullSessionStore() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> new CheckinFsmService(null, moodRepository, clock)
@@ -712,7 +712,7 @@ class CheckinFsmServiceTest {
      * Передача {@code null} вместо репозитория вызывает {@link NullPointerException}.
      */
     @Test
-    void constructor_rejectsNullMoodRepositoryTest() {
+    void testConstructorRejectsNullMoodRepository() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> new CheckinFsmService(sessionStore, null, clock)
@@ -725,7 +725,7 @@ class CheckinFsmServiceTest {
      * Передача {@code null} вместо часов вызывает {@link NullPointerException}.
      */
     @Test
-    void constructor_rejectsNullClockTest() {
+    void testConstructorRejectsNullClock() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> new CheckinFsmService(sessionStore, moodRepository, null)
@@ -738,7 +738,7 @@ class CheckinFsmServiceTest {
      * Старт диалога с {@code null}-идентификатором вызывает {@link NullPointerException}.
      */
     @Test
-    void start_rejectsNullUserIdTest() {
+    void testStartRejectsNullUserId() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> service.start(null)
@@ -751,7 +751,7 @@ class CheckinFsmServiceTest {
      * Обработка сообщения с {@code null}-идентификатором вызывает {@link NullPointerException}.
      */
     @Test
-    void handle_rejectsNullUserIdTest() {
+    void testHandleRejectsNullUserId() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> service.handle(null, "7")
@@ -764,7 +764,7 @@ class CheckinFsmServiceTest {
      * Проверка активной сессии с {@code null}-идентификатором вызывает {@link NullPointerException}.
      */
     @Test
-    void hasActiveSession_rejectsNullUserIdTest() {
+    void testHasActiveSessionRejectsNullUserId() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class,
                 () -> service.hasActiveSession(null)

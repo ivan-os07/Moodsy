@@ -40,7 +40,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что сохранённая сессия возвращается тому же пользователю.
      */
     @Test
-    void saveAndFindById() {
+    void testSaveAndFindById() {
         CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
         store.save(session);
@@ -63,7 +63,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что повторное сохранение заменяет предыдущую сессию пользователя.
      */
     @Test
-    void saveReplacesExistingSession() {
+    void testSaveReplacesExistingSession() {
         CheckinSession first = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
         CheckinSession second = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
@@ -80,7 +80,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что удаление возвращает удалённую сессию и убирает её из хранилища.
      */
     @Test
-    void removeExistingSession() {
+    void testRemoveExistingSession() {
         CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
         store.save(session);
 
@@ -106,7 +106,7 @@ class InMemoryCheckinSessionStoreTest {
      * удаление одного диалога не затрагивает другой.
      */
     @Test
-    void sessionsOfDifferentUsersAreIsolated() {
+    void testSessionsOfDifferentUsersAreIsolated() {
         CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
         CheckinSession secondSession = new CheckinSession(secondUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
         store.save(firstSession);
@@ -151,7 +151,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что поиск по {@code null}-идентификатору вызывает {@link NullPointerException}.
      */
     @Test
-    void findByIdRejectsNullUserId() {
+    void testFindByIdRejectsNullUserId() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class, () -> store.findById(null)
         );
@@ -166,7 +166,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что удаление по {@code null}-идентификатору вызывает {@link NullPointerException}.
      */
     @Test
-    void removeRejectsNullUserId() {
+    void testRemoveRejectsNullUserId() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class, () -> store.remove(null)
         );
@@ -181,7 +181,7 @@ class InMemoryCheckinSessionStoreTest {
      * Проверяет, что проверка наличия сессии по {@code null}-идентификатору вызывает {@link NullPointerException}.
      */
     @Test
-    void hasSessionRejectsNullUserId() {
+    void testHasSessionRejectsNullUserId() {
         NullPointerException exception = Assertions.assertThrows(
                 NullPointerException.class, () -> store.hasSession(null)
         );
@@ -198,7 +198,7 @@ class InMemoryCheckinSessionStoreTest {
      * с открытой сессией и {@code false} для пользователя без неё.
      */
     @Test
-    void hasSession() {
+    void testHasSession() {
         CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
         store.save(firstSession);

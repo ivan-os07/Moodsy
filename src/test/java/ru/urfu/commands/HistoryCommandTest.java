@@ -42,7 +42,7 @@ class HistoryCommandTest {
      * проверка корректного отображения в истории (от старых к новым)
      */
     @Test
-    void executeTest() {
+    void testExecute() {
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin",
                 command.execute(userId, null)
         );
@@ -115,7 +115,7 @@ class HistoryCommandTest {
      * Тестируем, что заметка выводится в верном формате.
      */
     @Test
-    void execute_showsNoteAndKeepsTimeAsStored() {
+    void testExecuteShowsNoteAndKeepsTimeAsStored() {
         repository.save(userId, new MoodEntry(LocalDateTime.of(2026, 12, 12, 23, 56), 6, Sphere.WORK, "много тикетов"));
 
         String response = command.execute(userId, null);

@@ -65,7 +65,7 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота, факт сохранения записи и её вид в истории.
      */
     @Test
-    void happyPathWithNoteTest() {
+    void testHappyPathWithNote() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "7");
@@ -112,7 +112,7 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота, факт сохранения записи и её вид в истории.
      */
     @Test
-    void happyPathWithoutNoteUsingSkipTest() {
+    void testHappyPathWithoutNoteUsingSkip() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "8");
@@ -162,7 +162,7 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота, факт несохранения записи и не появления её в истории.
      */
     @Test
-    void exitFromSpherePathTest() {
+    void testExitFromSpherePath() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin");
         BotResponse score = dispatcher.handle(userId, "1");
@@ -188,7 +188,7 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота (сообщение об ошибке), факт несохранения записи и не появления её в истории.
      */
     @Test
-    void pathUsingArgs() {
+    void testPathUsingArgs() {
         // подаём сообщения пользователя
         BotResponse first = dispatcher.handle(userId, "/checkin 1");
 
@@ -210,7 +210,7 @@ class CheckinFlowFunctionalTest {
      * Проверяются: ответы бота (сообщение об ошибке), факт несохранения записи и не появления её в истории.
      */
     @Test
-    void checkinShouldNotSaveEntryWhenUserCancels() {
+    void testCheckinShouldNotSaveEntryWhenUserCancels() {
         // подаём сообщения пользователя
         dispatcher.handle(userId, "/checkin");
         dispatcher.handle(userId, "7");
@@ -247,7 +247,7 @@ class CheckinFlowFunctionalTest {
      * а их записи в истории остаются изолированными.
      */
     @Test
-    void parallelDialogsOfTwoUsersAreIsolatedTest() {
+    void testParallelDialogsOfTwoUsersAreIsolated() {
         UUID secondUserId = UUID.randomUUID();
 
         dispatcher.handle(userId, "/checkin");

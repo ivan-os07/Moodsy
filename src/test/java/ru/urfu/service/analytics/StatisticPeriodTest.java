@@ -39,7 +39,7 @@ public class StatisticPeriodTest {
      * Тестируем, что дня в конце месяца возвращается верное начало месяца
      */
     @Test
-    void monthStartsTest() {
+    void testMonthStarts() {
         LocalDateTime current = LocalDateTime.of(2026, 11, 30, 23, 59);
         Assertions.assertEquals(LocalDateTime.of(2026, 11, 1, 0, 0)
                 , StatisticsPeriod.MONTH.getStart(current));
@@ -49,7 +49,7 @@ public class StatisticPeriodTest {
      * Тестируем верхнюю границу месяца, включая переход между годами
      */
     @Test
-    void monthEndsTest() {
+    void testMonthEnds() {
         LocalDateTime current = LocalDateTime.of(2026, 12, 31, 23, 59);
         Assertions.assertEquals(LocalDateTime.of(2027, 1, 1, 0, 0),
                 StatisticsPeriod.MONTH.getEndExclusive(current));
@@ -60,7 +60,7 @@ public class StatisticPeriodTest {
      * команд поиска начала и конца периода
      */
     @Test
-    void rejectNullTest() {
+    void testRejectNull() {
         NullPointerException weekExeption =
                 Assertions.assertThrows(NullPointerException.class,
                         () -> StatisticsPeriod.WEEK.getStart(null));
