@@ -45,14 +45,17 @@ class InMemoryCheckinSessionStoreTest {
 
         store.save(session);
 
-        Assertions.assertSame(session, store.findById(firstUserId).orElseThrow());
+        Assertions.assertSame(
+                session,
+                store.findById(firstUserId).orElseThrow()
+        );
     }
 
     /**
      * Проверяет, что для пользователя без открытой сессии возвращается пустой Optional.
      */
     @Test
-    void findByIdUnknownUser() {
+    void testFindByIdUnknownUser() {
         Assertions.assertTrue(store.findById(firstUserId).isEmpty());
     }
 
@@ -67,7 +70,10 @@ class InMemoryCheckinSessionStoreTest {
         store.save(first);
         store.save(second);
 
-        Assertions.assertSame(second, store.findById(firstUserId).orElseThrow());
+        Assertions.assertSame(
+                second,
+                store.findById(firstUserId).orElseThrow()
+        );
     }
 
     /**
@@ -82,13 +88,16 @@ class InMemoryCheckinSessionStoreTest {
 
         Assertions.assertSame(session, removed);
         Assertions.assertTrue(store.findById(firstUserId).isEmpty());
+
+        // Сессия отсутствует
+        Assertions.assertFalse(store.hasSession(firstUserId));
     }
 
     /**
      * Проверяет, что удаление несуществующей сессии ничего не возвращает.
      */
     @Test
-    void removeUnknownUser() {
+    void testRemoveUnknownUser() {
         Assertions.assertTrue(store.remove(firstUserId).isEmpty());
     }
 
@@ -103,33 +112,90 @@ class InMemoryCheckinSessionStoreTest {
         store.save(firstSession);
         store.save(secondSession);
 
-        Assertions.assertSame(firstSession, store.findById(firstUserId).orElseThrow());
-        Assertions.assertSame(secondSession, store.findById(secondUserId).orElseThrow());
+        Assertions.assertSame(
+                firstSession,
+                store.findById(firstUserId).orElseThrow()
+        );
+
+        Assertions.assertSame(
+                secondSession,
+                store.findById(secondUserId).orElseThrow()
+        );
 
         store.remove(firstUserId);
 
         Assertions.assertTrue(store.findById(firstUserId).isEmpty());
-        Assertions.assertSame(secondSession, store.findById(secondUserId).orElseThrow());
+        Assertions.assertSame(
+                secondSession,
+                store.findById(secondUserId).orElseThrow()
+        );
     }
 
 
     /**
-     * Проверяет, что null в аргументах отклоняется с NullPointerException.
+     * Проверяет, что сохранение {@code null}-сессии вызывает {@link NullPointerException}.
      */
     @Test
-    void nullArgumentsAreRejected() {
-        Assertions.assertThrows(NullPointerException.class, () -> store.save(null));
-        Assertions.assertThrows(NullPointerException.class, () -> store.findById(null));
-        Assertions.assertThrows(NullPointerException.class, () -> store.remove(null));
-        Assertions.assertThrows(NullPointerException.class, () -> store.hasSession(null));
+    void testSaveRejectsNullSession() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class, () -> store.save(null)
+        );
 
-        Assertions.assertTrue(store.findById(firstUserId).isEmpty());
+        Assertions.assertEquals(
+                "session не может быть null",
+                exception.getMessage()
+        );
     }
 
     /**
-     * Проверяет наличие сессии у пользователя,
-     * у которого сессия возвращается true,
-     * аналогично для пользователя без сессии закрыт - false
+     * Проверяет, что поиск по {@code null}-идентификатору вызывает {@link NullPointerException}.
+     */
+    @Test
+    void findByIdRejectsNullUserId() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class, () -> store.findById(null)
+        );
+
+        Assertions.assertEquals(
+                "userId не может быть null",
+                exception.getMessage()
+        );
+    }
+
+    /**
+     * Проверяет, что удаление по {@code null}-идентификатору вызывает {@link NullPointerException}.
+     */
+    @Test
+    void removeRejectsNullUserId() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class, () -> store.remove(null)
+        );
+
+        Assertions.assertEquals(
+                "userId не может быть null",
+                exception.getMessage()
+        );
+    }
+
+    /**
+     * Проверяет, что проверка наличия сессии по {@code null}-идентификатору вызывает {@link NullPointerException}.
+     */
+    @Test
+    void hasSessionRejectsNullUserId() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class, () -> store.hasSession(null)
+        );
+
+        Assertions.assertEquals(
+                "userId не может быть null",
+                exception.getMessage()
+        );
+    }
+
+
+    /**
+     * Проверяет, что {@code hasSession} возвращает {@code true} для пользователя
+     * с открытой сессией и {@code false} для пользователя без неё.
      */
     @Test
     void hasSession() {
@@ -141,6 +207,5 @@ class InMemoryCheckinSessionStoreTest {
         Assertions.assertFalse(store.hasSession(secondUserId));
 
     }
-
 
 }

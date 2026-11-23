@@ -39,7 +39,8 @@ public class TelegramConfig {
         String token = envProvider.apply(ENV_BOT_TOKEN);
 
         if (token == null || token.isBlank()) {
-            throw new IllegalStateException("Ошибка: переменная окружения " + ENV_BOT_TOKEN + " не задана!");
+            throw new IllegalStateException("Ошибка: переменная окружения "
+                    + ENV_BOT_TOKEN + " не задана!");
         }
         this.botToken = token;
     }

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
@@ -295,7 +296,7 @@ class CheckinFsmServiceTest {
         Assertions.assertEquals("✅ Запись сохранена.", response);
 
         // Проверяем, что запись появилась в репозитории
-        MoodEntry savedEntry = moodRepository.findLatest(userId).orElseThrow();
+        MoodEntry savedEntry = moodRepository.findLast(userId, 1).getFirst();
         Assertions.assertEquals(7, savedEntry.score());
         Assertions.assertEquals(Sphere.WORK, savedEntry.sphere());
         Assertions.assertEquals("заметка", savedEntry.note());
@@ -317,7 +318,7 @@ class CheckinFsmServiceTest {
 
         Assertions.assertEquals("Сессия завершена без сохранения отметки", response);
         Assertions.assertFalse(sessionStore.hasSession(userId));
-        Assertions.assertTrue(moodRepository.findLatest(userId).isEmpty());
+        Assertions.assertTrue(moodRepository.findLast(userId, 1).isEmpty());
     }
 
     /**
@@ -334,7 +335,7 @@ class CheckinFsmServiceTest {
 
         Assertions.assertEquals("Сессия завершена без сохранения отметки", response);
         Assertions.assertFalse(sessionStore.hasSession(userId));
-        Assertions.assertTrue(moodRepository.findLatest(userId).isEmpty());
+        Assertions.assertTrue(moodRepository.findLast(userId, 1).isEmpty());
     }
 
     /**
@@ -441,7 +442,7 @@ class CheckinFsmServiceTest {
 
         Assertions.assertEquals("Сессия завершена без сохранения отметки", response);
         Assertions.assertFalse(sessionStore.hasSession(userId));
-        Assertions.assertTrue(moodRepository.findLatest(userId).isEmpty());
+        Assertions.assertTrue(moodRepository.findLast(userId, 1).isEmpty());
     }
 
     /**
@@ -517,5 +518,258 @@ class CheckinFsmServiceTest {
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", response);
         CheckinSession session = sessionStore.findById(userId).orElseThrow();
         Assertions.assertEquals(CheckinStep.NOTE, session.step());
+    }
+
+    /**
+     * Обработка сообщения без открытой сессии возвращает подсказку и не создаёт сессию.
+     */
+    @Test
+    void handle_withoutActiveSessionReturnsNoSessionTest() {
+        String response = service.handle(userId, "7");
+
+        Assertions.assertEquals("Диалог не запущен. Отправьте /checkin", response);
+        Assertions.assertFalse(sessionStore.hasSession(userId));
+    }
+
+    /**
+     * Повторный старт перезаписывает незавершённую сессию и сбрасывает введённые данные.
+     */
+    @Test
+    void start_overwritesExistingSessionTest() {
+        service.start(userId);
+        service.handle(userId, "7");
+        service.handle(userId, "дела");
+        service.handle(userId, "старая заметка");
+
+        String response = service.start(userId);
+
+        Assertions.assertEquals("Введите оценку от 1 до 10", response);
+
+        CheckinSession session = sessionStore.findById(userId).orElseThrow();
+
+        Assertions.assertEquals(CheckinStep.SCORE, session.step());
+        Assertions.assertEquals(0, session.score());
+        Assertions.assertEquals("", session.note());
+        Assertions.assertTrue(moodRepository.findLast(userId, 10).isEmpty());
+    }
+
+    /**
+     * Неизвестная команда на шаге NOTE возвращает ошибку и не меняет шаг.
+     */
+    @Test
+    void handle_unknownCommandOnNoteStaysOnNoteTest() {
+        service.start(userId);
+        service.handle(userId, "7");
+        service.handle(userId, "дела");
+
+        String response = service.handle(userId, "/unknown");
+
+        Assertions.assertEquals(
+                "❌ Неизвестная команда. Доступны: /skip, /back, /exit",
+                response
+        );
+
+        CheckinSession session = sessionStore.findById(userId).orElseThrow();
+
+        Assertions.assertEquals(CheckinStep.NOTE, session.step());
+    }
+
+    /**
+     * Граничные оценки и оценка с пробелами по краям принимаются и переводят на шаг SPHERE.
+     *
+     * @param input          введённая оценка
+     * @param expectedScore  ожидаемая сохранённая оценка
+     */
+    @ParameterizedTest
+    @CsvSource({
+            "1, 1",
+            "10, 10",
+            "'  7  ', 7"
+    })
+    void handle_validBoundaryAndTrimmedScoreTest(String input, int expectedScore) {
+        service.start(userId);
+
+        String response = service.handle(userId, input);
+
+        Assertions.assertEquals("""
+                Выберете сферу из предложенных:
+                Дела, Общение, Здоровье, Отдых
+                """, response
+        );
+
+        CheckinSession session = sessionStore.findById(userId).orElseThrow();
+
+        Assertions.assertEquals(expectedScore, session.score());
+        Assertions.assertEquals(CheckinStep.SPHERE, session.step());
+    }
+
+    /**
+     * Команда /approve работает независимо от регистра и пробелов по краям.
+     */
+    @Test
+    void handle_approveIgnoresCaseAndWhitespaceTest() {
+        service.start(userId);
+        service.handle(userId, "8");
+        service.handle(userId, "дела");
+        service.handle(userId, "заметка");
+
+        String response = service.handle(userId, "  /APPROVE  ");
+
+        Assertions.assertEquals("✅ Запись сохранена.", response);
+        Assertions.assertEquals(1, moodRepository.findLast(userId, 10).size());
+        Assertions.assertFalse(sessionStore.hasSession(userId));
+    }
+
+    /**
+     * Команда /reject работает независимо от регистра.
+     */
+    @Test
+    void handle_rejectIgnoresCaseTest() {
+        service.start(userId);
+        service.handle(userId, "8");
+        service.handle(userId, "дела");
+        service.handle(userId, "заметка");
+
+        String response = service.handle(userId, "/ReJeCt");
+
+        Assertions.assertEquals("Сессия завершена без сохранения отметки", response);
+        Assertions.assertTrue(moodRepository.findLast(userId, 10).isEmpty());
+        Assertions.assertFalse(sessionStore.hasSession(userId));
+    }
+
+    /**
+     * Глобальные команды /back и /exit работают независимо от регистра.
+     */
+    @Test
+    void handle_backAndExitIgnoreCaseTest() {
+        service.start(userId);
+        service.handle(userId, "8");
+
+        String backResponse = service.handle(userId, "/Back");
+
+        Assertions.assertEquals("Введите оценку от 1 до 10", backResponse);
+        Assertions.assertEquals(
+                CheckinStep.SCORE,
+                sessionStore.findById(userId).orElseThrow().step()
+        );
+
+        String exitResponse = service.handle(userId, "  /EXIT  ");
+
+        Assertions.assertEquals("Сессия завершена без сохранения отметки", exitResponse);
+        Assertions.assertFalse(sessionStore.hasSession(userId));
+    }
+
+    /**
+     * Возврат через /back на всех шагах позволяет изменить оценку, сферу и заметку
+     * перед сохранением записи.
+     */
+    @Test
+    void handle_editAllFieldsViaBackSavesUpdatedEntryTest() {
+        service.start(userId);
+        service.handle(userId, "7");
+        service.handle(userId, "дела");
+        service.handle(userId, "старая заметка");
+
+        // PREVIEW → NOTE → SPHERE → SCORE
+        service.handle(userId, "/back");
+        service.handle(userId, "/back");
+        service.handle(userId, "/back");
+
+        service.handle(userId, "9");
+        service.handle(userId, "отдых");
+        service.handle(userId, "новая заметка");
+
+        String response = service.handle(userId, "/approve");
+
+        Assertions.assertEquals("✅ Запись сохранена.", response);
+        Assertions.assertFalse(sessionStore.hasSession(userId));
+
+        List<MoodEntry> entries = moodRepository.findLast(userId, 10);
+
+        Assertions.assertEquals(1, entries.size());
+
+        MoodEntry saved = entries.getFirst();
+
+        Assertions.assertEquals(9, saved.score());
+        Assertions.assertEquals(Sphere.REST, saved.sphere());
+        Assertions.assertEquals("новая заметка", saved.note());
+    }
+
+    /**
+     * Передача {@code null} вместо хранилища сессий вызывает {@link NullPointerException}.
+     */
+    @Test
+    void constructor_rejectsNullSessionStoreTest() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> new CheckinFsmService(null, moodRepository, clock)
+        );
+
+        Assertions.assertEquals("sessionStore не может быть null", exception.getMessage());
+    }
+
+    /**
+     * Передача {@code null} вместо репозитория вызывает {@link NullPointerException}.
+     */
+    @Test
+    void constructor_rejectsNullMoodRepositoryTest() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> new CheckinFsmService(sessionStore, null, clock)
+        );
+
+        Assertions.assertEquals("moodRepository не может быть null", exception.getMessage());
+    }
+
+    /**
+     * Передача {@code null} вместо часов вызывает {@link NullPointerException}.
+     */
+    @Test
+    void constructor_rejectsNullClockTest() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> new CheckinFsmService(sessionStore, moodRepository, null)
+        );
+
+        Assertions.assertEquals("clock не может быть null", exception.getMessage());
+    }
+
+    /**
+     * Старт диалога с {@code null}-идентификатором вызывает {@link NullPointerException}.
+     */
+    @Test
+    void start_rejectsNullUserIdTest() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> service.start(null)
+        );
+
+        Assertions.assertEquals("userId не может быть null", exception.getMessage());
+    }
+
+    /**
+     * Обработка сообщения с {@code null}-идентификатором вызывает {@link NullPointerException}.
+     */
+    @Test
+    void handle_rejectsNullUserIdTest() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> service.handle(null, "7")
+        );
+
+        Assertions.assertEquals("userId не может быть null", exception.getMessage());
+    }
+
+    /**
+     * Проверка активной сессии с {@code null}-идентификатором вызывает {@link NullPointerException}.
+     */
+    @Test
+    void hasActiveSession_rejectsNullUserIdTest() {
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> service.hasActiveSession(null)
+        );
+
+        Assertions.assertEquals("userId не может быть null", exception.getMessage());
     }
 }

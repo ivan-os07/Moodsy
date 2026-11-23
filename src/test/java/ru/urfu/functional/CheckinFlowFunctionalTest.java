@@ -16,7 +16,6 @@ import ru.urfu.service.fsm.InMemoryCheckinSessionStore;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -91,7 +90,7 @@ class CheckinFlowFunctionalTest {
         Assertions.assertEquals("✅ Запись сохранена.", approve.text());
 
         // запись появилась в репозитории с нужными данными
-        MoodEntry saved = moodRepository.findLatest(userId).orElseThrow();
+        MoodEntry saved = moodRepository.findLast(userId, 1).getFirst();
         Assertions.assertEquals(7, saved.score());
         Assertions.assertEquals("Дела", saved.sphere().getDisplayName());
         Assertions.assertEquals("много тикетов", saved.note());
@@ -140,7 +139,7 @@ class CheckinFlowFunctionalTest {
         Assertions.assertEquals("✅ Запись сохранена.", approve.text());
 
         // запись появилась в репозитории с нужными данными
-        MoodEntry saved = moodRepository.findLatest(userId).orElseThrow();
+        MoodEntry saved = moodRepository.findLast(userId, 1).getFirst();
         Assertions.assertEquals(8, saved.score());
         Assertions.assertEquals("Дела", saved.sphere().getDisplayName());
         Assertions.assertEquals("", saved.note());
@@ -175,8 +174,7 @@ class CheckinFlowFunctionalTest {
         Assertions.assertEquals("Сессия завершена без сохранения отметки", exit.text());
 
         // запись не появилась в репозитории
-        Optional<MoodEntry> saved = moodRepository.findLatest(userId);
-        Assertions.assertTrue(saved.isEmpty());
+        Assertions.assertTrue(moodRepository.findLast(userId, 1).isEmpty());
 
         // /history подсказывает, что заметок нет
         BotResponse history = dispatcher.handle(userId, "/history");
@@ -198,8 +196,7 @@ class CheckinFlowFunctionalTest {
         Assertions.assertEquals("❌ Команда /checkin вызывается без параметров.", first.text());
 
         // запись не появилась в репозитории
-        Optional<MoodEntry> saved = moodRepository.findLatest(userId);
-        Assertions.assertTrue(saved.isEmpty());
+        Assertions.assertTrue(moodRepository.findLast(userId, 1).isEmpty());
 
         // /history подсказывает, что заметок нет
         BotResponse history = dispatcher.handle(userId, "/history");
@@ -237,13 +234,53 @@ class CheckinFlowFunctionalTest {
         dispatcher.handle(userId, "/exit");
 
         // запись не появилась в репозитории
-        Optional<MoodEntry> saved = moodRepository.findLatest(userId);
-        Assertions.assertTrue(saved.isEmpty());
+        Assertions.assertTrue(moodRepository.findLast(userId, 1).isEmpty());
 
         // /history подсказывает, что заметок нет
         BotResponse history = dispatcher.handle(userId, "/history");
         Assertions.assertEquals("История пуста. Попробуйте использовать команду /checkin", history.text());
 
+    }
+
+    /**
+     * Проверяет, что параллельные диалоги двух пользователей не влияют друг на друга,
+     * а их записи в истории остаются изолированными.
+     */
+    @Test
+    void parallelDialogsOfTwoUsersAreIsolatedTest() {
+        UUID secondUserId = UUID.randomUUID();
+
+        dispatcher.handle(userId, "/checkin");
+        dispatcher.handle(secondUserId, "/checkin");
+
+        dispatcher.handle(userId, "9");
+        dispatcher.handle(secondUserId, "3");
+
+        dispatcher.handle(userId, "дела");
+        dispatcher.handle(secondUserId, "отдых");
+
+        dispatcher.handle(userId, "отличный день");
+        dispatcher.handle(secondUserId, "/exit");
+
+        BotResponse approveFirst = dispatcher.handle(userId, "/approve");
+
+        Assertions.assertEquals("✅ Запись сохранена.", approveFirst.text());
+
+        BotResponse firstHistory = dispatcher.handle(userId, "/history");
+
+        Assertions.assertEquals("""
+                 📅 Ваша история записей:
+                02.11.2026
+                12:00 - 9/10 - Дела
+                Заметка: отличный день""", firstHistory.text()
+        );
+
+        BotResponse secondHistory = dispatcher.handle(secondUserId, "/history");
+
+        Assertions.assertEquals(
+                "История пуста. Попробуйте использовать команду /checkin",
+                secondHistory.text()
+        );
     }
 
 }

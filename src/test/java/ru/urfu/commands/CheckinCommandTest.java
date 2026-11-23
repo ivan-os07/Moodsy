@@ -59,7 +59,7 @@ class CheckinCommandTest {
      * Проверяет, что команда без параметров запускает диалог и не сохраняет запись.
      */
     @Test
-    void execute_withoutArgs_startsDialog() {
+    void testExecute_withoutArgs_startsDialog() {
         Assertions.assertEquals("Введите оценку от 1 до 10",
                 command.execute(userId, new String[]{}));
 
@@ -72,7 +72,7 @@ class CheckinCommandTest {
      * и не создаёт сессию.
      */
     @Test
-    void execute_withArgs_returnsArgsError() {
+    void testExecute_withArgs_returnsArgsError() {
         Assertions.assertEquals(ARGS_ERROR, command.execute(userId, new String[]{"8"}));
         Assertions.assertEquals(ARGS_ERROR, command.execute(userId, new String[]{"abc"}));
         Assertions.assertEquals(ARGS_ERROR, command.execute(userId, new String[]{"6", "7"}));
@@ -85,7 +85,7 @@ class CheckinCommandTest {
      * Проверяет ключ и описание команды.
      */
     @Test
-    void commandMetadata() {
+    void testCommandMetadata() {
         Assertions.assertEquals("/checkin", command.getCommandKey());
         Assertions.assertEquals("Пошаговая отметка настроения", command.getDescription());
     }

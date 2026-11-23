@@ -165,7 +165,6 @@ public class TelegramBot implements LongPollingUpdateConsumer {
     public void start() throws Exception {
         try (TelegramBotsLongPollingApplication botsApplication =
                      new TelegramBotsLongPollingApplication()) {
-
             botsApplication.registerBot(this.botToken, this);
             System.out.println("Бот успешно запущен и слушает обновления...");
 

@@ -79,6 +79,12 @@ public class CheckinFsmService {
     private static final String UNKNOWN_COMMAND = "❌ Неизвестная команда. Доступны: /back, /exit";
 
     /**
+     * Сообщение о неизвестной команде на шаге заметки.
+     */
+    private static final String UNKNOWN_COMMAND_ON_NOTE =
+            "❌ Неизвестная команда. Доступны: /skip, /back, /exit";
+
+    /**
      * Сообщение об ошибке при вызове команды /skip не на шаге заметки.
      */
     private static final String SKIP_ERROR = "❌ Ошибка: команда /skip доступна только при вводе заметки.";
@@ -156,8 +162,11 @@ public class CheckinFsmService {
      *
      * @param userId идентификатор пользователя
      * @return приглашение ввести оценку
+     * @throws NullPointerException если {@code userId} равен {@code null}
      */
     public String start(UUID userId) {
+        Objects.requireNonNull(userId, "userId не может быть null");
+
         CheckinSession session = new CheckinSession(userId, CheckinStep.SCORE, 0, null, "");
         sessionStore.save(session);
         return SCORE_PROMPT;
@@ -177,20 +186,17 @@ public class CheckinFsmService {
 
     /**
      * Обрабатывает ввод пользователя в зависимости от текущего шага диалога.
-     * Команды /exit и /back доступны на любом шаге.
+     * Команды /exit и /back доступны на любом шаге, /skip — только на шаге заметки.
      *
      * @param userId идентификатор пользователя
      * @param text   текст сообщения
      * @return сообщение с результатом обработки
+     * @throws NullPointerException если {@code userId} равен {@code null}
      */
     public String handle(UUID userId, String text) {
         Objects.requireNonNull(userId, "userId не может быть null");
 
         // Проверяем наличие сессии
-        if (!sessionStore.hasSession(userId)) {
-            return NO_SESSION;
-        }
-
         Optional<CheckinSession> found = sessionStore.findById(userId);
         if (found.isEmpty()) {
             return NO_SESSION;
@@ -211,7 +217,7 @@ public class CheckinFsmService {
                 case SCORE -> handleScore(session, input);
                 case SPHERE -> handleSphere(session, input);
                 case NOTE -> handleNote(session, input);
-                case PREVIEW -> handlePreview(session, input);
+                case PREVIEW -> handlePreview(session, command);
             };
         };
 
@@ -325,8 +331,6 @@ public class CheckinFsmService {
      * @return текст карточки предпросмотра или сообщение об ошибке
      */
     private String handleNote(CheckinSession session, String text) {
-        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
-
         // Защита от null и очистка пробелов по краям
         String cleanText = (text == null) ? "" : text.trim();
         String note;
@@ -334,7 +338,7 @@ public class CheckinFsmService {
         if (CMD_SKIP.equalsIgnoreCase(cleanText)) {
             note = "";
         } else if (cleanText.startsWith("/")) {
-            return UNKNOWN_COMMAND;
+            return UNKNOWN_COMMAND_ON_NOTE;
         } else {
             note = cleanText;
         }
@@ -346,11 +350,7 @@ public class CheckinFsmService {
                 session.sphere(),
                 note // Новая заметка
         );
-
-        // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
-        // При этом session почистит GC
         sessionStore.save(updatedSession);
-
         return buildPreview(updatedSession);
     }
 
@@ -436,11 +436,10 @@ public class CheckinFsmService {
      * Обработка команды /skip
      *
      * @param session текущая сессия
-     * @return сообщение об ошибке если не на шаге NOTE
+     * @return сообщение об ошибке если не на шаге NOTE,
+     * иначе карточку предпросмотра
      */
     private String handleSkip(CheckinSession session) {
-        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
-
         CheckinSession updatedSession;
 
         // Если не на шаге NOTE, то выбрасываем сообщение об ошибке
@@ -461,7 +460,6 @@ public class CheckinFsmService {
         );
 
         // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
-        // При этом session почистит GC
         sessionStore.save(updatedSession);
 
         return buildPreview(updatedSession);
@@ -489,7 +487,6 @@ public class CheckinFsmService {
                 session.sphere().getDisplayName(),
                 note.isEmpty() ? "" : " " + note
         );
-
     }
 
     /**
@@ -497,10 +494,10 @@ public class CheckinFsmService {
      *
      * @param userId идентификатор пользователя
      * @return true, если у пользователя есть открытый диалог
+     * @throws NullPointerException если {@code userId} равен {@code null}
      */
     public boolean hasActiveSession(UUID userId) {
         Objects.requireNonNull(userId, "userId не может быть null");
-        // Делегирование в хранилище сессий
         return sessionStore.hasSession(userId);
     }
 
