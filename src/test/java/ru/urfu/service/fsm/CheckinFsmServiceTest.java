@@ -577,8 +577,8 @@ class CheckinFsmServiceTest {
     /**
      * Граничные оценки и оценка с пробелами по краям принимаются и переводят на шаг SPHERE.
      *
-     * @param input          введённая оценка
-     * @param expectedScore  ожидаемая сохранённая оценка
+     * @param input         введённая оценка
+     * @param expectedScore ожидаемая сохранённая оценка
      */
     @ParameterizedTest
     @CsvSource({
