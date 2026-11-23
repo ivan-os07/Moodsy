@@ -14,6 +14,7 @@ public interface CheckinSessionStore {
      * Сохраняет сессию пользователя, заменяя предыдущую сессию этого же пользователя.
      *
      * @param session сессия диалога
+     * @throws NullPointerException если session равен null
      */
     void save(CheckinSession session);
 
@@ -22,6 +23,7 @@ public interface CheckinSessionStore {
      *
      * @param userId идентификатор пользователя
      * @return сессия пользователя или пустой Optional, если диалог не запущен
+     * @throws NullPointerException если userId равен null
      */
     Optional<CheckinSession> findById(UUID userId);
 
@@ -30,6 +32,7 @@ public interface CheckinSessionStore {
      *
      * @param userId идентификатор пользователя
      * @return удалённая сессия или пустой Optional, если удалять было нечего
+     * @throws NullPointerException если userId равен null
      */
     Optional<CheckinSession> remove(UUID userId);
 
@@ -37,7 +40,8 @@ public interface CheckinSessionStore {
      * Проверяет есть сессия у пользователя
      *
      * @param userId идентификатор пользователя
-     * @return есть ли сессия
+     * @return true, если сессия существует, иначе false
+     * @throws NullPointerException если userId равен null
      */
     boolean hasSession(UUID userId);
 }

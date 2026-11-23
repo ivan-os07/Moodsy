@@ -12,31 +12,33 @@ import java.util.*;
 public class CommandDispatcher {
 
     /**
-     * Словарь зарегистрированных команд: ключ команды -> объект
-     * команды.
+     * Хранилище зарегистрированных команд, в котором ищем команду по ключу.
      */
-    private final Map<String, BotCommand> commands;
+    private final CommandRegistry registry;
+
     /**
-     * Сервис для фсм чекина.
+     * Сервис пошагового чекина.
      */
     private final CheckinFsmService checkinFsmService;
     private final StatsFsmService statsFsmService;
 
     /**
      * Конструктор диспетчера.
-     * Создает пустое хранилище для команд и проверка на не null сервиса чекина
+     *
+     * @param registry          хранилище команд
+     * @param checkinFsmService сервис пошагового чекина
      */
-    public CommandDispatcher(CheckinFsmService checkinFsmService,
-                             StatsFsmService statsFsmService) {
-        this.checkinFsmService = Objects.requireNonNull(checkinFsmService, "checkinFsmService не может быть null");
+    public CommandDispatcher(CommandRegistry registry, CheckinFsmService checkinFsmService, StatsFsmService statsFsmService) {
+        this.registry = Objects.requireNonNull(registry, "registry не может быть null");
+        this.checkinFsmService = Objects.requireNonNull(checkinFsmService,
+                "checkinFsmService не может быть null");
         this.statsFsmService = Objects.requireNonNull(statsFsmService, "statsFsmService не может быть null");
-        this.commands = new LinkedHashMap<>();
     }
 
     /**
      * Обработка входящего сообщения.
      *
-     * @param userId id пользователя.
+     * @param userId id пользователя
      * @param text   текст сообщения
      * @return ответ бота
      */
@@ -50,7 +52,7 @@ public class CommandDispatcher {
         String commandKey = parts[0];
         String[] args = Arrays.copyOfRange(parts, 1, parts.length);
 
-        // Сначала проверяем есть ли сессия
+        // Сначала проверяем, есть ли активная сессия чекина
         if (checkinFsmService.hasActiveSession(userId)) {
             FsmResult result = checkinFsmService.handleWithResponse(userId, text);
             return new BotResponse(userId, result.text(), result.keyboard());
@@ -59,41 +61,21 @@ public class CommandDispatcher {
             FsmResult result = statsFsmService.handleWithResponse(userId, text);
             return new BotResponse(userId, result.text(), result.keyboard());
         }
-        if (commands.equals("/stats")) {
+
+
+        // Ищем команду в хранилище
+        Optional<BotCommand> command = this.registry.find(commandKey);
+        if (commandKey.equals("/stats")) {
             FsmResult result = statsFsmService.startWithResponse(userId);
             return new BotResponse(userId, result.text(), result.keyboard());
         }
-
-        // ИНАЧЕ
-        // Ищем команду в мапе
-        BotCommand command = this.commands.get(commandKey);
-
-        // Если не нашли - проверяем fsm или возвращаем сообщение об ошибке
-        if (command == null) {
+        // Если не нашли - возвращаем сообщение об ошибке
+        if (command.isEmpty()) {
             return new BotResponse(userId, "Неизвестная команда. Введите /help для справки.");
         }
 
         // Если нашли - выполняем и возвращаем результат
-        return command.executeWithResponse(userId, args);
-
-    }
-
-    /**
-     * Возвращает коллекцию из всех зарегистрированных команд.
-     *
-     * @return коллекция команд
-     */
-    public Collection<BotCommand> getCommands() {
-        return this.commands.values();
-    }
-
-    /**
-     * Регистрирует команды по одной.
-     *
-     * @param command команда для регистрации
-     */
-    public void register(BotCommand command) {
-        this.commands.put(command.getCommandKey(), command);
+        return command.get().executeWithResponse(userId, args);
     }
 
 

@@ -22,7 +22,7 @@ import java.util.*;
  *     <li>Сохраняет готовую запись в репозиторий</li>
  * </ul>
  */
-public class CheckinFsmService implements FsmService {
+public class CheckinFsmService {
 
     /**
      * Команда завершения диалога без сохранения.
@@ -178,20 +178,17 @@ public class CheckinFsmService implements FsmService {
 
     /**
      * Обрабатывает ввод пользователя в зависимости от текущего шага диалога.
-     * Команды /exit и /back доступны на любом шаге.
+     * Команды /exit и /back доступны на любом шаге, /skip — только на шаге заметки.
      *
      * @param userId идентификатор пользователя
      * @param text   текст сообщения
      * @return сообщение с результатом обработки
+     * @throws NullPointerException если {@code userId} равен {@code null}
      */
     public String handle(UUID userId, String text) {
         Objects.requireNonNull(userId, "userId не может быть null");
 
         // Проверяем наличие сессии
-        if (!sessionStore.hasSession(userId)) {
-            return NO_SESSION;
-        }
-
         Optional<CheckinSession> found = sessionStore.findById(userId);
         if (found.isEmpty()) {
             return NO_SESSION;
@@ -212,7 +209,7 @@ public class CheckinFsmService implements FsmService {
                 case SCORE -> handleScore(session, input);
                 case SPHERE -> handleSphere(session, input);
                 case NOTE -> handleNote(session, input);
-                case PREVIEW -> handlePreview(session, input);
+                case PREVIEW -> handlePreview(session, command);
             };
         };
 

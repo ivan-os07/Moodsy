@@ -8,8 +8,6 @@ import ru.urfu.service.fsm.checkin.CheckinSessionStore;
 import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
 import ru.urfu.service.fsm.stats.StatsFsmService;
 import ru.urfu.transport.telegram.TelegramBot;
-import ru.urfu.commands.*;
-import ru.urfu.repository.*;
 
 import java.time.Clock;
 import java.time.ZoneOffset;
@@ -35,37 +33,17 @@ public class Main {
             return;
         }
 
-        String botToken = tgConfig.getBotToken();
-
-        // Инициализация инфраструктурных компонентов и слоев данных
-        MoodRepository moodRepository = new InMemoryMoodRepository();
-        UserRepository userRepository = new InMemoryUserRepository();
-        UserService userService = new UserService(userRepository);
-        MoodAnalyticsService analyticsService = new MoodAnalyticsService();
-
-        CheckinSessionStore sessionStore = new InMemoryCheckinSessionStore();
-        //время мск UTC+3
-        CheckinFsmService checkinFsmService = new CheckinFsmService(
-                sessionStore, moodRepository, Clock.system(ZoneOffset.ofHours(3)));
-        StatsFsmService statsFsmService = new StatsFsmService(
-                moodRepository, analyticsService ,Clock.system(ZoneOffset.ofHours(3)));
-
-        CommandDispatcher dispatcher = new CommandDispatcher(checkinFsmService, statsFsmService);
-
-        // Регистрируем команды в диспетчере
-        dispatcher.register(new StartCommand());
-        dispatcher.register(new HelpCommand(dispatcher));
-        dispatcher.register(new CheckinCommand(checkinFsmService));
-        dispatcher.register(new HistoryCommand(moodRepository));
-        dispatcher.register(new StatsCommand(statsFsmService));
+        // время мск UTC+3
+        BotComposition composition = new BotComposition(Clock.system(ZoneOffset.ofHours(3)));
 
 
         // Инициализация и запуск транспортного слоя (Telegram-бота)
         // Использование try-with-resources гарантирует корректное закрытие ресурсов бота
-
-        try (TelegramBot bot = new TelegramBot(botToken, dispatcher, userService)
-             // в будущем можно подключить этот же диспетчер к другим платформам
-        ) {
+        try (TelegramBot bot = new TelegramBot(
+                tgConfig.getBotToken(),
+                composition.getDispatcher(),
+                composition.getUserService()
+        )) {
             bot.start();
         } catch (Exception e) {
             e.printStackTrace();
