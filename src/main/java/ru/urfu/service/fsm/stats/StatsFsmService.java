@@ -17,11 +17,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Управляет процессом выполнения команды /stats
+ * Управляет диалогом команды /stats
  * предлагает выбрать период, обрабатывает выбор
- * и формирует статистику
+ * и формирует статистику за указанный период
  */
 public class StatsFsmService implements FsmService {
 
@@ -49,7 +50,7 @@ public class StatsFsmService implements FsmService {
     /**
      * Идентификаторы пользователей, которые находятся на этапе выбора периода
      */
-    private final Set<UUID> activeSessions = new HashSet<>();
+    private final Set<UUID> activeSessions = ConcurrentHashMap.newKeySet();
     /**
      * Репозиторий для хранения отметок пользователя
      */

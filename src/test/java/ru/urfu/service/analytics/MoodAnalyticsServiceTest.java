@@ -164,13 +164,14 @@ class MoodAnalyticsServiceTest {
     /**
      * Создает запись настроения для тестирования
      *
-     * @param score оценка настроения
-     * @param day день создания записи в ноябре 2026 года
+     * @param score  оценка настроения
+     * @param day    день создания записи в ноябре 2026 года
      * @param sphere сфера жизни
      * @return запись настроения
      */
     private MoodEntry entry(int score, int day, Sphere sphere) {
-        // Если везде вставлять LocalDateTime.of получается слишком громоздко
+        /* Если везде вставлять LocalDateTime.of получается слишком громоздко;
+        поэтому вынесли в отдельный метод*/
         return new MoodEntry(LocalDateTime.of(2026, 11, day, 12, 0), score, sphere, ""
         );
     }

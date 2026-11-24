@@ -62,15 +62,15 @@ class StatsFsmServiceTest {
 
         Assertions.assertEquals(2, keyboard.rows().size());
 
-        Assertions.assertEquals(2, keyboard.rows().get(0).buttons().size());
-        Assertions.assertEquals("Неделя", keyboard.rows().get(0).buttons().get(0).label());
-        Assertions.assertEquals("week", keyboard.rows().get(0).buttons().get(0).action());
+        Assertions.assertEquals(2, keyboard.rows().getFirst().buttons().size());
+        Assertions.assertEquals("Неделя", keyboard.rows().getFirst().buttons().getFirst().label());
+        Assertions.assertEquals("week", keyboard.rows().getFirst().buttons().getFirst().action());
 
         Assertions.assertEquals("Месяц", keyboard.rows().get(0).buttons().get(1).label());
         Assertions.assertEquals("month", keyboard.rows().get(0).buttons().get(1).action());
 
-        Assertions.assertEquals("Отмена", keyboard.rows().get(1).buttons().get(0).label());
-        Assertions.assertEquals("/exit", keyboard.rows().get(1).buttons().get(0).action());
+        Assertions.assertEquals("Отмена", keyboard.rows().get(1).buttons().getFirst().label());
+        Assertions.assertEquals("/exit", keyboard.rows().get(1).buttons().getFirst().action());
     }
 
     /**
