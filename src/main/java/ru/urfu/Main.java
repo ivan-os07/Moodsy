@@ -1,6 +1,12 @@
 package ru.urfu;
 
 import ru.urfu.config.TelegramConfig;
+import ru.urfu.service.UserService;
+import ru.urfu.service.analytics.MoodAnalyticsService;
+import ru.urfu.service.fsm.checkin.CheckinFsmService;
+import ru.urfu.service.fsm.checkin.CheckinSessionStore;
+import ru.urfu.service.fsm.checkin.InMemoryCheckinSessionStore;
+import ru.urfu.service.fsm.stats.StatsFsmService;
 import ru.urfu.transport.telegram.TelegramBot;
 
 import java.time.Clock;

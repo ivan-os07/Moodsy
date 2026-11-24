@@ -108,9 +108,9 @@ public class TelegramBot implements LongPollingUpdateConsumer {
         BotResponse response = dispatcher.handle(userId, message.getText());
         SendMessage sendMessage = new SendMessage(chatId, response.text());
 
-        Optional<InlineKeyboardMarkup> keyboard =
-                keyboardFactory.createKeyboard(response.interactionType());
-        keyboard.ifPresent(sendMessage::setReplyMarkup);
+        response.keyboard().map(keyboardFactory::createKeyboard)
+                .ifPresent(sendMessage::setReplyMarkup);
+
 
         telegramClient.execute(sendMessage);
     }
@@ -137,7 +137,7 @@ public class TelegramBot implements LongPollingUpdateConsumer {
         BotResponse response = dispatcher.handle(userId, callbackData);
 
         Optional<InlineKeyboardMarkup> keyboard =
-                keyboardFactory.createKeyboard(response.interactionType());
+                response.keyboard().map(keyboardFactory::createKeyboard);
 
         EditMessageText editMessage = new EditMessageText(
                 chatId,

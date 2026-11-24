@@ -1,17 +1,18 @@
-package ru.urfu.service.fsm;
+package ru.urfu.service.fsm.checkin;
 
-import ru.urfu.application.InteractionType;
+import ru.urfu.application.Keyboard;
+import ru.urfu.application.KeyboardButton;
+import ru.urfu.application.KeyboardRow;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
 import ru.urfu.repository.MoodRepository;
+import ru.urfu.service.fsm.FsmResult;
+import ru.urfu.service.fsm.FsmService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Управляет пошаговым диалогом чекина (управляет сессией):
@@ -21,7 +22,7 @@ import java.util.UUID;
  *     <li>Сохраняет готовую запись в репозиторий</li>
  * </ul>
  */
-public class CheckinFsmService {
+public class CheckinFsmService implements FsmService {
 
     /**
      * Команда завершения диалога без сохранения.
@@ -76,13 +77,7 @@ public class CheckinFsmService {
     /**
      * Сообщение о неизвестной команде на шаге заметки.
      */
-    private static final String UNKNOWN_COMMAND = "❌ Неизвестная команда. Доступны: /back, /exit";
-
-    /**
-     * Сообщение о неизвестной команде на шаге заметки.
-     */
-    private static final String UNKNOWN_COMMAND_ON_NOTE =
-            "❌ Неизвестная команда. Доступны: /skip, /back, /exit";
+    private static final String UNKNOWN_COMMAND = "❌ Неизвестная команда. Доступны: /skip, /back, /exit";
 
     /**
      * Сообщение об ошибке при вызове команды /skip не на шаге заметки.
@@ -162,11 +157,9 @@ public class CheckinFsmService {
      *
      * @param userId идентификатор пользователя
      * @return приглашение ввести оценку
-     * @throws NullPointerException если {@code userId} равен {@code null}
      */
     public String start(UUID userId) {
         Objects.requireNonNull(userId, "userId не может быть null");
-
         CheckinSession session = new CheckinSession(userId, CheckinStep.SCORE, 0, null, "");
         sessionStore.save(session);
         return SCORE_PROMPT;
@@ -178,7 +171,7 @@ public class CheckinFsmService {
      * @param userId идентификатор пользователя
      * @return результат запуска диалога
      */
-    public CheckinResult startWithResponse(UUID userId) {
+    public FsmResult startWithResponse(UUID userId) {
         String text = start(userId);
         return createResult(userId, text);
 
@@ -223,14 +216,9 @@ public class CheckinFsmService {
 
     }
 
-    /**
-     * Обрабатывает пользовательский ввод и определяет тип клавиатуры для следующего шага
-     *
-     * @param userId идентификатор пользователя
-     * @param text   текст ввода
-     * @return результат обработки вместе с необходимым типом клавиатуры
-     */
-    public CheckinResult handleWithResponse(UUID userId, String text) {
+
+    @Override
+    public FsmResult handleWithResponse(UUID userId, String text) {
         String response = handle(userId, text);
         return createResult(userId, response);
 
@@ -331,6 +319,8 @@ public class CheckinFsmService {
      * @return текст карточки предпросмотра или сообщение об ошибке
      */
     private String handleNote(CheckinSession session, String text) {
+        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
+
         // Защита от null и очистка пробелов по краям
         String cleanText = (text == null) ? "" : text.trim();
         String note;
@@ -338,7 +328,7 @@ public class CheckinFsmService {
         if (CMD_SKIP.equalsIgnoreCase(cleanText)) {
             note = "";
         } else if (cleanText.startsWith("/")) {
-            return UNKNOWN_COMMAND_ON_NOTE;
+            return UNKNOWN_COMMAND;
         } else {
             note = cleanText;
         }
@@ -350,7 +340,11 @@ public class CheckinFsmService {
                 session.sphere(),
                 note // Новая заметка
         );
+
+        // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
+        // При этом session почистит GC
         sessionStore.save(updatedSession);
+
         return buildPreview(updatedSession);
     }
 
@@ -436,10 +430,11 @@ public class CheckinFsmService {
      * Обработка команды /skip
      *
      * @param session текущая сессия
-     * @return сообщение об ошибке если не на шаге NOTE,
-     * иначе карточку предпросмотра
+     * @return сообщение об ошибке если не на шаге NOTE
      */
     private String handleSkip(CheckinSession session) {
+        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
+
         CheckinSession updatedSession;
 
         // Если не на шаге NOTE, то выбрасываем сообщение об ошибке
@@ -460,6 +455,7 @@ public class CheckinFsmService {
         );
 
         // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
+        // При этом session почистит GC
         sessionStore.save(updatedSession);
 
         return buildPreview(updatedSession);
@@ -487,17 +483,14 @@ public class CheckinFsmService {
                 session.sphere().getDisplayName(),
                 note.isEmpty() ? "" : " " + note
         );
+
     }
 
-    /**
-     * Проверяет наличие открытой сессии у пользователя.
-     *
-     * @param userId идентификатор пользователя
-     * @return true, если у пользователя есть открытый диалог
-     * @throws NullPointerException если {@code userId} равен {@code null}
-     */
+
+    @Override
     public boolean hasActiveSession(UUID userId) {
         Objects.requireNonNull(userId, "userId не может быть null");
+        // Делегирование в хранилище сессий
         return sessionStore.hasSession(userId);
     }
 
@@ -518,32 +511,94 @@ public class CheckinFsmService {
     }
 
     /**
-     * Создает результат и определяет тип взаимодействия по сохраненному состоянию сессии
-     *
-     * @param userId идентификатор пользователя
-     * @param text   текст ответа
-     * @return ответ с типом взаимодействия или NONE если сессия завершена
-     *
+     * Создает результат обработки пользовательского ввода
+     * @param userId внутренний идентификатор пользователя
+     * @param text текст ответа
+     * @return результат обработки без дополнительной клавиатуры
      */
-    private CheckinResult createResult(UUID userId, String text) {
-        InteractionType interactionType = sessionStore.findById(userId)
-                .map(session -> resolveInteractionType(session.step()))
-                .orElse(InteractionType.NONE);
-        return new CheckinResult(text, interactionType);
+    private FsmResult createResult(UUID userId, String text){
+        Optional<Keyboard> keyboard = sessionStore.findById(userId)
+                .map(session -> createKeyboard(session.step()));
+        return new FsmResult(text, keyboard);
     }
 
     /**
-     * Преобразует шаг диалога в тип взаимодействия для транспортного слоя
-     *
-     * @param step текущий шаг диалога
-     * @return тип взаимодействия для соответствующей клавиатуры
+     * Создает клавиатуру в зависимости от текущего шага в чекине
+     * @param step текущий шаг в диалоге
+     * @return универсальная клавиатура с доступными действиями
      */
-    private InteractionType resolveInteractionType(CheckinStep step) {
-        return switch (step) {
-            case SCORE -> InteractionType.SCORE_SELECTION;
-            case SPHERE -> InteractionType.SPHERE_SELECTION;
-            case NOTE -> InteractionType.NOTE_INPUT;
-            case PREVIEW -> InteractionType.PREVIEW_CONFIRMATION;
-        };
+    private Keyboard createKeyboard(CheckinStep step) {
+        List<KeyboardRow> rows = new ArrayList<>();
+        switch (step) {
+            case SCORE ->{
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("1", "1"),
+                        new KeyboardButton("2", "2"),
+                        new KeyboardButton("3", "3"),
+                        new KeyboardButton("4", "4"),
+                        new KeyboardButton("5", "5")
+
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("6", "6"),
+                        new KeyboardButton("7", "7"),
+                        new KeyboardButton("8", "8"),
+                        new KeyboardButton("9", "9"),
+                        new KeyboardButton("10", "10")
+
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Отмена",  CMD_EXIT)
+                )));
+            }
+            case SPHERE ->{
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton(
+                                Sphere.WORK.getDisplayName(),
+                                Sphere.WORK.getDisplayName()
+                        ),
+                        new KeyboardButton(
+                                Sphere.SOCIAL.getDisplayName(),
+                                Sphere.SOCIAL.getDisplayName()
+                        )
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton(
+                                Sphere.HEALTH.getDisplayName(),
+                                Sphere.HEALTH.getDisplayName()
+                        ),
+                        new KeyboardButton(
+                                Sphere.REST.getDisplayName(),
+                                Sphere.REST.getDisplayName()
+                        )
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Назад",  CMD_BACK),
+                        new KeyboardButton("Отмена",  CMD_EXIT)
+                )));
+
+
+            }
+            case NOTE ->{
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Пропустить", CMD_SKIP)
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Назад",  CMD_BACK),
+                        new KeyboardButton("Отмена",  CMD_EXIT)
+                )));
+            }
+            case PREVIEW ->{
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("✅ Сохранить", CMD_APPROVE)
+                )));
+                rows.add(new KeyboardRow(List.of(
+                        new KeyboardButton("Назад",  CMD_BACK),
+                        new KeyboardButton("Отмена",  CMD_EXIT)
+                )));
+            }
+
+        }
+        return new Keyboard(rows);
     }
 }

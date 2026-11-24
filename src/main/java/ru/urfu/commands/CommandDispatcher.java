@@ -1,12 +1,10 @@
 package ru.urfu.commands;
 
-import ru.urfu.service.fsm.CheckinFsmService;
-import ru.urfu.service.fsm.CheckinResult;
+import ru.urfu.service.fsm.checkin.CheckinFsmService;
+import ru.urfu.service.fsm.FsmResult;
+import ru.urfu.service.fsm.stats.StatsFsmService;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Маршрутизатор. Получает сырой текст от пользователя, находит нужную команду и вызывает её
@@ -22,17 +20,23 @@ public class CommandDispatcher {
      * Сервис пошагового чекина.
      */
     private final CheckinFsmService checkinFsmService;
+    /**
+     * Сервис пошаговой stats
+     */
+    private final StatsFsmService statsFsmService;
 
     /**
      * Конструктор диспетчера.
      *
      * @param registry          хранилище команд
      * @param checkinFsmService сервис пошагового чекина
+     * @param statsFsmService  сервис пошаговой stats
      */
-    public CommandDispatcher(CommandRegistry registry, CheckinFsmService checkinFsmService) {
+    public CommandDispatcher(CommandRegistry registry, CheckinFsmService checkinFsmService, StatsFsmService statsFsmService) {
         this.registry = Objects.requireNonNull(registry, "registry не может быть null");
         this.checkinFsmService = Objects.requireNonNull(checkinFsmService,
                 "checkinFsmService не может быть null");
+        this.statsFsmService = Objects.requireNonNull(statsFsmService, "statsFsmService не может быть null");
     }
 
     /**
@@ -54,13 +58,17 @@ public class CommandDispatcher {
 
         // Сначала проверяем, есть ли активная сессия чекина
         if (checkinFsmService.hasActiveSession(userId)) {
-            CheckinResult result = checkinFsmService.handleWithResponse(userId, text);
-            return new BotResponse(userId, result.text(), result.interactionType());
+            FsmResult result = checkinFsmService.handleWithResponse(userId, text);
+            return new BotResponse(userId, result.text(), result.keyboard());
         }
+        if (statsFsmService.hasActiveSession(userId)) {
+            FsmResult result = statsFsmService.handleWithResponse(userId, text);
+            return new BotResponse(userId, result.text(), result.keyboard());
+        }
+
 
         // Ищем команду в хранилище
         Optional<BotCommand> command = this.registry.find(commandKey);
-
         // Если не нашли - возвращаем сообщение об ошибке
         if (command.isEmpty()) {
             return new BotResponse(userId, "Неизвестная команда. Введите /help для справки.");
@@ -69,4 +77,6 @@ public class CommandDispatcher {
         // Если нашли - выполняем и возвращаем результат
         return command.get().executeWithResponse(userId, args);
     }
+
+
 }

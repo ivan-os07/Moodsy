@@ -1,4 +1,4 @@
-package ru.urfu.service.fsm;
+package ru.urfu.service.fsm.checkin;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -485,10 +485,10 @@ class CheckinFsmServiceTest {
         service.start(userId);
         service.handle(userId, "5"); // SCORE → SPHERE
 
-        Assertions.assertEquals("❌ Неизвестная команда. Доступны: /back, /exit",
+        Assertions.assertEquals("❌ Неизвестная команда. Доступны: /skip, /back, /exit",
                 service.handle(userId, "/approve")
         );
-        Assertions.assertEquals("❌ Неизвестная команда. Доступны: /back, /exit",
+        Assertions.assertEquals("❌ Неизвестная команда. Доступны: /skip, /back, /exit",
                 service.handle(userId, "/reject")
         );
 
