@@ -12,6 +12,7 @@ import ru.urfu.service.fsm.FsmResult;
 import ru.urfu.service.fsm.FsmService;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -179,7 +180,8 @@ public class StatsFsmService implements FsmService {
             LocalDateTime from,
             LocalDateTime toExclusive,
             MoodStatistics statistics) {
-        DecimalFormat averageFormatter = new DecimalFormat("0.00");
+        DecimalFormat averageFormatter = new DecimalFormat("0.00",
+                DecimalFormatSymbols.getInstance(Locale.forLanguageTag("ru-RU")));
 
         return "\uD83D\uDCCA Статистика за " +
                 period.getDisplayName() +

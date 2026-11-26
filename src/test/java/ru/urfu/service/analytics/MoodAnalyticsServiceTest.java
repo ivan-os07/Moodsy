@@ -162,6 +162,20 @@ class MoodAnalyticsServiceTest {
     }
 
     /**
+     * Тестируем ситуацию, когда записи есть только с одной сферой
+     */
+    @Test
+    void testCalculateWithSingleSphere() {
+        List<MoodEntry> entries = List.of(entry(5, 1, Sphere.WORK),
+                entry(7, 2, Sphere.WORK),
+                entry(9, 3, Sphere.WORK),
+                entry(5, 4, Sphere.WORK));
+        MoodStatistics result = service.calculate(entries);
+        Assertions.assertEquals(Sphere.WORK, result.mostFrequentSphere());
+        Assertions.assertEquals(4, result.sphereCount());
+    }
+
+    /**
      * Создает запись настроения для тестирования
      *
      * @param score  оценка настроения

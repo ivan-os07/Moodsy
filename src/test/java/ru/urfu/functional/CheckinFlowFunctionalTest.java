@@ -78,7 +78,7 @@ class CheckinFlowFunctionalTest {
 
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
+        Assertions.assertEquals("Выберите сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", sphere.text());
         Assertions.assertEquals("""
                 📋 Предпросмотр карточки:
@@ -125,7 +125,7 @@ class CheckinFlowFunctionalTest {
 
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
+        Assertions.assertEquals("Выберите сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", sphere.text());
 
         Assertions.assertEquals("""
@@ -173,7 +173,7 @@ class CheckinFlowFunctionalTest {
 
         // ответы совпадают с диалогом
         Assertions.assertEquals("Введите оценку от 1 до 10", first.text());
-        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
+        Assertions.assertEquals("Выберите сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", score.text());
         Assertions.assertEquals("Сессия завершена без сохранения отметки", exit.text());
 
         // запись не появилась в репозитории
@@ -227,7 +227,7 @@ class CheckinFlowFunctionalTest {
 
         // ответы совпадают с диалогом
         Assertions.assertEquals("Добавьте заметку или отправьте /skip", backToNote.text());
-        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n",
+        Assertions.assertEquals("Выберите сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n",
                 backToSphere.text()
         );
         Assertions.assertEquals("Введите оценку от 1 до 10", backToScore.text());
