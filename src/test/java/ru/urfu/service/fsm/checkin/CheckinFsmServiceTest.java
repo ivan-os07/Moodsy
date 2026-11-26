@@ -94,7 +94,7 @@ class CheckinFsmServiceTest {
         String response = service.handle(userId, "7");
 
         Assertions.assertEquals("""
-                Выберете сферу из предложенных:
+                Выберите сферу из предложенных:
                 Дела, Общение, Здоровье, Отдых
                 """, response
         );
@@ -592,7 +592,7 @@ class CheckinFsmServiceTest {
         String response = service.handle(userId, input);
 
         Assertions.assertEquals("""
-                Выберете сферу из предложенных:
+                Выберите сферу из предложенных:
                 Дела, Общение, Здоровье, Отдых
                 """, response
         );

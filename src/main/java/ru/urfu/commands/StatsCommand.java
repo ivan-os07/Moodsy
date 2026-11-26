@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Выполняет команду /stats и формирует статистику за календарный месяц или неделю
+ * Выполняет команду /stats и запускает соответствующий FSM
  */
 public class StatsCommand implements BotCommand {
     /**
@@ -20,7 +20,7 @@ public class StatsCommand implements BotCommand {
     private static final String ARGS_ERROR = "❌ Команда /stats вызывается без параметров";
 
     /**
-     * Создает команду получения статистики
+     * Запускает нужный FSM для команды /stats
      *
      * @param statsFsmService сервис конечного автомата статистики
      * @throws NullPointerException если statsFsmService равно null

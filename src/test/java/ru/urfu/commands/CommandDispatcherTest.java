@@ -128,7 +128,7 @@ class CommandDispatcherTest {
         dispatcher.handle(USER_ID, "/checkin");
         BotResponse response = dispatcher.handle(USER_ID, "7");
 
-        Assertions.assertEquals("Выберете сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", response.text());
+        Assertions.assertEquals("Выберите сферу из предложенных:\nДела, Общение, Здоровье, Отдых\n", response.text());
         Assertions.assertTrue(checkinFsmService.hasActiveSession(USER_ID));
     }
 

@@ -114,7 +114,7 @@ public class CheckinFsmService implements FsmService {
      * Сообщение о выборе сферы
      */
     private static final String SPHERE_PROMPT = """
-            Выберете сферу из предложенных:
+            Выберите сферу из предложенных:
             Дела, Общение, Здоровье, Отдых
             """;
 

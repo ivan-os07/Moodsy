@@ -106,10 +106,91 @@ class InMemoryMoodRepositoryTest {
                 UnsupportedOperationException.class,
                 () -> history.add(secondEntry)
         );
-        // Стандартное поведение неизменной коллекции
+        // Стандартное поведение неизменяемой коллекции
         Assertions.assertNull(exception.getMessage());
         Assertions.assertIterableEquals(List.of(firstEntry),
                 repository.findLast(userId, 10)
         );
+    }
+
+    /**
+     * Тестируем, что начало периода включительно - конец исключительно
+     * содержатся в return метода
+     */
+    @Test
+    void testFindByPeriodInclusiveStartAndExclusiveEnd() {
+        MoodEntry before = new MoodEntry(
+                LocalDateTime.of(2026, 11, 1, 23, 59),
+                5, Sphere.WORK, "");
+        MoodEntry atStart = new MoodEntry(
+                LocalDateTime.of(2026, 11, 2, 00, 00),
+                5, Sphere.REST, "");
+
+        MoodEntry beforeEnd = new MoodEntry(
+                LocalDateTime.of(2026, 11, 8, 23, 59),
+                5, Sphere.HEALTH, "");
+        MoodEntry atEnd = new MoodEntry(
+                LocalDateTime.of(2026, 11, 9, 00, 00),
+                5, Sphere.SOCIAL, "");
+        repository.save(userId, before);
+        repository.save(userId, atStart);
+        repository.save(userId, atEnd);
+        repository.save(userId, beforeEnd);
+        List<MoodEntry> result = repository.findByPeriod(userId,
+                LocalDateTime.of(2026, 11, 2, 0, 0),
+                LocalDateTime.of(2026, 11, 9, 0, 0));
+        Assertions.assertIterableEquals(List.of(atStart, beforeEnd), result);
+    }
+
+    /**
+     * Тестируем, что при отсутствии отметок за период возвращается пустой список
+     */
+    @Test
+    void testFindByPeriodReturnsEmptyList() {
+        List<MoodEntry> result = repository.findByPeriod(userId,
+                LocalDateTime.of(2026, 11, 1, 0, 0),
+                LocalDateTime.of(2026, 12, 1, 0, 0));
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    /**
+     * Тестируем, что исключение при нарушении
+     * условия: начало периода должно быть раньше конца
+     */
+    @Test
+    void testFindByPeriodInvalidRange() {
+        LocalDateTime date = LocalDateTime.of(2026, 11, 1, 0, 0);
+        IllegalArgumentException exception = Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.findByPeriod(userId, date, date));
+        Assertions.assertEquals("Начало периода должно быть раньше конца",
+                exception.getMessage());
+        IllegalArgumentException exceptionEndExclusive = Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.findByPeriod(userId, date.plusDays(1), date));
+        Assertions.assertEquals("Начало периода должно быть раньше конца",
+                exceptionEndExclusive.getMessage());
+    }
+    @Test
+    void testFindByPeriodRejectsNullArguments(){
+        LocalDateTime from = LocalDateTime.of(2026, 11, 1, 0, 0);
+        LocalDateTime to = LocalDateTime.of(2026, 12, 1, 0, 0);
+        NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> repository.findByPeriod(null, from, to));
+        Assertions.assertEquals("userId не может быть null",
+                exception.getMessage());
+
+        NullPointerException exceptionFrom = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> repository.findByPeriod(userId, null, to));
+        Assertions.assertEquals("from не может быть null",
+                exceptionFrom.getMessage());
+
+        NullPointerException exceptionTo = Assertions.assertThrows(
+                NullPointerException.class,
+                () -> repository.findByPeriod(userId, from, null));
+        Assertions.assertEquals("to не может быть null",
+                exceptionTo.getMessage());
     }
 }
