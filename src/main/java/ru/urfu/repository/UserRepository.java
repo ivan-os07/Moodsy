@@ -50,4 +50,11 @@ public interface UserRepository {
      *                                  уже привязан у другого пользователя
      */
     User addPlatformIdentity(UUID userId, PlatformIdentity identity);
+
+    /**
+     * Реализуй сама
+     * @param ownerUserId id владельца(кто вызвал /link)
+     * @param joiningUserId id кто добавляет(кто вызвал /verify)
+     */
+    void merge(UUID ownerUserId, UUID joiningUserId);
 }
