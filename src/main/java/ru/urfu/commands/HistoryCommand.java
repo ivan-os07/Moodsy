@@ -1,5 +1,6 @@
 package ru.urfu.commands;
 
+import ru.urfu.application.BotResponse;
 import ru.urfu.repository.MoodRepository;
 import ru.urfu.model.MoodEntry;
 
@@ -61,28 +62,28 @@ public class HistoryCommand implements BotCommand {
     }
 
     @Override
-    public String execute(UUID userId, String[] args) {
+    public BotResponse execute(UUID userId, String[] args) {
         int limit = 10;
         if (args != null && args.length > 0) {
             if (args.length != 1) {
-                return """
+                return new BotResponse("""
                         Использование команды /history:
                         /history <n> - показать последние n записей
-                        /history - последние 10 записей""";
+                        /history - последние 10 записей""");
             }
             try {
                 limit = Integer.parseInt(args[0]);
             } catch (NumberFormatException exception) {
-                return ("❌ Ошибка: переданный формат числа не соответствует ожидаемому");
+                return new BotResponse("❌ Ошибка: переданный формат числа не соответствует ожидаемому");
             }
             if (limit <= 0) {
-                return ("❌ Ошибка: переданный формат числа не соответствует ожидаемому");
+                return new BotResponse("❌ Ошибка: переданный формат числа не соответствует ожидаемому");
             }
         }
 
         List<MoodEntry> entries = moodRepository.findLast(userId, limit);
         if (entries.isEmpty()) {
-            return ("История пуста. Попробуйте использовать команду /checkin");
+            return new BotResponse("История пуста. Попробуйте использовать команду /checkin");
         }
         StringBuilder result = new StringBuilder(" \uD83D\uDCC5 Ваша история записей:");
         LocalDate lastDate = null;
@@ -96,6 +97,6 @@ public class HistoryCommand implements BotCommand {
             result.append("\n").append(formatEntry(entry));
         }
 
-        return result.toString();
+        return new BotResponse(result.toString());
     }
 }

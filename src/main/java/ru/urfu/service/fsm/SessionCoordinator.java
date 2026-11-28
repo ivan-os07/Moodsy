@@ -16,8 +16,19 @@ import java.util.UUID;
  */
 public class SessionCoordinator {
 
+    /**
+     * Команда /exit
+     */
     private static final String CMD_EXIT = "/exit";
+
+    /**
+     * Текст отсутствия активного диалога
+     */
     private static final String NO_SESSION = "Активного диалога нет.";
+
+    /**
+     * Текст отмены диалога
+     */
     private static final String CANCELLED = "Диалог отменён.";
 
     /**

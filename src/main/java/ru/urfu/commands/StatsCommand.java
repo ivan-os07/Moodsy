@@ -1,8 +1,7 @@
 package ru.urfu.commands;
 
 import ru.urfu.application.BotResponse;
-import ru.urfu.service.fsm.FsmResult;
-import ru.urfu.service.fsm.stats.StatsFsmService;
+import ru.urfu.service.fsm.SessionCoordinator;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -12,24 +11,24 @@ import java.util.UUID;
  */
 public class StatsCommand implements BotCommand {
     /**
-     * Сервис конечного автомата, отвечающий за команду /stats
-     */
-    private final StatsFsmService statsFsmService;
-    /**
      * Сообщение о корректном использовании команды, при некорректном вызове
      */
     private static final String ARGS_ERROR = "❌ Команда /stats вызывается без параметров";
 
     /**
-     * Создает команду получения статистики
-     *
-     * @param statsFsmService сервис конечного автомата статистики
-     * @throws NullPointerException если statsFsmService равно null
+     * Координатор диалоговых сессий.
      */
-    public StatsCommand(StatsFsmService statsFsmService) {
-        this.statsFsmService = Objects.requireNonNull(statsFsmService, "statsFsmService не должен быть null");
+    private final SessionCoordinator sessionCoordinator;
 
-
+    /**
+     * Создаёт команду /stats.
+     *
+     * @param sessionCoordinator координатор диалоговых сессий
+     * @throws NullPointerException если {@code sessionCoordinator} равен {@code null}
+     */
+    public StatsCommand(SessionCoordinator sessionCoordinator) {
+        this.sessionCoordinator = Objects.requireNonNull(
+                sessionCoordinator, "sessionCoordinator не может быть null");
     }
 
     @Override
@@ -43,20 +42,10 @@ public class StatsCommand implements BotCommand {
     }
 
     @Override
-    public String execute(UUID userId, String[] args) {
+    public BotResponse execute(UUID userId, String[] args) {
         if (args != null && args.length > 0) {
-            return ARGS_ERROR;
+            return new BotResponse(ARGS_ERROR);
         }
-        return statsFsmService.start(userId);
+        return //TODO сделать как у меня только свое
     }
-
-    @Override
-    public BotResponse executeWithResponse(UUID userId, String[] args) {
-        if (args != null && args.length > 0) {
-            return new BotResponse(userId, ARGS_ERROR);
-        }
-        FsmResult result = statsFsmService.startWithResponse(userId);
-        return new BotResponse(userId, result.text(), result.keyboard());
-    }
-
 }
