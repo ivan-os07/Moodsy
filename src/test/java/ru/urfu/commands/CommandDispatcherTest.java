@@ -3,6 +3,7 @@ package ru.urfu.commands;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.urfu.application.BotResponse;
 import ru.urfu.repository.InMemoryMoodRepository;
 import ru.urfu.service.analytics.MoodAnalyticsService;
 import ru.urfu.service.fsm.checkin.CheckinFsmService;

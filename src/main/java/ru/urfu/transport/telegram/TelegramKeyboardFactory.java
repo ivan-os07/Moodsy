@@ -6,12 +6,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import ru.urfu.application.Keyboard;
 import ru.urfu.application.KeyboardButton;
 import ru.urfu.application.KeyboardRow;
-import ru.urfu.model.Sphere;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Создает inline-клавиатуры Telegram в соответствии с текущим шагом в /checkin

@@ -1,36 +1,37 @@
-package ru.urfu.service.fsm.checkin;
+package ru.urfu.service.fsm;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 /**
- * Хранилище сессий чекина в оперативной памяти.
+ * Хранилище сессий в оперативной памяти.
  * Потокобезопасная коллекция позволяет вести диалоги разных пользователей параллельно.
  */
-public class InMemoryCheckinSessionStore implements CheckinSessionStore {
+public class InMemorySessionStore implements SessionStore{
     /**
      * Открытые сессии диалогов, разделённые по идентификаторам пользователей.
      */
-    private final ConcurrentHashMap<UUID, CheckinSession> sessions = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, UserSession> sessions = new ConcurrentHashMap<>();
 
 
     @Override
-    public void save(CheckinSession session) {
+    public void save(UserSession session) {
         Objects.requireNonNull(session, "session не может быть null");
         sessions.put(session.userId(), session);
     }
 
 
     @Override
-    public Optional<CheckinSession> findById(UUID userId) {
+    public Optional<UserSession> findById(UUID userId) {
         Objects.requireNonNull(userId, "userId не может быть null");
         return Optional.ofNullable(sessions.get(userId));
     }
 
     @Override
-    public Optional<CheckinSession> remove(UUID userId) {
+    public Optional<UserSession> remove(UUID userId) {
         Objects.requireNonNull(userId, "userId не может быть null");
         return Optional.ofNullable(sessions.remove(userId));
     }

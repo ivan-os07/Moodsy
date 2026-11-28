@@ -3,7 +3,6 @@ package ru.urfu.transport.telegram;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -18,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
-import ru.urfu.commands.BotResponse;
+import ru.urfu.application.BotResponse;
 import ru.urfu.commands.CommandDispatcher;
 import ru.urfu.model.PlatformIdentity;
 import ru.urfu.model.PlatformType;

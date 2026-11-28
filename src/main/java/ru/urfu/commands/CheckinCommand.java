@@ -1,7 +1,8 @@
 package ru.urfu.commands;
 
-import ru.urfu.service.fsm.checkin.CheckinFsmService;
-import ru.urfu.service.fsm.FsmResult;
+import ru.urfu.application.BotResponse;
+import ru.urfu.service.fsm.DialogType;
+import ru.urfu.service.fsm.SessionCoordinator;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -19,18 +20,19 @@ public class CheckinCommand implements BotCommand {
             "❌ Команда /checkin вызывается без параметров.";
 
     /**
-     * Сервис диалога чекина.
+     * Координатор диалоговых сессий.
      */
-    private final CheckinFsmService checkinFsmService;
+    private final SessionCoordinator sessionCoordinator;
 
     /**
      * Создаёт команду /checkin.
      *
-     * @param checkinFsmService сервис диалога чекина
+     * @param sessionCoordinator координатор диалоговых сессий
+     * @throws NullPointerException если {@code sessionCoordinator} равен {@code null}
      */
-    public CheckinCommand(CheckinFsmService checkinFsmService) {
-        this.checkinFsmService = Objects.requireNonNull(
-                checkinFsmService, "checkinFsmService не может быть null");
+    public CheckinCommand(SessionCoordinator sessionCoordinator) {
+        this.sessionCoordinator = Objects.requireNonNull(
+                sessionCoordinator, "sessionCoordinator не может быть null");
     }
 
     @Override
@@ -44,18 +46,10 @@ public class CheckinCommand implements BotCommand {
     }
 
     @Override
-    public String execute(UUID userId, String[] args) {
+    public BotResponse execute(UUID userId, String[] args) {
         if (args != null && args.length > 0) {
-            return ARGS_ERROR;
+            return new BotResponse(ARGS_ERROR);
         }
-        return checkinFsmService.start(userId);
-    }
-    @Override
-    public BotResponse executeWithResponse(UUID userId, String[] args){
-        if (args != null && args.length > 0) {
-            return new BotResponse(userId, ARGS_ERROR);
-        }
-        FsmResult result = checkinFsmService.startWithResponse(userId);
-        return new BotResponse(userId, result.text(), result.keyboard());
+        return sessionCoordinator.start(userId, DialogType.CHECKIN);
     }
 }

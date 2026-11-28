@@ -3,23 +3,19 @@ package ru.urfu.service.fsm;
 import java.util.UUID;
 
 /**
- * Общий контракт конечного автомата, обрабатывающего
- * последовательные действия пользователя
+ * Контракт отдельного диалогового сценария.
+ *
+ * @param <S> конкретный тип сессии, с которым работает сценарий
  */
-public interface FsmService {
+public interface FsmService<S extends UserSession> {
+
     /**
-     * Проверяет наличие открытой сессии у пользователя.
-     *
-     * @param userId идентификатор пользователя
-     * @return true, если у пользователя есть открытый диалог
+     * Запускает новый диалог и возвращает первый шаг.
      */
-    boolean hasActiveSession(UUID userId);
+    StepTransition start(UUID userId);
+
     /**
-     * Обрабатывает пользовательский ввод и определяет тип клавиатуры для следующего шага
-     *
-     * @param userId идентификатор пользователя
-     * @param text   текст ввода
-     * @return результат обработки вместе с необходимым типом клавиатуры
+     * Обрабатывает ввод пользователя в рамках его текущей сессии.
      */
-    FsmResult handleWithResponse(UUID userId, String text);
+    StepTransition handle(S session, String input);
 }

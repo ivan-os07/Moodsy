@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import ru.urfu.application.BotResponse;
+
 import java.util.UUID;
 
 /**
@@ -33,7 +35,7 @@ public class HelpCommand implements BotCommand {
     }
 
     @Override
-    public String execute(UUID userId, String[] args) {
+    public BotResponse execute(UUID userId, String[] args) {
         StringBuilder builder = new StringBuilder("Привет! Я бот Moodsy\n");
 
         for (BotCommand command : registry.getCommands()) {
@@ -43,7 +45,7 @@ public class HelpCommand implements BotCommand {
             builder.append("\n");
         }
 
-        return builder.toString();
+        return new BotResponse(builder.toString());
 
     }
 }

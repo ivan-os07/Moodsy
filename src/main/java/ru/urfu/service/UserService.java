@@ -50,4 +50,20 @@ public class UserService {
     public User linkPlatform(UUID userId, PlatformIdentity identity) {
         return userRepository.addPlatformIdentity(userId, identity);
     }
+
+
+    /**
+     * Объединяет двух пользователей. Пользователь-владелец остается,
+     * платформы и записи присоединяемого переходят к нему,
+     * присоединяемый удаляется
+     *
+     * @param ownerUserId   UUID пользователя, который остается
+     * @param joiningUserId UUID пользователя, который присоединяется и удаляется
+     * @throws PlatformConflictException если у обоих есть одна и та же платформа
+     */
+//    public void mergeUsers(UUID ownerUserId, UUID joiningUserId) {
+//        Objects.requireNonNull(ownerUserId, "ownerUserId не может быть null");
+//        Objects.requireNonNull(joiningUserId, "joiningUserId не может быть null");
+//        userRepository.merge(ownerUserId, joiningUserId);
+//    }
 }
