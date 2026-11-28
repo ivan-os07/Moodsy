@@ -1,21 +1,24 @@
-package ru.urfu.service.fsm.checkin;
+package ru.urfu.service.fsm;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import ru.urfu.model.Sphere;
+import ru.urfu.service.fsm.InMemorySessionStore;
+import ru.urfu.service.fsm.checkin.CheckinSession;
+import ru.urfu.service.fsm.checkin.CheckinStep;
 
 import java.util.UUID;
 
 /**
- * Тестирование хранилища сессий чекина.
+ * Тестирование in-memory хранилища сессий.
  */
-class InMemoryCheckinSessionStoreTest {
+class InMemorySessionStoreTest {
 
     /**
      * Хранилище сессий, создаваемое перед каждым тестом.
      */
-    private InMemoryCheckinSessionStore store;
+    private SessionStore store;
 
     /**
      * Идентификатор первого пользователя.
@@ -33,7 +36,7 @@ class InMemoryCheckinSessionStoreTest {
      */
     @BeforeEach
     void setUp() {
-        store = new InMemoryCheckinSessionStore();
+        store = new InMemorySessionStore();
     }
 
     /**
@@ -41,7 +44,8 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void testSaveAndFindById() {
-        CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        // на примере CheckinSession
+        UserSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
         store.save(session);
 
@@ -64,8 +68,8 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void testSaveReplacesExistingSession() {
-        CheckinSession first = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
-        CheckinSession second = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        UserSession first = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        UserSession second = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
         store.save(first);
         store.save(second);
@@ -81,10 +85,10 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void testRemoveExistingSession() {
-        CheckinSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        UserSession session = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
         store.save(session);
 
-        CheckinSession removed = store.remove(firstUserId).orElseThrow();
+        UserSession removed = store.remove(firstUserId).orElseThrow();
 
         Assertions.assertSame(session, removed);
         Assertions.assertTrue(store.findById(firstUserId).isEmpty());
@@ -107,8 +111,8 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void testSessionsOfDifferentUsersAreIsolated() {
-        CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
-        CheckinSession secondSession = new CheckinSession(secondUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        UserSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        UserSession secondSession = new CheckinSession(secondUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
         store.save(firstSession);
         store.save(secondSession);
 
@@ -199,7 +203,7 @@ class InMemoryCheckinSessionStoreTest {
      */
     @Test
     void testHasSession() {
-        CheckinSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
+        UserSession firstSession = new CheckinSession(firstUserId, CheckinStep.SCORE, 0, Sphere.WORK, "");
 
         store.save(firstSession);
 

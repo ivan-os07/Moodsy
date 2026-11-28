@@ -61,9 +61,9 @@ public class UserService {
      * @param joiningUserId UUID пользователя, который присоединяется и удаляется
      * @throws PlatformConflictException если у обоих есть одна и та же платформа
      */
-    public void mergeUsers(UUID ownerUserId, UUID joiningUserId) {
-        Objects.requireNonNull(ownerUserId, "ownerUserId не может быть null");
-        Objects.requireNonNull(joiningUserId, "joiningUserId не может быть null");
-        userRepository.merge(ownerUserId, joiningUserId);
-    }
+//    public void mergeUsers(UUID ownerUserId, UUID joiningUserId) {
+//        Objects.requireNonNull(ownerUserId, "ownerUserId не может быть null");
+//        Objects.requireNonNull(joiningUserId, "joiningUserId не может быть null");
+//        userRepository.merge(ownerUserId, joiningUserId);
+//    }
 }

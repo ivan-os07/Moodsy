@@ -56,5 +56,5 @@ public interface UserRepository {
      * @param ownerUserId id владельца(кто вызвал /link)
      * @param joiningUserId id кто добавляет(кто вызвал /verify)
      */
-    void merge(UUID ownerUserId, UUID joiningUserId);
+    //void merge(UUID ownerUserId, UUID joiningUserId);
 }
