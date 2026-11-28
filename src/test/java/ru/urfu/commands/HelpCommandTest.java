@@ -3,11 +3,17 @@ package ru.urfu.commands;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.UUID;
 
 /**
  * Тестирование команды /help
  */
 class HelpCommandTest {
+
+    /**
+     * Идентификатор пользователя для вызовов команды в тестах.
+     */
+    private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000123");
 
     /**
      * Хранилище команд, из которого /help берет список
@@ -32,7 +38,7 @@ class HelpCommandTest {
      * Тестируем валидность возврата ключа команды
      */
     @Test
-    void getCommandKeyTest() {
+    void testGetCommandKey() {
         Assertions.assertEquals("/help", command.getCommandKey());
     }
 
@@ -40,7 +46,7 @@ class HelpCommandTest {
      * Тестируем валидность возврата описания команды
      */
     @Test
-    void getValidDescriptionTest() {
+    void testGetValidDescription() {
         Assertions.assertEquals("Получить помощь и список команд", command.getDescription());
     }
 
@@ -49,11 +55,11 @@ class HelpCommandTest {
      * приветствие, затем команды в порядке регистрации.
      */
     @Test
-    void getListsAllRegisteredCommandsTest() {
+    void testGetListsAllRegisteredCommands() {
         registry.register(new FakeCommand("/cmd1", "cmd1 description", "ans1"));
         registry.register(new FakeCommand("/cmd2", "cmd2 description", "ans2"));
 
-        String result = command.execute("tg123", new String[]{});
+        String result = command.execute(USER_ID, new String[]{});
 
         String expected = """
                 Привет! Я бот Moodsy
@@ -67,10 +73,10 @@ class HelpCommandTest {
      * Если сама команда /help зарегистрирована в хранилище, она тоже попадает в список.
      */
     @Test
-    void getIncludesItselfWhenRegisteredTest() {
+    void testGetIncludesItselfWhenRegistered() {
         registry.register(command);
 
-        String result = command.execute("tg123", new String[]{});
+        String result = command.execute(USER_ID, new String[]{});
 
         String expected = """
                 Привет! Я бот Moodsy
@@ -83,8 +89,8 @@ class HelpCommandTest {
      * Если других команд нет, выводится только приветствие.
      */
     @Test
-    void getEmptyRegistry_returnsOnlyGreetingTest() {
-        String result = command.execute("tg123", new String[]{});
+    void testGetEmptyRegistry_returnsOnlyGreeting() {
+        String result = command.execute(USER_ID, new String[]{});
 
         Assertions.assertEquals("Привет! Я бот Moodsy\n", result);
     }

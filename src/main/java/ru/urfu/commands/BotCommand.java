@@ -1,5 +1,7 @@
 package ru.urfu.commands;
 
+import java.util.UUID;
+
 /**
  * Контракт для всех команд. Каждая команда будет его реализовывать.
  * Диспетчер будет работать с этим интерфейсом и для него не важно какая именно команда пришла
@@ -26,5 +28,17 @@ public interface BotCommand {
      * @param args   массив аргументов команды
      * @return String - текст ответа
      */
-    String execute(String userId, String[] args);
+    String execute(UUID userId, String[] args);
+
+    /**
+     * Выполняет команду и формирует ответ с типом взаимодействия по умолчанию
+     * Реализация может переопределять метод, если команде нужна другая клавиатура
+     *
+     * @param userId идентификатор пользователя
+     * @param args   аргументы команды
+     * @return ответ для пользователя
+     */
+    default BotResponse executeWithResponse(UUID userId, String[] args) {
+        return new BotResponse(userId, execute(userId, args));
+    }
 }

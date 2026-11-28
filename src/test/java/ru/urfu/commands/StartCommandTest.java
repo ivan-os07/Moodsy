@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.Assertions;
 
+import java.util.UUID;
+
 /**
- * Тестирование команды /start
+ * Тестирование команды /test
  */
 class StartCommandTest {
 
@@ -27,7 +29,7 @@ class StartCommandTest {
      * Тестируем валидность возврата команды
      */
     @Test
-    void getCommandKey_returnsCorrectKeyTest() {
+    void testGetCommandKey_returnsCorrectKey() {
         String result = command.getCommandKey();
         Assertions.assertEquals("/start", result);
     }
@@ -36,7 +38,7 @@ class StartCommandTest {
      * Тестируем валидность возврата описания команды
      */
     @Test
-    void getValidDescriptionTest() {
+    void testGetDescription_returnsNonEmpty() {
         String result = command.getDescription();
         Assertions.assertEquals("Начать работу", result);
     }
@@ -45,8 +47,8 @@ class StartCommandTest {
      * Тестируем, что команда возвращает корректное приветственное сообщение.
      */
     @Test
-    void execute_returnsWelcomeMessageTest() {
-        String result = command.execute("tg:123", new String[]{});
+    void testExecute_returnsWelcomeMessage() {
+        String result = command.execute(UUID.fromString("00000000-0000-0000-0000-000000000123"), new String[]{});
         Assertions.assertEquals("Добро пожаловать!", result);
     }
 }
