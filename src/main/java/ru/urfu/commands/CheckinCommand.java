@@ -1,5 +1,6 @@
 package ru.urfu.commands;
 
+import ru.urfu.application.BotResponse;
 import ru.urfu.service.fsm.checkin.CheckinFsmService;
 import ru.urfu.service.fsm.FsmResult;
 
@@ -49,13 +50,5 @@ public class CheckinCommand implements BotCommand {
             return ARGS_ERROR;
         }
         return checkinFsmService.start(userId);
-    }
-    @Override
-    public BotResponse executeWithResponse(UUID userId, String[] args){
-        if (args != null && args.length > 0) {
-            return new BotResponse(userId, ARGS_ERROR);
-        }
-        FsmResult result = checkinFsmService.startWithResponse(userId);
-        return new BotResponse(userId, result.text(), result.keyboard());
     }
 }

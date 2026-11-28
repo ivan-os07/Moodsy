@@ -8,7 +8,6 @@ import ru.urfu.repository.MoodRepository;
 import ru.urfu.service.analytics.MoodAnalyticsService;
 import ru.urfu.service.analytics.MoodStatistics;
 import ru.urfu.service.analytics.StatisticsPeriod;
-import ru.urfu.service.fsm.FsmResult;
 import ru.urfu.service.fsm.FsmService;
 
 import java.text.DecimalFormat;

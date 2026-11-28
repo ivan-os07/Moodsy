@@ -1,13 +1,14 @@
 package ru.urfu.service.fsm.checkin;
 
+import ru.urfu.application.BotResponse;
 import ru.urfu.application.Keyboard;
 import ru.urfu.application.KeyboardButton;
 import ru.urfu.application.KeyboardRow;
 import ru.urfu.model.MoodEntry;
 import ru.urfu.model.Sphere;
 import ru.urfu.repository.MoodRepository;
-import ru.urfu.service.fsm.FsmResult;
 import ru.urfu.service.fsm.FsmService;
+import ru.urfu.service.fsm.StepTransition;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -22,12 +23,7 @@ import java.util.*;
  *     <li>Сохраняет готовую запись в репозиторий</li>
  * </ul>
  */
-public class CheckinFsmService implements FsmService {
-
-    /**
-     * Команда завершения диалога без сохранения.
-     */
-    private static final String CMD_EXIT = "/exit";
+public class CheckinFsmService implements FsmService<CheckinSession> {
 
     /**
      * Команда возврата на предыдущий шаг.
@@ -70,6 +66,14 @@ public class CheckinFsmService implements FsmService {
     private static final String NOTE_PROMPT = "Добавьте заметку или отправьте /skip";
 
     /**
+     * Сообщение о выборе сферы
+     */
+    private static final String SPHERE_PROMPT = """
+            Выберете сферу из предложенных:
+            Дела, Общение, Здоровье, Отдых
+            """;
+
+    /**
      * Сообщение об ошибке оценки.
      */
     private static final String SCORE_ERROR = "❌ Ошибка: оценка настроения должна быть числом от 1 до 10.";
@@ -96,11 +100,6 @@ public class CheckinFsmService implements FsmService {
     private static final String PREVIEW_HINT = "Пожалуйста, подтвердите запись с помощью /approve или отмените через /reject.";
 
     /**
-     * Сообщение о попытке продолжить диалог, которого нет.
-     */
-    private static final String NO_SESSION = "Диалог не запущен. Отправьте /checkin";
-
-    /**
      * Сообщение об успешном сохранении записи.
      */
     private static final String SAVED = "✅ Запись сохранена.";
@@ -111,22 +110,9 @@ public class CheckinFsmService implements FsmService {
     private static final String EXITED = "Сессия завершена без сохранения отметки";
 
     /**
-     * Сообщение о выборе сферы
-     */
-    private static final String SPHERE_PROMPT = """
-            Выберете сферу из предложенных:
-            Дела, Общение, Здоровье, Отдых
-            """;
-
-    /**
      * Сообщение об ошибке при выборе сферы
      */
     private static final String SPHERE_ERROR = "❌Ошибка: НЕОБХОДИМО выбрать только из предложенных сфер.";
-
-    /**
-     * Хранилище открытых сессий диалогов.
-     */
-    private final CheckinSessionStore sessionStore;
 
     /**
      * Репозиторий записей настроения.
@@ -139,73 +125,42 @@ public class CheckinFsmService implements FsmService {
     private final Clock clock;
 
     /**
+     * Фабрика клавиатур для шагов чекина.
+     */
+    private final CheckinKeyboardFactory keyboardFactory;
+
+    /**
      * Создаёт сервис диалога чекина.
      *
-     * @param sessionStore   хранилище открытых сессий
-     * @param moodRepository репозиторий записей настроения
-     * @param clock          источник времени; время приводится к московскому (UTC+3)
+     * @param moodRepository  репозиторий записей настроения
+     * @param clock           источник времени; время приводится к московскому (UTC+3)
+     * @param keyboardFactory фабрика клавиатур для шагов чекина
      */
-    public CheckinFsmService(CheckinSessionStore sessionStore, MoodRepository moodRepository, Clock clock) {
-        this.sessionStore = Objects.requireNonNull(sessionStore, "sessionStore не может быть null");
+    public CheckinFsmService(
+            MoodRepository moodRepository,
+            Clock clock,
+            CheckinKeyboardFactory keyboardFactory
+    ) {
         this.moodRepository = Objects.requireNonNull(moodRepository, "moodRepository не может быть null");
         this.clock = Objects.requireNonNull(clock, "clock не может быть null").withZone(ZoneOffset.ofHours(3));
+        this.keyboardFactory = Objects.requireNonNull(keyboardFactory, "keyboardFactory не может быть null");
     }
 
-    /**
-     * Создаёт сессию на шаге SCORE и просит ввести оценку.
-     * Если сессия уже была создана, то старая удалится и новая добавится.
-     *
-     * @param userId идентификатор пользователя
-     * @return приглашение ввести оценку
-     */
-    public String start(UUID userId) {
-        Objects.requireNonNull(userId, "userId не может быть null");
-        CheckinSession session = new CheckinSession(userId, CheckinStep.SCORE, 0, null, "");
-        sessionStore.save(session);
-        return SCORE_PROMPT;
+    @Override
+    public StepTransition start(UUID userId) {
+        return continueStep(SCORE_PROMPT, new CheckinSession(userId));
     }
 
-    /**
-     * Запускает диалог и возвращает результат с типом взаимодействия
-     *
-     * @param userId идентификатор пользователя
-     * @return результат запуска диалога
-     */
-    public FsmResult startWithResponse(UUID userId) {
-        String text = start(userId);
-        return createResult(userId, text);
+    @Override
+    public StepTransition handle(CheckinSession session, String text) {
+        Objects.requireNonNull(session, "session не может быть null");
 
-    }
-
-    /**
-     * Обрабатывает ввод пользователя в зависимости от текущего шага диалога.
-     * Команды /exit и /back доступны на любом шаге, /skip — только на шаге заметки.
-     *
-     * @param userId идентификатор пользователя
-     * @param text   текст сообщения
-     * @return сообщение с результатом обработки
-     * @throws NullPointerException если {@code userId} равен {@code null}
-     */
-    public String handle(UUID userId, String text) {
-        Objects.requireNonNull(userId, "userId не может быть null");
-
-        // Проверяем наличие сессии
-        Optional<CheckinSession> found = sessionStore.findById(userId);
-        if (found.isEmpty()) {
-            return NO_SESSION;
-        }
-
-        CheckinSession session = found.get();
         String input = text == null ? "" : text.trim();
         String command = input.toLowerCase(Locale.ROOT);
 
         return switch (command) {
-            // обработка выхода
-            case CMD_EXIT -> handleExit(session);
             case CMD_BACK -> handleBack(session);
             case CMD_SKIP -> handleSkip(session);
-
-            // Идем по шагам
             default -> switch (session.step()) {
                 case SCORE -> handleScore(session, input);
                 case SPHERE -> handleSphere(session, input);
@@ -213,16 +168,8 @@ public class CheckinFsmService implements FsmService {
                 case PREVIEW -> handlePreview(session, command);
             };
         };
-
     }
 
-
-    @Override
-    public FsmResult handleWithResponse(UUID userId, String text) {
-        String response = handle(userId, text);
-        return createResult(userId, response);
-
-    }
 
     /**
      * На шаге PREVIEW: /approve сохраняет запись, /reject отменяет диалог,
@@ -232,14 +179,14 @@ public class CheckinFsmService implements FsmService {
      * @param command ввод пользователя в нижнем регистре
      * @return сообщение по результату
      */
-    private String handlePreview(CheckinSession session, String command) {
+    private StepTransition handlePreview(CheckinSession session, String command) {
         if (CMD_APPROVE.equals(command)) {
             return handleApprove(session);
         }
         if (CMD_REJECT.equals(command)) {
-            return handleExit(session);
+            return finishStep(EXITED);
         }
-        return PREVIEW_HINT;
+        return continueStep(PREVIEW_HINT, session);
     }
 
     /**
@@ -249,34 +196,26 @@ public class CheckinFsmService implements FsmService {
      * @param text    введённый текст
      * @return приглашение ввести сферу или сообщение об ошибке
      */
-    private String handleScore(CheckinSession session, String text) {
+    private StepTransition handleScore(CheckinSession session, String text) {
         // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
         int score;
         try {
             score = Integer.parseInt(text);
         } catch (NumberFormatException e) {
             // Сессия остается та же самая(с теми же данными)
-            return SCORE_ERROR;
+            return continueStep(SCORE_ERROR, session);
         }
 
         // валидация
         if (score < MIN_SCORE || score > MAX_SCORE) {
             // Сессия остается та же самая(с теми же данными)
-            return SCORE_ERROR;
+            return continueStep(SCORE_ERROR, session);
         }
 
-        // Создаем новую сессию
-        CheckinSession updatedSession = new CheckinSession(session.userId(),
-                CheckinStep.SPHERE,    // меняем шаг на следующий
-                score,               // оценка
-                session.sphere(),
-                session.note()
+        return continueStep(
+                SPHERE_PROMPT,
+                session.withScore(score, CheckinStep.SPHERE)
         );
-
-        // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
-        sessionStore.save(updatedSession);
-
-        return SPHERE_PROMPT;
     }
 
     /**
@@ -286,28 +225,19 @@ public class CheckinFsmService implements FsmService {
      * @param text    введённый текст
      * @return приглашение ввести заметку или сообщение об ошибке
      */
-    private String handleSphere(CheckinSession session, String text) {
+    private StepTransition handleSphere(CheckinSession session, String text) {
         // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
         if (text.startsWith("/")) {
-            return UNKNOWN_COMMAND;
+            return continueStep(UNKNOWN_COMMAND, session);
         }
 
         // валидация сферы
         Optional<Sphere> resolved = resolveSphere(text);
-        if (resolved.isEmpty()) {
-            return SPHERE_ERROR;
-        }
+        return resolved.map(sphere -> continueStep(
+                NOTE_PROMPT,
+                session.withSphere(sphere, CheckinStep.NOTE)
+        )).orElseGet(() -> continueStep(SPHERE_ERROR, session));
 
-        Sphere sphere = resolved.get();
-        CheckinSession updatedSession = new CheckinSession(session.userId(),
-                CheckinStep.NOTE, // меняем шаг на следующий
-                session.score(),
-                sphere,           // сфера
-                session.note()
-        );
-
-        sessionStore.save(updatedSession);
-        return NOTE_PROMPT;
     }
 
 
@@ -318,34 +248,13 @@ public class CheckinFsmService implements FsmService {
      * @param text    введённый текст
      * @return текст карточки предпросмотра или сообщение об ошибке
      */
-    private String handleNote(CheckinSession session, String text) {
-        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
-
-        // Защита от null и очистка пробелов по краям
-        String cleanText = (text == null) ? "" : text.trim();
-        String note;
-
-        if (CMD_SKIP.equalsIgnoreCase(cleanText)) {
-            note = "";
-        } else if (cleanText.startsWith("/")) {
-            return UNKNOWN_COMMAND;
-        } else {
-            note = cleanText;
+    private StepTransition handleNote(CheckinSession session, String text) {
+        if (text.startsWith("/")) {
+            return continueStep(UNKNOWN_COMMAND, session);
         }
 
-        // Создаем новую сессию
-        CheckinSession updatedSession = new CheckinSession(session.userId(),
-                CheckinStep.PREVIEW, // Меняем шаг на следующий,
-                session.score(),
-                session.sphere(),
-                note // Новая заметка
-        );
-
-        // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
-        // При этом session почистит GC
-        sessionStore.save(updatedSession);
-
-        return buildPreview(updatedSession);
+        CheckinSession updatedSession = session.withNote(text, CheckinStep.PREVIEW);
+        return continueStep(buildPreview(updatedSession), updatedSession);
     }
 
 
@@ -355,111 +264,43 @@ public class CheckinFsmService implements FsmService {
      * @param session текущая сессия
      * @return сообщение о сохранении записи
      */
-    private String handleApprove(CheckinSession session) {
-        MoodEntry entry = new MoodEntry(LocalDateTime.now(clock), session.score(), session.sphere(), session.note());
-
-        moodRepository.save(session.userId(), entry);
-        sessionStore.remove(session.userId());
-        return SAVED;
-    }
-
-    /**
-     * Удаляет сессию без сохранения записи.
-     *
-     * @param session текущая сессия
-     * @return сообщение о завершении диалога
-     */
-    private String handleExit(CheckinSession session) {
-        sessionStore.remove(session.userId());
-        return EXITED;
-    }
-
-    /**
-     * Переводит диалог на предыдущий шаг и сообщает, куда он вернулся.
-     *
-     * @param session текущая сессия
-     * @return приглашение предыдущего шага или сообщение о невозможности возврата
-     */
-    private String handleBack(CheckinSession session) {
-        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
-
-        CheckinSession updatedSession;
-
-        switch (session.step()) {
-            case SCORE -> {
-                return FIRST_STEP;
-            }
-            case SPHERE -> {
-                updatedSession = new CheckinSession(session.userId(),
-                        CheckinStep.SCORE,
-                        session.score(),
-                        session.sphere(),
-                        session.note()
-                );
-
-                sessionStore.save(updatedSession);
-                return SCORE_PROMPT;
-            }
-            case NOTE -> {
-                updatedSession = new CheckinSession(session.userId(),
-                        CheckinStep.SPHERE,
-                        session.score(),
-                        session.sphere(),
-                        session.note()
-                );
-
-                sessionStore.save(updatedSession);
-                return SPHERE_PROMPT;
-            }
-            case PREVIEW -> {
-                updatedSession = new CheckinSession(session.userId(),
-                        CheckinStep.NOTE,
-                        session.score(),
-                        session.sphere(),
-                        session.note()
-                );
-
-                sessionStore.save(updatedSession);
-                return NOTE_PROMPT;
-            }
-        }
-        return "Неизвестный шаг: " + session.step();
-    }
-
-    /**
-     * Обработка команды /skip
-     *
-     * @param session текущая сессия
-     * @return сообщение об ошибке если не на шаге NOTE
-     */
-    private String handleSkip(CheckinSession session) {
-        // тк мы приняли сессию, то она точно не пуста (мы проверили ее в handle)
-
-        CheckinSession updatedSession;
-
-        // Если не на шаге NOTE, то выбрасываем сообщение об ошибке
-        if (session.step() != CheckinStep.NOTE) {
-            // Если на шаге PREVIEW, то еще напоминаем, какие команды доступны на этом шаге
-            if (session.step() == CheckinStep.PREVIEW) {
-                return SKIP_ERROR + '\n' + PREVIEW_HINT;
-            }
-            return SKIP_ERROR;
-        }
-
-        // Иначе, пропускаем шаг NOTE, при этом поле note заполняем пустой строкой.
-        updatedSession = new CheckinSession(session.userId(),
-                CheckinStep.PREVIEW,
+    private StepTransition handleApprove(CheckinSession session) {
+        MoodEntry entry = new MoodEntry(
+                LocalDateTime.now(clock),
                 session.score(),
                 session.sphere(),
-                ""
+                session.note()
         );
+        moodRepository.save(session.userId(), entry);
+        return finishStep(SAVED);
+    }
 
-        // Сохраняем новую сессию в хранилище (она заменит старую по контракту save)
-        // При этом session почистит GC
-        sessionStore.save(updatedSession);
 
-        return buildPreview(updatedSession);
+    /**
+     * Переводит диалог на предыдущий шаг.
+     */
+    private StepTransition handleBack(CheckinSession session) {
+        return switch (session.step()) {
+            case SCORE -> continueStep(FIRST_STEP, session);
+            case SPHERE -> continueStep(SCORE_PROMPT, session.withStep(CheckinStep.SCORE));
+            case NOTE -> continueStep(SPHERE_PROMPT, session.withStep(CheckinStep.SPHERE));
+            case PREVIEW -> continueStep(NOTE_PROMPT, session.withStep(CheckinStep.NOTE));
+        };
+    }
 
+    /**
+     * Обрабатывает команду /skip (доступна только на шаге NOTE).
+     */
+    private StepTransition handleSkip(CheckinSession session) {
+        if (session.step() != CheckinStep.NOTE) {
+            String message = session.step() == CheckinStep.PREVIEW
+                    ? SKIP_ERROR + '\n' + PREVIEW_HINT
+                    : SKIP_ERROR;
+            return continueStep(message, session);
+        }
+
+        CheckinSession updatedSession = session.withNote("", CheckinStep.PREVIEW);
+        return continueStep(buildPreview(updatedSession), updatedSession);
     }
 
     /**
@@ -487,14 +328,6 @@ public class CheckinFsmService implements FsmService {
     }
 
 
-    @Override
-    public boolean hasActiveSession(UUID userId) {
-        Objects.requireNonNull(userId, "userId не может быть null");
-        // Делегирование в хранилище сессий
-        return sessionStore.hasSession(userId);
-    }
-
-
     /**
      * Валидация сферы
      *
@@ -511,94 +344,17 @@ public class CheckinFsmService implements FsmService {
     }
 
     /**
-     * Создает результат обработки пользовательского ввода
-     * @param userId внутренний идентификатор пользователя
-     * @param text текст ответа
-     * @return результат обработки без дополнительной клавиатуры
+     * Формирует переход с сохранением сессии и клавиатурой для её шага.
      */
-    private FsmResult createResult(UUID userId, String text){
-        Optional<Keyboard> keyboard = sessionStore.findById(userId)
-                .map(session -> createKeyboard(session.step()));
-        return new FsmResult(text, keyboard);
+    private StepTransition continueStep(String text, CheckinSession nextSession) {
+        BotResponse response = new BotResponse(text, keyboardFactory.create(nextSession.step()));
+        return new StepTransition(response, nextSession);
     }
 
     /**
-     * Создает клавиатуру в зависимости от текущего шага в чекине
-     * @param step текущий шаг в диалоге
-     * @return универсальная клавиатура с доступными действиями
+     * Формирует завершающий переход без клавиатуры и без следующей сессии.
      */
-    private Keyboard createKeyboard(CheckinStep step) {
-        List<KeyboardRow> rows = new ArrayList<>();
-        switch (step) {
-            case SCORE ->{
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton("1", "1"),
-                        new KeyboardButton("2", "2"),
-                        new KeyboardButton("3", "3"),
-                        new KeyboardButton("4", "4"),
-                        new KeyboardButton("5", "5")
-
-                )));
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton("6", "6"),
-                        new KeyboardButton("7", "7"),
-                        new KeyboardButton("8", "8"),
-                        new KeyboardButton("9", "9"),
-                        new KeyboardButton("10", "10")
-
-                )));
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton("Отмена",  CMD_EXIT)
-                )));
-            }
-            case SPHERE ->{
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton(
-                                Sphere.WORK.getDisplayName(),
-                                Sphere.WORK.getDisplayName()
-                        ),
-                        new KeyboardButton(
-                                Sphere.SOCIAL.getDisplayName(),
-                                Sphere.SOCIAL.getDisplayName()
-                        )
-                )));
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton(
-                                Sphere.HEALTH.getDisplayName(),
-                                Sphere.HEALTH.getDisplayName()
-                        ),
-                        new KeyboardButton(
-                                Sphere.REST.getDisplayName(),
-                                Sphere.REST.getDisplayName()
-                        )
-                )));
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton("Назад",  CMD_BACK),
-                        new KeyboardButton("Отмена",  CMD_EXIT)
-                )));
-
-
-            }
-            case NOTE ->{
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton("Пропустить", CMD_SKIP)
-                )));
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton("Назад",  CMD_BACK),
-                        new KeyboardButton("Отмена",  CMD_EXIT)
-                )));
-            }
-            case PREVIEW ->{
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton("✅ Сохранить", CMD_APPROVE)
-                )));
-                rows.add(new KeyboardRow(List.of(
-                        new KeyboardButton("Назад",  CMD_BACK),
-                        new KeyboardButton("Отмена",  CMD_EXIT)
-                )));
-            }
-
-        }
-        return new Keyboard(rows);
+    private StepTransition finishStep(String text) {
+        return new StepTransition(new BotResponse(text));
     }
 }

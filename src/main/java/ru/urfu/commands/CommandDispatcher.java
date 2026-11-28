@@ -1,5 +1,6 @@
 package ru.urfu.commands;
 
+import ru.urfu.application.BotResponse;
 import ru.urfu.service.fsm.checkin.CheckinFsmService;
 import ru.urfu.service.fsm.FsmResult;
 import ru.urfu.service.fsm.stats.StatsFsmService;
