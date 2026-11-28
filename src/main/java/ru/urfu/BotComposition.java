@@ -56,6 +56,21 @@ public class BotComposition {
         MoodRepository moodRepository = new InMemoryMoodRepository();
         UserRepository userRepository = new InMemoryUserRepository();
         this.userService = new UserService(userRepository);
+        SessionCoordinator sessionCoordinator = getSessionCoordinator(moodRepository, moscowClock);
+
+        // Команды
+        this.registry = new CommandRegistry();
+        registry.register(new StartCommand());
+        registry.register(new HelpCommand(registry));
+        registry.register(new CheckinCommand(sessionCoordinator));
+        registry.register(new StatsCommand(sessionCoordinator));
+        registry.register(new HistoryCommand(moodRepository));
+
+        // Диспетчер
+        this.dispatcher = new CommandDispatcher(registry, sessionCoordinator);
+    }
+
+    private static SessionCoordinator getSessionCoordinator(MoodRepository moodRepository, Clock moscowClock) {
         MoodAnalyticsService analyticsService = new MoodAnalyticsService();
 
         // FSM: единое хранилище, сценарии и координатор
@@ -72,22 +87,11 @@ public class BotComposition {
                 analyticsService,
                 moscowClock
         );
-        SessionCoordinator sessionCoordinator = new SessionCoordinator(
+        return new SessionCoordinator(
                 sessionStore,
                 checkinFsm,
                 statsFsm
         );
-
-        // Команды
-        this.registry = new CommandRegistry();
-        registry.register(new StartCommand());
-        registry.register(new HelpCommand(registry));
-        registry.register(new CheckinCommand(sessionCoordinator));
-        registry.register(new StatsCommand(sessionCoordinator));
-        registry.register(new HistoryCommand(moodRepository));
-
-        // Диспетчер
-        this.dispatcher = new CommandDispatcher(registry, sessionCoordinator);
     }
 
     /**
