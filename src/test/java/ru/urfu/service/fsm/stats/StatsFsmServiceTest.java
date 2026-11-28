@@ -38,12 +38,17 @@ class StatsFsmServiceTest {
      */
     private UUID userId;
 
+    /**
+     * Инициализация зависимостей перед каждым тестом
+     */
     @BeforeEach
     void setUp() {
         repository = new InMemoryMoodRepository();
         userId = UUID.randomUUID();
 
-        Clock clock = Clock.fixed(Instant.parse("2026-11-04T12:00:00Z"), ZoneOffset.ofHours(3));
+        Clock clock = Clock.fixed(
+                Instant.parse("2026-11-04T12:00:00Z"), ZoneOffset.ofHours(3)
+        );
 
         service = new StatsFsmService(repository, new MoodAnalyticsService(), clock);
     }
@@ -122,10 +127,18 @@ class StatsFsmServiceTest {
      */
     @Test
     void testSelectWeekReturnsStatisticsForCurrentWeek() {
-        repository.save(userId, entry("2026-11-02T10:00", 5, Sphere.WORK));
-        repository.save(userId, entry("2026-11-03T10:00", 9, Sphere.WORK));
-        repository.save(userId, entry("2026-11-08T23:59", 7, Sphere.SOCIAL));
-        repository.save(userId, entry("2026-11-09T00:00", 1, Sphere.REST));
+        repository.save(userId, entry(
+                "2026-11-02T10:00", 5, Sphere.WORK)
+        );
+        repository.save(userId, entry(
+                "2026-11-03T10:00", 9, Sphere.WORK)
+        );
+        repository.save(userId, entry(
+                "2026-11-08T23:59", 7, Sphere.SOCIAL)
+        );
+        repository.save(userId, entry(
+                "2026-11-09T00:00", 1, Sphere.REST)
+        );
 
         service.start(userId);
         FsmResult result = service.handleWithResponse(userId, "week");
@@ -146,10 +159,18 @@ class StatsFsmServiceTest {
      */
     @Test
     void testSelectMonthReturnsStatisticsForCurrentMonth() {
-        repository.save(userId, entry("2026-10-31T23:59", 1, Sphere.REST));
-        repository.save(userId, entry("2026-11-01T10:00", 4, Sphere.WORK));
-        repository.save(userId, entry("2026-11-30T10:00", 10, Sphere.WORK));
-        repository.save(userId, entry("2026-12-01T00:00", 1, Sphere.SOCIAL));
+        repository.save(userId, entry(
+                "2026-10-31T23:59", 1, Sphere.REST)
+        );
+        repository.save(userId, entry(
+                "2026-11-01T10:00", 4, Sphere.WORK)
+        );
+        repository.save(userId, entry(
+                "2026-11-30T10:00", 10, Sphere.WORK)
+        );
+        repository.save(userId, entry(
+                "2026-12-01T00:00", 1, Sphere.SOCIAL)
+        );
 
         service.start(userId);
         FsmResult result = service.handleWithResponse(userId, "month");
@@ -188,8 +209,15 @@ class StatsFsmServiceTest {
         service.start(userId);
         FsmResult result = service.handleWithResponse(userId, "week");
 
-        Assertions.assertTrue(
-                result.text().endsWith("(" + count + " " + expectedWord + ")")
+        Assertions.assertEquals(
+                """
+                        📊 Статистика за неделю (02.11.2026 - 08.11.2026)
+                        Средняя оценка: 5,00/10
+                        Лучший день: 02.11.2026 10:00 - 5/10
+                        Худший день: 02.11.2026 10:00 - 5/10
+                        Самая частая сфера: Дела (%d %s)
+                        """.formatted(count, expectedWord).stripTrailing(),
+                result.text()
         );
     }
 
@@ -212,7 +240,9 @@ class StatsFsmServiceTest {
      */
     @Test
     void testSelectPeriodTrimsInputAndIgnoresCase() {
-        repository.save(userId, entry("2026-11-02T10:00", 6, Sphere.HEALTH));
+        repository.save(userId, entry(
+                "2026-11-02T10:00", 6, Sphere.HEALTH)
+        );
         service.start(userId);
 
         FsmResult result = service.handleWithResponse(userId, "  WEEK  ");
