@@ -1,6 +1,7 @@
 package ru.urfu.commands;
 
 import ru.urfu.application.BotResponse;
+import ru.urfu.service.fsm.DialogType;
 import ru.urfu.service.fsm.SessionCoordinator;
 
 import java.util.Objects;
@@ -46,6 +47,6 @@ public class StatsCommand implements BotCommand {
         if (args != null && args.length > 0) {
             return new BotResponse(ARGS_ERROR);
         }
-        return //TODO сделать как у меня только свое
+        return sessionCoordinator.start(userId, DialogType.STATS);
     }
 }

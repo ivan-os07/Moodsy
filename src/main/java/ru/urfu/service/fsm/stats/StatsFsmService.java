@@ -1,5 +1,6 @@
 package ru.urfu.service.fsm.stats;
 
+import ru.urfu.application.BotResponse;
 import ru.urfu.application.Keyboard;
 import ru.urfu.application.KeyboardButton;
 import ru.urfu.application.KeyboardRow;
@@ -9,6 +10,7 @@ import ru.urfu.service.analytics.MoodAnalyticsService;
 import ru.urfu.service.analytics.MoodStatistics;
 import ru.urfu.service.analytics.StatisticsPeriod;
 import ru.urfu.service.fsm.FsmService;
+import ru.urfu.service.fsm.StepTransition;
 
 import java.text.DecimalFormat;
 import java.time.Clock;
@@ -23,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * предлагает выбрать период, обрабатывает выбор
  * и формирует статистику за указанный период
  */
-public class StatsFsmService implements FsmService {
+public class StatsFsmService implements FsmService<StatsSession> {
 
     /**
      * Сообщение с предложением выбора статистики
@@ -76,59 +78,32 @@ public class StatsFsmService implements FsmService {
     ) {
         this.moodRepository = Objects.requireNonNull(moodRepository);
         this.moodAnalyticsService = Objects.requireNonNull(analyticsService);
-        this.clock = Objects.requireNonNull(clock).withZone(ZoneOffset.ofHours(3));
-    }
-
-    /**
-     * Запускает диалог выбора периода статистики
-     * @param userId внутренний идентификатор пользователя
-     * @return сообщение с предложением выбрать период
-     * @throws NullPointerException если userId равен null
-     */
-    public String start(UUID userId) {
-        Objects.requireNonNull(userId, "userId не может быть null");
-        activeSessions.add(userId);
-        return PERIOD_MESSAGE;
-    }
-
-    /**
-     * Запускает диалог выбора периода и формирует клавиатуру
-     * с доступными вариантами
-     * @param userId внутренний идентификатор пользователя
-     * @return результат запуска диалога с клавиатурой
-     */
-    public FsmResult startWithResponse(UUID userId) {
-        String text = start(userId);
-        return new FsmResult(text, Optional.of(createKeyboard()));
+        this.clock = Objects.requireNonNull(clock)
+                .withZone(ZoneOffset.ofHours(3));
     }
 
     @Override
-    public FsmResult handleWithResponse(UUID userId, String text) {
-        Objects.requireNonNull(userId, "userId не может быть null");
-        if (!activeSessions.contains(userId)) {
-            return new FsmResult(text, Optional.empty());
-        }
+    public StepTransition start(UUID userId) {
+        StatsSession statsSession = new StatsSession(userId);
+        BotResponse response = new BotResponse(PERIOD_MESSAGE, createKeyboard());
+        return new StepTransition(response, statsSession);
+    }
+
+    @Override
+    public StepTransition handle(StatsSession session, String text){
+        Objects.requireNonNull(session, "session не может быть null");
         String input = text == null ? "" : text.trim();
-        if ("/exit".equalsIgnoreCase(input)) {
-            activeSessions.remove(userId);
-            return new FsmResult("Выбор периода статистики отменён.",
-                    Optional.empty());
-        }
         StatisticsPeriod period = findPeriod(input);
+
         if (period == null) {
-            return new FsmResult(PERIOD_ERROR, Optional.of(createKeyboard()));
+            return new StepTransition(new BotResponse(
+                    PERIOD_ERROR, createKeyboard()),
+                    session
+            );
         }
+        String response = calculateStatistics(session.userId(), period);
+        return new StepTransition(new BotResponse(response));
 
-        activeSessions.remove(userId);
-        String response = calculateStatistics(userId, period);
-        return new FsmResult(response, Optional.empty());
-    }
-
-
-    @Override
-    public boolean hasActiveSession(UUID userId) {
-        Objects.requireNonNull(userId, "userId не может быть null");
-        return activeSessions.contains(userId);
     }
 
     /**
