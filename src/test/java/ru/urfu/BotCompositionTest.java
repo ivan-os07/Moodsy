@@ -12,6 +12,10 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Тесты для {@link BotComposition}.
+ * Проверяют корректность регистрации команд в диспетчере и связывание общих сервисов.
+ */
 class BotCompositionTest {
     /**
      * Сообщение о неизвестной команде.
@@ -102,6 +106,10 @@ class BotCompositionTest {
         dispatcher.handle(user, "/approve");
 
         String history = dispatcher.handle(user, "/history").text();
-        Assertions.assertTrue(history.contains("7/10"));
+        Assertions.assertEquals("""
+                 📅 Ваша история записей:
+                01.01.2026
+                15:00 - 7/10 - Дела
+                Заметка: много тикетов""", history);
     }
 }
